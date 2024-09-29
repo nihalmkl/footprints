@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #5a5a5a;
+        }
+        .input-field {
+            width: 90%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            transition: border-color 0.3s;
+        }
+        .input-field:focus {
+            border-color: #88c8bc;
+            outline: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #88c8bc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #69d99f;
+        }
+        .link {
+            margin-top: 15px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .link a {
+            color: #3f3f3f;
+            text-decoration: none;
+        }
+        .link a:hover {
+            color: #02466b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>OTP Verification</h2>
+    <p>Please enter the six-digit code</p>
+    <input type="text" class="input-field" placeholder="Enter OTP" maxlength="6" required>
+
+    <p>02:15</p> <!-- Timer placeholder -->
+    <div class="link">
+        <a>Didn’t you receive the OTP?</a>
+        <a href="#">Resend OTP</a>
+    </div>
+    <button type="submit" class="btn">Verify OTP</button>
+</div>
+
+</body>
+</html>

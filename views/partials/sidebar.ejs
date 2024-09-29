@@ -1,0 +1,82 @@
+<!-- Sidebar -->
+<aside id="sidebar">
+    <div class="d-flex">
+        <button class="toggle-btn" type="button">
+            <i class="lni lni-grid-alt"></i>
+        </button>
+        <div class="sidebar-logo">
+            <a href="#">FootPrints</a>
+        </div>
+    </div>
+    <ul class="sidebar-nav">
+        <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+                <i class="lni lni-dashboard"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+                <i class="lni lni-user"></i>
+                <span>Users</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+                <i class="lni lni-package"></i>
+                <span>Products</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+                <i class="lni lni-cart"></i>
+                <span>Orders</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+                <i class="lni lni-credit-cards"></i>
+                <span>Payments</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+                <i class="lni lni-layers"></i>
+                <span>Category</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+                <i class="lni lni-slack"></i>
+                <span>Brand</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+                <i class="lni lni-ticket-alt"></i>
+                <span>Coupon</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="#" class="sidebar-link">
+                <i class="lni lni-offer"></i>
+                <span>Offers</span>
+            </a>
+        </li>
+    </ul>
+    <div class="sidebar-footer">
+        <a href="#" class="sidebar-link">
+            <i class="lni lni-exit"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+</aside>
+
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.querySelector('.toggle-btn');
+
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('expand');
+    });
+</script>
