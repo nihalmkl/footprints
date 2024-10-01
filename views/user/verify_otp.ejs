@@ -72,18 +72,56 @@
 </head>
 <body>
 
-<div class="container">
-    <h2>OTP Verification</h2>
-    <p>Please enter the six-digit code</p>
-    <input type="text" class="input-field" placeholder="Enter OTP" maxlength="6" required>
-
-    <p>02:15</p> <!-- Timer placeholder -->
-    <div class="link">
-        <a>Didn’t you receive the OTP?</a>
-        <a href="#">Resend OTP</a>
+    <div class="container">
+        <h2>OTP Verification</h2>
+        <p>Please enter the six-digit code</p>
+        <input type="text" id="otpInput" class="input-field" placeholder="Enter OTP" maxlength="6" required>
+    
+        <p id="timer">02:15</p> <!-- Timer placeholder -->
+        <div class="link">
+            <a id="resendLink" style="display: none;">Didn’t you receive the OTP?</a>
+            <a id="resendButton" href="#" style="display: none;">Resend OTP</a>
+        </div>
+        <button id="verifyButton" type="submit" class="btn">Verify OTP</button>
     </div>
-    <button type="submit" class="btn">Verify OTP</button>
-</div>
-
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Timer variables
+        let countdownTime =  60 ; 
+        const timerElement = document.getElementById('timer');
+        const resendLink = document.getElementById('resendLink');
+        const resendButton = document.getElementById('resendButton');
+        const verifyButton = document.getElementById('verifyButton');
+    
+        // Start the countdown timer
+        const countdown = setInterval(() => {
+            // Calculate minutes and seconds
+            const minutes = Math.floor(countdownTime / 60);
+            const seconds = countdownTime % 60;
+    
+            // Format the time to MM:SS
+            timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    
+            // Decrease the countdown time
+            countdownTime--;
+    
+            // When the countdown reaches zero
+            if (countdownTime < 0) {
+                clearInterval(countdown);
+                timerElement.textContent = "00:00";
+                resendLink.style.display = "block"; // Show "Didn’t you receive the OTP?" link
+                resendButton.style.display = "block"; // Show "Resend OTP" button
+            }
+        }, 1000); // Update every second
+    
+        // Event listener for the "Resend OTP" button
+        resendButton.addEventListener('click', () => {
+            
+            console.log("OTP resent!"); // Placeholder for resend logic
+            // Optionally, restart the timer or any other necessary actions
+        });
+    });
+        
+</script>
 </body>
 </html>

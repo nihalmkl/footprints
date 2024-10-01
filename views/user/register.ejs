@@ -74,9 +74,8 @@
         }
         .error {
             color: red;
-            font-size: 12px;
-            margin-top: -10px;
-            margin-bottom: 10px;
+            font-size: 0.75rem;
+            display: none;
         }
         .image-container {
             flex: 1;
@@ -87,41 +86,124 @@
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="form-container">
         <h2>Create an Account</h2>
-        <form id="registrationForm">
+        <form id="registrationForm" method="POST" action="/register">
             <label for="username">Username</label>
-            <input type="text" id="username" name="username" class="input-field" placeholder="Enter your name" required>
-            <div class="error" id="usernameError"></div>
+            <input type="text" id="username" name="username" class="input-field" placeholder="Enter your name">
+            <div class="error" id="error1"></div>
             
             <label for="email">Email</label>
             <input type="email" id="email" name="email" class="input-field" placeholder="Enter your email" required>
-            <div class="error" id="emailError"></div>
+            <div class="error" id="error2"></div>
             
-            <label for="phone">Mobile no</label>
+            <label for="phone">Phone</label>
             <input type="tel" id="phone" name="phone" class="input-field" placeholder="Enter your phone">
-            <div class="error" id="phoneError"></div>
+            <div class="error" id="error3"></div>
             
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" class="input-field" placeholder="**********" required>
-            <div class="error" id="passwordError"></div>
+            <input type="password" id="password" name="password" class="input-field" placeholder="**********">
+            <div class="error" id="error4"></div>
             
             <label for="confirm_password">Confirm Password</label>
             <input type="password" id="confirm_password" name="confirm_password" class="input-field" placeholder="**********">
-            <div class="error" id="confirmPasswordError"></div>
+            <div class="error" id="error5"></div>
             
             <button type="submit" class="btn">Sign Up</button>
         </form>
-        
         <div class="link">
             Already have an account? <a href="/login">Sign In</a>
         </div>
     </div>
     <div class="image-container"></div>
 </div>
+
+<script>
+    const nameId = document.getElementById('username');
+    const emailId = document.getElementById('email');
+    const phoneId = document.getElementById('phone');
+    const passwordId = document.getElementById('password');
+    const cPasswordId = document.getElementById('confirm_password');
+    const error1 = document.getElementById('error1');
+    const error2 = document.getElementById('error2');
+    const error3 = document.getElementById('error3');
+    const error4 = document.getElementById('error4');
+    const error5 = document.getElementById('error5');
+    const form = document.getElementById('registrationForm');
+
+    const usernameValidate = () => {
+        const nameVal = nameId.value.trim();
+        const namePattern = /^[A-Za-z\s]+$/;
+        if (nameVal === "") {
+            error1.style.display = "block";
+            error1.innerHTML = "Please enter a valid name";
+        } else if (!namePattern.test(nameVal)) {
+            error1.style.display = "block";
+            error1.innerHTML = "Name can only contain alphabets and spaces";
+        } else {
+            error1.style.display = "none";
+            error1.innerHTML = "";
+        }
+    };
+
+    const emailValidate = () => {
+        const emailVal = emailId.value.trim();
+        const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+        if (!emailPattern.test(emailVal)) {
+            error2.style.display = "block";
+            error2.innerHTML = "Invalid email format";
+        } else {
+            error2.style.display = "none";
+            error2.innerHTML = "";
+        }
+    };
+
+    const phoneValidate = () => {
+        const phoneVal = phoneId.value.trim();
+        if (phoneVal === "") {
+            error3.style.display = "block";
+            error3.innerHTML = "Please enter a valid phone number";
+        } else if (phoneVal.length !== 10) {
+            error3.style.display = "block";
+            error3.innerHTML = "Enter a 10-digit phone number";
+        } else {
+            error3.style.display = "none";
+            error3.innerHTML = "";
+        }
+    };
+
+    const passwordValidate = () => {
+        const passwordVal = passwordId.value.trim();
+        const cPassVal = cPasswordId.value.trim();
+        if (passwordVal.length < 8) {
+            error4.style.display = "block";
+            error4.innerHTML = "Password should contain at least 8 characters";
+        }else {
+            error4.style.display = "none";
+            error4.innerHTML = "";
+        }
+
+        if (passwordVal !== cPassVal) {
+            error5.style.display = "block";
+            error5.innerHTML = "Passwords do not match";
+        } else {
+            error5.style.display = "none";
+            error5.innerHTML = "";
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        form.addEventListener('submit', (event) => {
+            usernameValidate();
+            emailValidate();
+            phoneValidate();
+            passwordValidate();
+            if (error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML || error5.innerHTML) {
+                event.preventDefault(); // Prevent form submission if any errors exist
+            }
+        });
+    });
+</script>
 </body>
 </html>
-
-

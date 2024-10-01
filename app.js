@@ -17,7 +17,12 @@ app.use(nocache());
 app.use(session({
     secret: process.env.SECRET_KEY || 'secret key',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie:{
+        httpOnly: true,
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24
+    }
 }));  
 
 app.use(passport.session());

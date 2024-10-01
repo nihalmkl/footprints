@@ -2495,7 +2495,9 @@ input[type="button"].btn-block {
 .dropright,
 .dropdown,
 .dropleft {
-  position: relative; }
+  position: relative;
+  padding-left: 100%;
+  top: 32px; }
 
 .dropdown-toggle::after {
   display: inline-block;
@@ -7831,11 +7833,17 @@ h1, h2, h3, h4, h5,
       font-weight: 400;
       font-size: 18px;
       color: #000; }
+    .discount-price {
+        color: red;
+
+        font-weight: 400;
+        font-size: 18px;
+      }
     .product-detail-wrap .product-desc .price .rate {
       font-size: 13px;
       color: #b3b3b3; }
       .product-detail-wrap .product-desc .price .rate i {
-        color: #616161; }
+        color: #f8d90c; }
   .product-detail-wrap .product-desc .btn-addtocart i {
     color: #fff;
     font-size: 20px;
