@@ -153,6 +153,35 @@ exports.resendOtp = async (req, res) => {
 
 
 
+exports.loadShop = async(req,res)=>{
+    try{
+        res.render('user/shop')
+    }catch(error){
+        console.log(error.message)
+    }
+}
 
 
+exports.productView = async(req,res)=>{
+    try{
+        res.render('user/product_detail')
+    }catch(error){
+        console.log(error.message)
+    }
+}
 
+exports.loadAbout = async(req,res)=>{
+    try{
+        res.render('user/about')
+    }catch(error){
+        console.log(error.message)
+    }
+}
+
+exports.loadContact = async(req,res)=>{
+    try{
+        res.render('user/contact')
+    }catch(error){
+        console.log(error.message)
+    }
+}

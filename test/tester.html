@@ -1,133 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Details</title>
-  <!-- Bootstrap CSS for responsiveness -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Additional CSS for custom styling -->
-  <style>
-    .product-img-zoom {
-      width: 100%;
-      max-width: 400px;
-      cursor: zoom-in;
-      object-fit: cover;
-    }
-    .breadcrumbs {
-      margin: 20px 0;
-    }
-    .discount-price {
-      color: red;
-      font-weight: bold;
-    }
-    .out-of-stock {
-      color: gray;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-    .rating {
-      color: gold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .table-container {
+            margin-top: 20px;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+        }
+
+        .btn-custom {
+            background-color: #88c8bc;
+            color: white;
+            border-radius: 20px;
+            padding: 5px 17px;
+        }
+
+        .btn-custom:hover {
+            background-color: #0056b3;
+        }
+
+        .modal-header {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .modal-footer .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .modal-footer .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .action-btn i {
+            font-size: 1.2rem;
+        }
+
+        .action-btn:hover i {
+            color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Breadcrumbs -->
-    <nav aria-label="breadcrumb" class="breadcrumbs">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/">Home</a></li>
-        <li class="breadcrumb-item"><a href="/category">Shoes</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Product Name</li>
-      </ol>
-    </nav>
-
-    <!-- Product Details Section -->
-    <div class="row">
-      <!-- Product Images -->
-      <div class="col-md-6">
-        <div class="product-images">
-          <img src="product-main.jpg" class="img-fluid product-img-zoom" id="mainImage" alt="Product Image">
-          <div class="row mt-2">
-            <div class="col-3">
-              <img src="https://imgs.search.brave.com/Vpi8wu4ys8YMfr4TyhUT87hma3l9Jy5CSpjP7hG0HdQ/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTg1/MDExNzYzL3Bob3Rv/L3Nob2VzLmpwZz9z/PTYxMng2MTImdz0w/Jms9MjAmYz1peVJn/aWR6eDN6cWNGX1hT/UzlrY3JLYW0xaXkw/VVg5bE1GTUlCS3c3/WDJZPQ" class="img-fluid" onclick="changeImage('https://imgs.search.brave.com/Vpi8wu4ys8YMfr4TyhUT87hma3l9Jy5CSpjP7hG0HdQ/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTg1/MDExNzYzL3Bob3Rv/L3Nob2VzLmpwZz9z/PTYxMng2MTImdz0w/Jms9MjAmYz1peVJn/aWR6eDN6cWNGX1hT/UzlrY3JLYW0xaXkw/VVg5bE1GTUlCS3c3/WDJZPQ')" alt="Thumbnail 1">
-            </div>
-            <div class="col-3">
-              <img src="https://imgs.search.brave.com/wZwbFZ6le5cabz6m1SsBIxiSjBaaT32oiBaaji4_Rao/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTg3/MzEwMjc5L3Bob3Rv/L2Jyb3duLWxlYXRo/ZXItc2hvZS5qcGc_/cz02MTJ4NjEyJnc9/MCZrPTIwJmM9Ti1H/MVNQOGREb2pwM01f/eWtTN3RRdVlJOE9W/UFdNMFhBOF9rbkJp/V1J0WT0" class="img-fluid" onclick="changeImage('https://imgs.search.brave.com/wZwbFZ6le5cabz6m1SsBIxiSjBaaT32oiBaaji4_Rao/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTg3/MzEwMjc5L3Bob3Rv/L2Jyb3duLWxlYXRo/ZXItc2hvZS5qcGc_/cz02MTJ4NjEyJnc9/MCZrPTIwJmM9Ti1H/MVNQOGREb2pwM01f/eWtTN3RRdVlJOE9W/UFdNMFhBOF9rbkJp/V1J0WT0')" alt="Thumbnail 2">
-            </div>
-            <div class="col-3">
-              <img src="product-thumb3.jpg" class="img-fluid" onclick="changeImage('product-thumb3.jpg')" alt="Thumbnail 3">
-            </div>
-            <div class="col-3">
-              <img src="product-thumb4.jpg" class="img-fluid" onclick="changeImage('product-thumb4.jpg')" alt="Thumbnail 4">
-            </div>
-          </div>
+    <div class="container">
+        <div class="d-flex justify-content-end mb-4">
+            <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#addCategoryModal">+ Add</button>
         </div>
-      </div>
 
-      <!-- Product Information -->
-      <div class="col-md-6">
-        <h1>Product Name</h1>
-        <!-- Ratings -->
-        <div class="rating">
-          ★★★★☆ (4.5)
+        <div class="table-container">
+            <table class="table table-hover table-borderless table-responsive">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Category ID</th>
+                        <th>Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#321</td>
+                        <td>Casual Shoes</td>
+                        <td>
+                            <button class="action-btn" data-bs-toggle="modal" data-bs-target="#editCategoryModal-0">
+                                <i class="fas fa-edit text-warning"></i>
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>#322</td>
+                        <td>Sport Shoes</td>
+                        <td>
+                            <button class="action-btn" data-bs-toggle="modal" data-bs-target="#editCategoryModal-1">
+                                <i class="fas fa-edit text-warning"></i>
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>#456</td>
+                        <td>Formal Shoes</td>
+                        <td>
+                            <button class="action-btn" data-bs-toggle="modal" data-bs-target="#editCategoryModal-2">
+                                <i class="fas fa-edit text-warning"></i>
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        <!-- Price and Discount -->
-        <p><span class="price">$120</span> <span class="discount-price">$90</span></p>
-        <!-- Coupons or Discounts -->
-        <div class="alert alert-success">Coupon applied: SAVE10 - 10% off</div>
-
-        <!-- Stock Status -->
-        <p id="stock-status" class="text-success">In Stock</p>
-        
-        <!-- Add to Cart / Sold Out Buttons -->
-        <button class="btn btn-primary" id="addToCartBtn">Add to Cart</button>
-        <button class="btn btn-danger d-none" id="soldOutBtn">Sold Out</button>
-
-        <!-- Reviews Section -->
-        <h3>Customer Reviews</h3>
-        <ul class="list-group">
-          <li class="list-group-item">Great product! ★★★★★</li>
-          <li class="list-group-item">Very comfortable ★★★★☆</li>
-        </ul>
-      </div>
     </div>
-  </div>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- JavaScript for Image Zoom and Stock Handling -->
-  <script>
-    // Image zoom on hover
-    const mainImage = document.getElementById('mainImage');
-    mainImage.addEventListener('mousehover', function () {
-      if (mainImage.style.transform === 'scale(2)') {
-        mainImage.style.transform = 'scale(2)';
-        mainImage.style.cursor = 'zoom-in';
-      } else {
-        mainImage.style.transform = 'scale(2)';
-        mainImage.style.cursor = 'zoom-out';
-      }
-    });
+    <!-- Add New Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="categoryName" placeholder="Enter category name">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Add Category</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // Change main product image
-    function changeImage(imageSrc) {
-      mainImage.src = imageSrc;
-    }
+    <!-- Edit Category Modal -->
+    <div class="modal fade" id="editCategoryModal-0" tabindex="-1" aria-labelledby="editCategoryModalLabel-0" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCategoryModalLabel-0">Edit Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="editCategoryName" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="editCategoryName" value="Casual Shoes">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // Simulate stock availability
-    const inStock = true; // Change this value to false to simulate out of stock
-    const stockStatus = document.getElementById('stock-status');
-    const addToCartBtn = document.getElementById('addToCartBtn');
-    const soldOutBtn = document.getElementById('soldOutBtn');
-
-    if (!inStock) {
-      stockStatus.textContent = 'Out of Stock';
-      stockStatus.classList.replace('text-success', 'text-danger');
-      addToCartBtn.classList.add('d-none');
-      soldOutBtn.classList.remove('d-none');
-    }
-  </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

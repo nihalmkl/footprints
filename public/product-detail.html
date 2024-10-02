@@ -118,36 +118,19 @@
 		<div class="colorlib-product">
 			<div class="container">
 				<div class="row row-pb-lg product-detail-wrap">
-					<div class="col-sm-8">
-						<div class="owl-carousel">
-							<div class="item">
-								<div class="product-entry border">
-									<a href="#" class="prod-img">
-										<img src="images/item-1.jpg" class="img-fluid" alt="Free html5 bootstrap 4 template">
-									</a>
-								</div>
-							</div>
-							<div class="item">
-								<div class="product-entry border">
-									<a href="#" class="prod-img">
-										<img src="images/item-2.jpg" class="img-fluid" alt="Free html5 bootstrap 4 template">
-									</a>
-								</div>
-							</div>
-							<div class="item">
-								<div class="product-entry border">
-									<a href="#" class="prod-img">
-										<img src="images/item-3.jpg" class="img-fluid" alt="Free html5 bootstrap 4 template">
-									</a>
-								</div>
-							</div>
-							<div class="item">
-								<div class="product-entry border">
-									<a href="#" class="prod-img">
-										<img src="images/item-4.jpg" class="img-fluid" alt="Free html5 bootstrap 4 template">
-									</a>
-								</div>
-							</div>
+					<div class="col-sm-2">
+						<div class="thumbnail-images">
+							<img src="images/item-1.jpg" alt="Thumbnail 1" onclick="changeImage('images/item-1.jpg')">
+							<img src="images/item-2.jpg" alt="Thumbnail 2" onclick="changeImage('images/item-2.jpg')">
+							<img src="images/item-3.jpg" alt="Thumbnail 3" onclick="changeImage('images/item-3.jpg')">
+							<img src="images/item-4.jpg" alt="Thumbnail 4" onclick="changeImage('images/item-4.jpg')">
+						</div>
+					</div>
+	
+					<!-- Main Image Column -->
+					<div class="col-sm-6">
+						<div class="main-product-image">
+							<img src="images/item-1.jpg" id="mainProductImage" class="img-fluid" alt="Main Product Image">
 						</div>
 					</div>
 					<div class="col-sm-4">
@@ -517,7 +500,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 		    
 		});
 	</script>
-
+    <script>
+		function changeImage(imageSrc) {
+			document.getElementById('mainProductImage').src = imageSrc;
+		}
+	</script>
 
 	</body>
 </html>

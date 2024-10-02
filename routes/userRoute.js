@@ -13,13 +13,13 @@ user_route.post('/register', userController.register);
 
 // router.post('/verify-otp', userController.)
 // router.post('/resend-otp',userController.resendOtp)
+
 user_route.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 user_route.get('/auth/google/callback',passport.authenticate('google', { failureRedirect: '/login' }),(req, res) => {
       res.redirect('/')});
-
-
-
-
-
+user_route.get('/shop',userController.loadShop)
+user_route.get('/about',userController.loadAbout)
+user_route.get('/contact',userController.loadContact)
+user_route.get('/product-view',userController.productView)
 
 module.exports = user_route;

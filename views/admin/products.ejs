@@ -1,10 +1,14 @@
+
 <div class="container mt-5">
     <div class="d-flex justify-content-end align-items-center mb-4">
-        <button class="btn custom-btn">
-            Add New Product
-        </button>
+        <a href="/admin/add_product">
+            <button class="btn custom-btn">
+                Add New Product
+            </button>
+        </a>
     </div>
 </div>
+
 <div class="table-container">
     <table class="table table-hover table-borderless table-responsive">
         <thead class="table-dark">
@@ -13,77 +17,59 @@
                 <th>Product Name</th>
                 <th>Category</th>
                 <th>Brand</th>
+                <th>Size</th>
+                <th>Color</th>
                 <th>Stock</th>
                 <th>Price</th>
+                <th>Image</th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>1</td>
-                <td>Jornery Run's</td>
-                <td>Sports Shoes</td>
-                <td>Nike</td>
-                <td>7 In Stock</td>
-                <td>$39.00</td>
-                <td class="action-btns">
-                    <button class="btn btn-success btn-sm">Edit</button>
-                    <button class="btn btn-danger btn-sm">Delete</button>
-                </td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td>Blazer Phantom Low</td>
-                <td>Casual Shoes</td>
-                <td>Nike</td>
-                <td>6 In Stock</td>
-                <td>$99.00</td>
-                <td class="action-btns">
-                    <button class="btn btn-success btn-sm">Edit</button>
-                    <button class="btn btn-danger btn-sm">Delete</button>
-                </td>
-            </tr>
-            <tr>
-                <td>3</td>
-                <td>Oxford Tecap Shoes</td>
-                <td>Formal Shoes</td>
-                <td>Adidas</td>
-                <td class="out-of-stock">Out of Stock</td>
-                <td>$59.00</td>
-                <td class="action-btns">
-                    <button class="btn btn-success btn-sm">Edit</button>
-                    <button class="btn btn-danger btn-sm">Delete</button>
-                </td>
-            </tr>
-            <tr>
-                <td>4</td>
-                <td>Air Max 90 Premium</td>
-                <td>Casual Shoes</td>
-                <td>Nike</td>
-                <td class="out-of-stock">Out of Stock</td>
-                <td>$99.00</td>
-                <td class="action-btns">
-                    <button class="btn btn-success btn-sm">Edit</button>
-                    <button class="btn btn-danger btn-sm">Delete</button>
-                </td>
-            </tr>
+            <% products.forEach((product, index) => { %>
+                <tr>
+                    <td><%= index + 1 %></td>
+                    <td><%= product.name %></td>
+                    <td><%= product.category %></td>
+                    <td><%= product.brand %></td>
+                    <td><%= product.size %></td>
+                    <td><%= product.color %></td>
+                    <td>
+                        <% if (product.stock > 0) { %>
+                            <%= product.stock %> In Stock
+                        <% } else { %>
+                            <span class="out-of-stock">Out of Stock</span>
+                        <% } %>
+                    </td>
+                    <td>$<%= product.price %></td>
+                    <td>
+                        <% if (product.images && product.images.length > 0) { %>
+                            <img src="<%= product.images[0] %>" class="img-fluid img-thumbnail pro-img-width" alt="Product Image">
+                        <% } %>
+                    </td>
+                    <td class="action-btns">
+                        <a href="/admin/edit_product/<%= product._id %>">
+                            <button class="btn btn-success btn-sm">Edit</button>
+                        </a>
+                        <form action="/admin/delete_product/<%= product._id %>" method="POST" style="display:inline;">
+                            <button class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }) %>
         </tbody>
     </table>
 
     <!-- Pagination -->
     <nav aria-label="Product Page Navigation">
         <ul class="pagination justify-content-center">
+            <% for(let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
+                    <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                </li>
+            <% } %>
             <li class="page-item">
-                <a class="page-link" href="#">1</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="#">2</a>
-            </li>
-            <li class="page-item disabled">
-                <a class="page-link" href="#">...</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="#">Last</a>
+                <a class="page-link" href="?page=<%= totalPages %>">Last</a>
             </li>
         </ul>
     </nav>
