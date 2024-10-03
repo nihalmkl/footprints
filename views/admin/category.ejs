@@ -1,106 +1,157 @@
-  <div class="container">
-        <div class="d-flex justify-content-end mb-4">
-            <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#addCategoryModal">+ Add</button>
-        </div>
-
-        <div class="table-container">
-            <table class="table table-hover table-borderless table-responsive">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Category ID</th>
-                        <th>Name</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>#321</td>
-                        <td>Casual Shoes</td>
-                        <td>
-                            <button class="action-btn" data-bs-toggle="modal" data-bs-target="#editCategoryModal-0">
-                                <i class="fas fa-edit text-warning"></i>
-                            </button>
-                            <button class="action-btn">
-                                <i class="fas fa-trash-alt text-danger"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#322</td>
-                        <td>Sport Shoes</td>
-                        <td>
-                            <button class="action-btn" data-bs-toggle="modal" data-bs-target="#editCategoryModal-1">
-                                <i class="fas fa-edit text-warning"></i>
-                            </button>
-                            <button class="action-btn">
-                                <i class="fas fa-trash-alt text-danger"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#456</td>
-                        <td>Formal Shoes</td>
-                        <td>
-                            <button class="action-btn" data-bs-toggle="modal" data-bs-target="#editCategoryModal-2">
-                                <i class="fas fa-edit text-warning"></i>
-                            </button>
-                            <button class="action-btn">
-                                <i class="fas fa-trash-alt text-danger"></i>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+<div class="container">
+    <div class="d-flex justify-content-end mb-4">
+        <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#addCategoryModal">+ Add</button>
     </div>
 
-    <!-- Add New Category Modal -->
-    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="categoryName" class="form-label">Category Name</label>
-                            <input type="text" class="form-control" id="categoryName" placeholder="Enter category name">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Add Category</button>
-                </div>
+    <div class="table-container">
+        <table class="table table-hover table-borderless table-responsive">
+            <thead class="table-dark">
+                <tr>
+                    <th>Category ID</th>
+                    <th>Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% categories.reverse().forEach(function(category, index) { %>
+                <tr>
+                    <td>#<%= category.id %></td>
+                    <td><%= category.category_name %></td>
+                    <td>
+                        <button class="action-btn" data-bs-toggle="modal" data-bs-target="#editCategoryModal-<%= index %>">
+                            <i class="fas fa-edit text-warning"></i>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-trash-alt text-danger"></i>
+                        </button>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add New Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="add-category" method="POST" onsubmit="return handleFormSubmit(event)">
+                    <div class="mb-3">
+                        <label for="categoryName" class="form-label">Category Name</label>
+                        <input type="text" class="form-control" id="categoryName" placeholder="Enter category name">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Add Category</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Edit Category Modal -->
-    <div class="modal fade" id="editCategoryModal-0" tabindex="-1" aria-labelledby="editCategoryModalLabel-0" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editCategoryModalLabel-0">Edit Category</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="editCategoryName" class="form-label">Category Name</label>
-                            <input type="text" class="form-control" id="editCategoryName" value="Casual Shoes">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                </div>
+<!-- Edit Category Modals -->
+<% categories.forEach(function(category, index) { %>
+<div class="modal fade" id="editCategoryModal-<%= index %>" tabindex="-1" aria-labelledby="editCategoryModalLabel-<%= index %>" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCategoryModalLabel-<%= index %>">Edit Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="editCategoryName" class="form-label">Category Name</label>
+                        <input type="text" class="form-control" id="editCategoryName" value="<%= category.category_name %>">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
             </div>
         </div>
     </div>
+</div>
+<% }) %>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        if(!validateForm()){
+            return false
+        }
+        const categoryName = document.getElementById('categoryName')[0].value
+        fetch('/admin/add-category', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ categoryName })
+        })
+        .then(response =>{
+            if(!response.ok){
+              return response.json().then(err=>{
+                throw new Error(err.error)
+              })
+            }
+            return response.json()
+          })
+          .then(data =>{
+            location.reload()
+          })
+          .catch(err =>{
+            if(error.message === 'Category already exist'){
+                Swal.fire({
+                    icon:"error",
+                    title:"Oops",
+                    text:"Category already exist",
+                    timer:1500
+                })
+            }else{
+                Swal.fire({
+                    icon:"error",
+                    title:"Oops",
+                    text:"Something went wrong",
+                    timer:1500
+                })
+            }
+          })
+        }
 
+     function validateForm(){
+        clearErrorMessages()
+        const categoryName = document.getElementById('categoryName')[0].value.trim();
+        isValid = true
+        if(categoryName === ''){
+            displayErrorMessage('name-error',"Please enter a name") 
+            isValid = false
+        }else if(!/^[a-zA-Z\s]+$/.test(categoryName)){
+            displayErrorMessage('name-error',"Category name should contain only alphabets")
+          isValid = false
+        }else{
+           return isValid
+        }
+     }    
+     
+     function displayErrorMessage(elementId,message){
+        var errorElement = document.getElementById(elementId)
+        errorElement.textContent = message
+        errorElement.style.display = 'block'
+     }
+     function clearErrorMessages(){
+        const errorElements = document.getElementById('error-message')
+         Array.from(errorElements).forEach(element => {
+            element.innerText = ''
+            element.style.display = 'none'
+         });
+     }
+</script>

@@ -15,9 +15,9 @@ const otpSchema = new Schema({
     },
     createdAt:{
         type:Date,
-        default:Date.now(),
+        default:Date.now,
     }
 })
- otpSchema.index({createdAt:1},{expireAfterSeconds:60})    
+otpSchema.index({createdAt:1},{expireAfterSeconds:30})   
 const Otp = mongoose.model('Otp',otpSchema)
 module.exports = Otp

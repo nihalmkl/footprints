@@ -329,3 +329,35 @@ a.sidebar-link:hover {
     .action-btn:hover i {
         color: #237062;
     }
+
+/* Button Styles */
+.btn-custom {
+    padding: 5px 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+/* Block & Unblock Button Styles */
+.badge-block {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+}
+
+.badge-block:hover {
+    background-color: #c82333;
+}
+
+.badge-unblock {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+}
+
+.badge-unblock:hover {
+    background-color: #218838;
+}
+

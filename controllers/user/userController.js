@@ -113,6 +113,7 @@ exports.register = async (req, res) => {
 
         // Generate OTP
         const otp = generateOtp();
+        req.session.userOtp = otp
         console.log('Generated OTP:', otp);
 
         // Send OTP to the user
@@ -136,20 +137,108 @@ exports.register = async (req, res) => {
         });
     }
 };
-
-
-
-
-
-exports.resendOtp = async (req, res) => {
-    try{
-
-        generateOtp()
-
-    }catch(error){
+const securePassword = async (password) => {
+    try {
+        const passwordHash = await bcrypt.hash(password, 10)
+        return passwordHash
+    
+    } catch (error) {
         console.log(error.message)
     }
 }
+
+exports.verityOtp = async (req,res)=>{
+    try{
+        const {userOtp} = req.body
+        const otpRecord = await Otp.findOne({email:req.session.userData.email})
+        console.log(req.body)
+        console.log(otpRecord)
+        console.log(userOtp)
+        if(!otpRecord){
+            return res.status(400).json({success:false,message:'OTP not found'})
+        }
+        if(String(userOtp) === String(otpRecord.otp)){
+            const user = req.session.userData
+            const passwordHash = await securePassword(user.password)
+            const newUser = new User({
+                username:user.username,
+                email:user.email,
+                phone:user.phone,
+                password:passwordHash
+            })
+            await newUser.save()
+            req.session.user =  newUser._id
+            res.json({success:true,redirectUrl:'/login'})
+        }else{
+            res.status(400).json({success:false,message:'Invalid OTP,please try again'})
+        }
+    }catch(error){
+        console.log("Error Verification OTP :",error)
+        res.status(500).json({success:false,message:'Internal Server Error'})
+    }
+}
+
+
+
+
+// exports.resendOtp = async (req, res) => {
+//     try {
+//         const {email} = req.session.userData; // Assuming user data is stored in the session
+
+//         if (!email) {
+//             return res.status(400).json({ success: false, message: 'User session expired or not logged in.' });
+//         }
+//          const otp = generateOtp()
+//         req.session.userotp = otp
+//         const sentEmail = await sentVerificationEmail(email, otp);
+//         if (sentEmail) {
+//             console.error("Resend otp :",otp);
+//             return res.status(200).json("Otp Send sussussfully");
+//         }else{
+//             res.status(500).json({success:false,message:'Internal Server Error'})
+//         }
+//         const recordOtp = new Otp({ email, otp });
+//         await recordOtp.save();
+//         console.log('OTP sent:', otp);
+//     } catch (error) {
+//         console.error('Error in resending OTP:', error);
+//         return res.status(500).json({ success: false, message: 'Internal server error.' });
+//     }
+// };
+
+exports.resendOtp = async (req, res) => {
+    try {
+        const { email } = req.session.userData; // Assuming session holds user email
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'User session expired or not logged in.' });
+        }
+
+        const otp = generateOtp(); // Generate a new OTP
+        req.session.userotp = otp; // Store OTP in session (optional if you also store in DB)
+
+        // First, save the new OTP in the database
+        const recordOtp = await Otp.findOneAndUpdate(
+            { email }, 
+            { otp, createdAt: Date.now() }, 
+            { new: true, upsert: true } // Create or update the OTP record
+        );
+        await recordOtp.save()
+        console.log('New OTP saved:', otp);
+
+        // Then, send the email with the new OTP
+        const sentEmail = await sentVerificationEmail(email, otp);
+
+        if (sentEmail) {
+            return res.status(200).json({ success: true, message: 'OTP resent successfully!' });
+        } else {
+            return res.status(500).json({ success: false, message: 'Failed to send OTP email.' });
+        }
+    } catch (error) {
+        console.error('Error in resending OTP:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+};
 
 
 

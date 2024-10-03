@@ -9,9 +9,10 @@ user_route.get('/login', userController.loadLogin);
 
 user_route.get('/register', userController.loadRegister);
 user_route.post('/register', userController.register);
-// user_route.get('/forgot_password', userController.forgotPass)
 
-// router.post('/verify-otp', userController.)
+user_route.post('/verify-otp', userController.verityOtp)
+user_route.post('/resend-otp', userController.resendOtp)
+
 // router.post('/resend-otp',userController.resendOtp)
 
 user_route.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));

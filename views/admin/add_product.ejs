@@ -4,7 +4,7 @@
         <div class="row mb-3">
             <div class="col-md-6">
                 <label for="productName" class="form-label">Product Name</label>
-                <input type="text" class="form-control" id="productName" placeholder="Enter product name" required>
+                <input type="text" class="form-control" id="productName" placeholder="Enter product name" name="productName" required>
             </div>
         </div>
 
@@ -12,7 +12,7 @@
         <div class="row mb-3">
             <div class="col-md-6">
                 <label for="category" class="form-label">Category</label>
-                <select class="form-select" id="category" required>
+                <select class="form-select" id="category" name="category" required>
                     <option selected disabled>Select Category</option>
                     <option>Casual Shoes</option>
                     <option>Sports Shoes</option>
@@ -21,11 +21,11 @@
             </div>
             <div class="col-md-6">
                 <label for="brand" class="form-label">Brand</label>
-                <select class="form-select" id="brand" required>
-                    <option selected disabled>Select Category</option>
-                    <option>Casual Shoes</option>
-                    <option>Sports Shoes</option>
-                    <option>Formal Shoes</option>
+                <select class="form-select" id="brand" name="brand" required>
+                    <option selected disabled>Select Brand</option>
+                    <option>Brand A</option>
+                    <option>Brand B</option>
+                    <option>Brand C</option>
                 </select>
             </div>
         </div>
@@ -34,39 +34,120 @@
         <div class="row mb-3">
             <div class="col-md-3">
                 <label for="stock" class="form-label">Stock</label>
-                <input type="number" class="form-control" id="stock" placeholder="Enter stock quantity" required>
+                <input type="number" class="form-control" id="stock" name="stock" placeholder="Enter stock quantity" required>
             </div>
             <div class="col-md-3">
                 <label for="color" class="form-label">Color</label>
-                <input type="text" class="form-control" id="color" placeholder="Enter color" required>
+                <input type="text" class="form-control" id="color" name="color" placeholder="Enter color" required>
             </div>
             <div class="col-md-3">
                 <label for="price" class="form-label">Price</label>
-                <input type="number" class="form-control" id="price" placeholder="Enter price" required>
+                <input type="number" class="form-control" id="price" name="price" placeholder="Enter price" required>
             </div>
             <div class="col-md-3">
                 <label for="size" class="form-label">Size</label>
-                <input type="text" class="form-control" id="size" placeholder="Enter size" required>
+                <input type="text" class="form-control" id="size" name="size" placeholder="Enter size" required>
             </div>
         </div>
 
         <!-- Description -->
         <div class="mb-3">
             <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" rows="3" placeholder="Enter product description"></textarea>
+            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter product description"></textarea>
         </div>
 
         <!-- Product Images Upload -->
         <div class="mb-4">
             <label for="productImages" class="form-label">Upload Product Images (Max 4)</label>
-            <input class="form-control" type="file" id="productImages" name="productImages[]" multiple accept="image/*" required>
-            <input class="form-control" type="file" id="productImages" name="productImages[]" multiple accept="image/*" required>
-            <input class="form-control" type="file" id="productImages" name="productImages[]" multiple accept="image/*" required>
-            <input class="form-control" type="file" id="productImages" name="productImages[]" multiple accept="image/*" required>
+            <div class="row" id="imageUploadContainer">
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <label class="form-label">Image Previews</label>
+                        <div id="imagePreviews" class="row"></div>
+                    </div>
+                    <input class="form-control" type="file" id="productImages" name="productImages[]" accept="image/*" required>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <label class="form-label">Image Previews</label>
+                        <div id="imagePreviews" class="row"></div>
+                    </div>
+                    <input class="form-control" type="file" id="productImages" name="productImages[]" accept="image/*" required>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <label class="form-label">Image Previews</label>
+                        <div id="imagePreviews" class="row"></div>
+                    </div>
+                    <input class="form-control" type="file" id="productImages" name="productImages[]" accept="image/*" required>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <label class="form-label">Image Previews</label>
+                        <div id="imagePreviews" class="row"></div>
+                    </div>
+                    <input class="form-control" type="file" id="productImages" name="productImages[]" accept="image/*" required>
+                </div>
+            </div>
             <div class="form-text">You can upload up to 4 images.</div>
         </div>
         <!-- Submit Button -->
-        <button type="submit" class="btn cust-btn">Add Product</button>
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <button type="submit" class="btn cust-btn">Add Product</button>
+            </div>
+        </div> 
     </form>
 </div>
 
+<!-- Include Cropper.js and your custom script -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.15/cropper.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.15/cropper.min.js"></script>
+<script>
+    const imageInputs = document.querySelectorAll('input[type="file"]');
+    const imagePreviews = document.getElementById('imagePreviews');
+    let cropper;
+
+    imageInputs.forEach((input, index) => {
+        input.addEventListener('change', function(event) {
+            const files = event.target.files;
+
+            if (files && files.length) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageElement = document.createElement('img');
+                    imageElement.src = e.target.result;
+                    imageElement.style.width = '100%'; // Ensure the image fits well
+
+                    // Clear previous previews for the current input
+                    imagePreviews.innerHTML = '';
+
+                    const previewCol = document.createElement('div');
+                    previewCol.classList.add('col-md-3', 'mb-3');
+                    previewCol.appendChild(imageElement);
+                    imagePreviews.appendChild(previewCol);
+
+                    // Initialize cropper for each image
+                    cropper = new Cropper(imageElement, {
+                        aspectRatio: 16 / 9,
+                        viewMode: 1,
+                        ready() {
+                            // Handle cropped image preview
+                            const canvas = cropper.getCroppedCanvas();
+                            const croppedImage = canvas.toDataURL();
+
+                            const croppedPreviewCol = document.createElement('div');
+                            croppedPreviewCol.classList.add('col-md-3', 'mb-3');
+                            const croppedImageElement = document.createElement('img');
+                            croppedImageElement.src = croppedImage;
+                            croppedImageElement.style.width = '100%'; // Ensure it fits well
+                            croppedPreviewCol.appendChild(croppedImageElement);
+                            imagePreviews.appendChild(croppedPreviewCol);
+                        }
+                    });
+                };
+                reader.readAsDataURL(files[0]); // Read only the first file
+            }
+        });
+    });
+</script>

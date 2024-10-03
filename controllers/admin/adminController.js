@@ -1,6 +1,7 @@
 // const User = require('../../models/userSchema')
 // const bcrypt = require('bcrypt')
 
+
 exports.adminLogin = (req,res)=>{
     res.render('admin/login')
 }
@@ -82,22 +83,10 @@ exports.loadAddProduct = async(req,res)=>{
     res.render('admin/add_product', { layout: 'layout/admin', title: 'Products' });
 }catch(error){
     console.log(error)
-}
-   
-}
-
-exports.loadCategory = async(req,res)=>{
-    try{
-        res.render('admin/category', { layout: 'layout/admin', title: 'Categories' });
-    }catch(error){
-        console.log(error)
-    }
+  }
 }
 
-exports.loadOrders = async(req,res)=>{
-    try{
-        res.render('admin/users', { layout: 'layout/admin', title: 'Users' });
-    }catch(error){
-        console.log(error)
-    }
-}
+
+
+
+

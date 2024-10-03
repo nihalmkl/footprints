@@ -58,19 +58,5 @@
                 </tr>
             <% }) %>
         </tbody>
-    </table>
-
-    <!-- Pagination -->
-    <nav aria-label="Product Page Navigation">
-        <ul class="pagination justify-content-center">
-            <% for(let i = 1; i <= totalPages; i++) { %>
-                <li class="page-item <%= (i === currentPage) ? 'active' : '' %>">
-                    <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                </li>
-            <% } %>
-            <li class="page-item">
-                <a class="page-link" href="?page=<%= totalPages %>">Last</a>
-            </li>
-        </ul>
-    </nav>
+    </table>  
 </div>

@@ -4,6 +4,7 @@ const session = require('express-session');
 const connectDB = require('./config/db');
 const expressLayouts = require('express-ejs-layouts');
 const env = require('dotenv').config();
+const multer = require('multer')
 const path = require('path');
 const passport = require('./config/passport');
 const app = express();
