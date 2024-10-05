@@ -361,3 +361,11 @@ a.sidebar-link:hover {
     background-color: #218838;
 }
 
+
+.badge-unblock {
+    background-color: green; /* Color for unblock button */
+}
+
+.btn-danger {
+    background-color: red; /* Color for block button */
+}

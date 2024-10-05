@@ -109,13 +109,13 @@
 <div class="container">
     <div class="form-container">
         <h2>Login to Your Account</h2>
-        <form action="/login" method="POST">
+        <form id="login-form"  method="POST">
             <label for="email">Email</label>
             <input type="email" id="email" name="email" class="input-field" placeholder="Enter your email" required>
-            
+            <small id="email-error"></small>
             <label for="password">Password</label>
             <input type="password" id="password" name="password" class="input-field" placeholder="**********" >
-
+             <small id="password-error"></small>
             <button type="submit" class="btn">Sign In</button>
         </form>
         
@@ -135,4 +135,58 @@
 </div>
 
 </body>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById('login-form').addEventListener('submit',async (event) => {
+    event.preventDefault();
+
+    // Get form input values
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim(); 
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
+    const passRegex = /^(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+    const emailError = document.getElementById('email-error')
+    const passwordError = document.getElementById('password-error')
+    passwordError.innerHTML = ""
+    emailError.innerHTML = ""
+    if(!emailRegex.test(email)){
+        return emailError.innerHTML ="Invalid Email"
+    }
+    if(!passRegex.test(password)){
+       return passwordError.innerHTML ="Invalid Password"
+    }
+
+    console.log("Email:", email);
+    console.log("Password:", password);
+
+    console.log("adasdjfasdkj")
+   const response =await fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password
+        })
+    })
+     console.log("THis si fasdf",response)
+    
+    const data = await response.json()
+     console.log("asodfhasodjfsad",data)
+    if(data.success){
+        window.location.href = "/user-home"
+    }else{
+        
+        Swal.fire({
+                    icon: "Error",
+                    title: "error",
+                    text: data.message,
+                    timer: 1500
+                });
+        }
+        
+    });
+</script>
+
 </html>

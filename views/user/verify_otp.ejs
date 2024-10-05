@@ -76,20 +76,22 @@
     <div class="container">
         <h2>OTP Verification</h2>
         <p>Please enter the six-digit code</p>
-        <form action="verify-otp" method="POST" onsubmit="return validateForm()">
-        <input type="text" id="otpInput" class="input-field" placeholder="Enter OTP" maxlength="6" required>
-        <p id="timer">02:15</p> <!-- Timer placeholder -->
-        <div class="link">
-            <a id="resendLink" style="display: none;">Didn’t you receive the OTP?</a>
-            <a id="resendButton" href="#" style="display: none;">Resend OTP</a>
-        </div>
-        <button id="verifyButton" type="submit" class="btn">Verify OTP</button>
-    </form>
+        <form>
+            <input type="text" id="otpInput" class="input-field" placeholder="Enter OTP" maxlength="6" required>
+            <p id="timer">00:30</p> <!-- Timer placeholder -->
+            <div class="link">
+                <a id="resendLink" style="display: none;">Didn’t you receive the OTP?</a>
+                <a id="resendButton" href="#" style="display: none;">Resend OTP</a>
+            </div>
+            <button id="verifyButton" type="button" onclick="validateForm()" class="btn">Verify OTP</button>
+        </form>
     </div>
+</body>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         // Timer variables
-        let countdownTime =  30 ; 
+        let countdownTime = 30; 
         const timerElement = document.getElementById('timer');
         const resendLink = document.getElementById('resendLink');
         const resendButton = document.getElementById('resendButton');
@@ -98,7 +100,7 @@
         // Start the countdown timer
         const countdown = setInterval(() => {
             // Calculate minutes and seconds
-            const minutes = Math.floor(countdownTime / 30);
+            const minutes = Math.floor(countdownTime / 60);
             const seconds = countdownTime % 60;
     
             // Format the time to MM:SS
@@ -119,13 +121,17 @@
         // Event listener for the "Resend OTP" button
         resendButton.addEventListener('click', () => {
             document.getElementById("otpInput").disabled = true;
-        resendButton.disabled = true;
-
-        // Call the resend OTP API
-        $.ajax({
-            type: "POST",
-            url: "/resend-otp", // Adjust your backend route for resending OTP
-            success: function(res) {
+            resendButton.disabled = true;
+    
+            // Call the resend OTP API using Fetch
+            fetch('/resend-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(res => {
                 if (res.success) {
                     Swal.fire({
                         title: "OTP Resent",
@@ -134,15 +140,18 @@
                         timer: 1500,
                         showConfirmButton: false
                     });
-
+    
                     // Restart the timer
-                    countdownTime = 30; // Reset to 30 seconds or desired value
+                    countdownTime = 30; // Reset to 30 seconds
                     document.getElementById("otpInput").disabled = false;
                     resendButton.disabled = false;
                     resendLink.style.display = "none";
                     resendButton.style.display = "none";
-                    
+    
+                    // Restart the countdown
                     setInterval(countdown, 1000);
+
+
                 } else {
                     Swal.fire({
                         title: "Error",
@@ -152,8 +161,8 @@
                         showConfirmButton: false
                     });
                 }
-            },
-            error: function() {
+            })
+            .catch(() => {
                 Swal.fire({
                     title: "Error",
                     text: "Something went wrong. Please try again later.",
@@ -161,48 +170,53 @@
                     timer: 1500,
                     showConfirmButton: false
                 });
-            }
+            });
         });
     });
-});
-        
-        function validateForm(){
-            const otpInput=document.getElementById('otpInput').value
-            $.ajax({
-                type:"POST",
-                url:"/verify-otp",
-                data:{otp:otpInput},
-                success:function(res){
-                    if(res.success){
-                        Swal.fire({
-                      title: "Good job!",
-                      text: "OTP verified successfully!",
-                      icon: "success",
-                      timer:1500,
-                      showConfirmButton:false
-                      }).then(()=> window.location.href= res.redirectUrl )
-                    }else{
-                        Swal.fire({
-                      title: "Error!",
-                      text: res.message,
-                      icon: "error",
-                      timer:1500,
-                      showConfirmButton:false
-                        })
-                    }
-                },
-                error:function(){
-                    Swal.fire({
-                      title: "Error!",
-                      text: "Please try again later",
-                      icon: "error",
-                      timer:1500,
-                      showConfirmButton:false
-                        })
-                }
-            })
-            return false
-        }
-</script>
-</body>
-</html>
+    
+    // OTP Verification using Fetch
+    function validateForm() {
+        const otpInput = document.getElementById('otpInput').value.trim();
+    
+         const response = fetch('/verify-otp', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ otpInput })
+        })
+        .then(response => response.json())
+        .then(res => {
+            if (res.success) {
+                Swal.fire({
+                    title: "OTP verified!",
+                    text: "OTP verified successfully!",
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => window.location.href = res.redirectUrl);
+            } else {
+                Swal.fire({
+                    title: "Error!",
+                    text: res.message,
+                    icon: "error",
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                title: "Error!",
+                text: "Please try again later",
+                icon: "error",
+                timer: 1500,
+                showConfirmButton: false
+            });
+        });
+    
+    }
+    </script>
+
+    </html>
+    

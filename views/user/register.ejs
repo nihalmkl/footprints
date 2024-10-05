@@ -149,7 +149,7 @@
 
     const emailValidate = () => {
         const emailVal = emailId.value.trim();
-        const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+        const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[com]{3}$/;
         if (!emailPattern.test(emailVal)) {
             error2.style.display = "block";
             error2.innerHTML = "Invalid email format";
@@ -176,7 +176,11 @@
     const passwordValidate = () => {
         const passwordVal = passwordId.value.trim();
         const cPassVal = cPasswordId.value.trim();
-        if (passwordVal.length < 8) {
+        const passPattern = /^(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+        if (!passPattern.test(passwordVal)) {
+            error2.style.display = "block";
+            error2.innerHTML = "Invalid email format";
+        }else if (passwordVal.length < 8) {
             error4.style.display = "block";
             error4.innerHTML = "Password should contain at least 8 characters";
         }else {

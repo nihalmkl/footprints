@@ -6,10 +6,6 @@ const brandSchema = new Schema({
         type:String,
         required:'true'
     },
-    image:{
-        type:String,
-        required:'true'
-    },
     is_delete:{
         type:Boolean,
         default:'false'

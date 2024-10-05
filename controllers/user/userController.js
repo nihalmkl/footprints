@@ -13,6 +13,31 @@ exports.loadLogin =async (req,res) => {
     }
    
 }
+
+exports.userLogin = async(req,res)=>{
+    try{
+        const {email,password} = req.body
+        const userData = await User.findOne({email:email})
+        console.log(userData)
+
+     if(!userData){
+        console.log("hii user");
+        res.json({success:false,message:"User doesn't find Enter valid email"})
+      return  
+     }
+     const isMatch = await bcrypt.compare(userData.password,password);
+     if(!isMatch){
+        console.log('hello')
+        res.json({success:false,message:"Password does't match"})
+        return 
+     }
+     console.log('hey')
+     return res.json({success:true})
+     
+    }catch(error){
+        console.log(error.message)
+    }
+}
 // exports.notFound= async(req,res)=>{
 //     try{
 //         res.render('user/error_page')
@@ -33,9 +58,6 @@ exports.loadHome = async (req, res) => {
   }
 };
 
-exports.loadLogin = (req,res)=>{
-    res.render('user/login')
-}
 exports.loadRegister = async(req,res)=>{
     try {
         res.render('user/register')   
@@ -46,6 +68,19 @@ exports.loadRegister = async(req,res)=>{
             errorCode: 500
         });
     }
+}
+exports.loadUserHome = async(req,res)=>{
+    try{
+        res.render('user/user_home')
+    }catch(error){
+        console.log(error.message)
+    }
+}
+
+
+
+exports. verifyOtp = (req,res)=>{
+    res.render('user/verify_otp'); 
 }
 // exports.register = async(req,res)=>{
 //     const {username,email,phone,password} = req.body
@@ -99,9 +134,8 @@ exports.loadRegister = async(req,res)=>{
 } 
 exports.register = async (req, res) => {
     try {
-        console.log(req.body);
-
         const { username,email,phone, password, confirm_password } = req.body;
+        console.log(req.body)
         if (password !== confirm_password) {
             return res.render("user/register", { message: "Password doesn't match" });
         }
@@ -127,8 +161,9 @@ exports.register = async (req, res) => {
         const recordOtp = new Otp({ email, otp });
         await recordOtp.save();
         req.session.userData = {username,email,phone,password}
+         console.log("iqeriqwerio",req.session.userData)
         console.log('OTP sent:', otp);
-        res.render('user/verify_otp'); 
+        res.redirect('/verify-otp'); 
     } catch (err) {
         console.error('Error:', err.message);
         res.status(500).render('user/error', {
@@ -147,26 +182,43 @@ const securePassword = async (password) => {
     }
 }
 
+function generateNumericReferralCode(length = 6) {
+    const numbers = '0123456789';
+    let referralCode = '';
+    for (let i = 0; i < length; i++) {
+        referralCode += numbers.charAt(Math.floor(Math.random() * numbers.length));
+    }
+    return referralCode;
+}
+
 exports.verityOtp = async (req,res)=>{
     try{
-        const {userOtp} = req.body
+       
+        console.log('hioadihfaosdhfaosdf')
+        const {otpInput} = req.body
+        console.log("this is user date",req.session.userData.email)
         const otpRecord = await Otp.findOne({email:req.session.userData.email})
-        console.log(req.body)
-        console.log(otpRecord)
-        console.log(userOtp)
+       
+        console.log("hiaoidfasdfhao",otpRecord.otp,"ufhushdasdhf",otpInput,"uwpihdaisdfhas")
+       
         if(!otpRecord){
             return res.status(400).json({success:false,message:'OTP not found'})
         }
-        if(String(userOtp) === String(otpRecord.otp)){
+        const referralCode = generateNumericReferralCode(); // Generates a 6-digit numeric referral code
+
+        if(String(otpInput) === String(otpRecord.otp)){
+            console.log("checking 1")
             const user = req.session.userData
             const passwordHash = await securePassword(user.password)
             const newUser = new User({
                 username:user.username,
                 email:user.email,
                 phone:user.phone,
-                password:passwordHash
+                password:passwordHash,
+                googleId:referralCode
             })
             await newUser.save()
+            console.log("thish is user now",newUser)
             req.session.user =  newUser._id
             res.json({success:true,redirectUrl:'/login'})
         }else{
@@ -174,7 +226,6 @@ exports.verityOtp = async (req,res)=>{
         }
     }catch(error){
         console.log("Error Verification OTP :",error)
-        res.status(500).json({success:false,message:'Internal Server Error'})
     }
 }
 
@@ -214,19 +265,20 @@ exports.resendOtp = async (req, res) => {
             return res.status(400).json({ success: false, message: 'User session expired or not logged in.' });
         }
 
-        const otp = generateOtp(); // Generate a new OTP
-        req.session.userotp = otp; // Store OTP in session (optional if you also store in DB)
+        // Generate a new OTP
+        const otp = generateOtp(); 
+        req.session.userotp = otp; 
 
-        // First, save the new OTP in the database
-        const recordOtp = await Otp.findOneAndUpdate(
-            { email }, 
-            { otp, createdAt: Date.now() }, 
-            { new: true, upsert: true } // Create or update the OTP record
-        );
-        await recordOtp.save()
+        await Otp.findOneAndDelete({ email });
+        const resentotp = new Otp({
+            email,
+            otp,
+        })
+
+        await resentotp.save();
         console.log('New OTP saved:', otp);
 
-        // Then, send the email with the new OTP
+        // Send the OTP to the user's email
         const sentEmail = await sentVerificationEmail(email, otp);
 
         if (sentEmail) {
@@ -234,6 +286,7 @@ exports.resendOtp = async (req, res) => {
         } else {
             return res.status(500).json({ success: false, message: 'Failed to send OTP email.' });
         }
+
     } catch (error) {
         console.error('Error in resending OTP:', error);
         return res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -241,6 +294,14 @@ exports.resendOtp = async (req, res) => {
 };
 
 
+
+exports.loadUserInterface = async(req,res)=>{
+    try{
+        res.render('user/user_interface')
+    }catch(error){
+        console.log(error.message)
+    }
+}
 
 exports.loadShop = async(req,res)=>{
     try{

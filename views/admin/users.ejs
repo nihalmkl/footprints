@@ -9,16 +9,18 @@
             </tr>
         </thead>
         <tbody>
-            <% users.forEach(function(user) { %>
+            <% users.forEach((user,index)=> { %>
             <tr>
                 <td><%= user.username %></td>
                 <td><%= user.email %></td>
                 <td><%= user.phone %></td>
                 <td>
-                    <% if (user.isBlocked === 'true') { %>
-                    <button class="btn-custom badge-custom  badge-unblock"><a href="/admin/blockUser/:<%= user.id %>"></a>Unblock</button>
+                    <% if (user.isBlocked) { %>
+                    <!-- Unblock Button -->
+                    <a href="/admin/unblockUser/<%= user.id %>" class="btn-custom badge-custom badge-unblock">Unblock</a>
                     <% } else { %>
-                    <button class="btn-custom badge-custom btn-danger badge-block"><a href="/admin/unblockUser/:<%= user.id %>">Block</a></button>
+                    <!-- Block Button -->
+                    <a href="/admin/blockUser/<%= user.id %>" class="btn-custom badge-custom btn-danger badge-block">Block</a>
                     <% } %>
                 </td>
             </tr>

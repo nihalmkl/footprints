@@ -6,10 +6,6 @@ const productSchema = new Schema({
         type:String,
         required:true
     },
-    description:{
-        type:String,
-        required:true
-    },
     category_id:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Category',
@@ -38,6 +34,9 @@ const productSchema = new Schema({
             required:true
         }
     }],
+    description:{
+        type:String,
+    },
     images:[{
         type:String,
         required:true
