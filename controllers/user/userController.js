@@ -4,7 +4,7 @@ const Otp = require('../../models/otpSchema')
 const nodemailer = require('nodemailer')
 const bcrypt = require('bcrypt')
 const env  = require('dotenv').config()
-
+const Product = require('../../models/productSchema')
 exports.loadLogin =async (req,res) => {
     try {
         res.render('user/login')
@@ -305,7 +305,10 @@ exports.loadUserInterface = async(req,res)=>{
 
 exports.loadShop = async(req,res)=>{
     try{
-        res.render('user/shop')
+        console.log("hi");
+const products = await Product.find({});
+res.render('user/shop', { products: products }); // Corrected variable name
+
     }catch(error){
         console.log(error.message)
     }

@@ -1,9 +1,8 @@
 const express = require('express')
 const admin_route = express.Router()
 const multer = require('multer')
-const storage = require('../helpers/multer')
 const path = require('path')
-
+const upload = require('../config/multer')
 
 // const auth = require('../middlewares/adminAuth')
 const usersContorller = require('../controllers/admin/usersController')
@@ -13,11 +12,12 @@ const productController = require('../controllers/admin/productController')
 const brandController = require('../controllers/admin/brandController')
 
 // const adminAuth = require('../middlewares/adminAuth')
-admin_route.get('/',adminController.adminLogin)
-// admin_route.post('/',auth.isLogout,adminController.adminLogin)
-// admin_route.get('/dashboard',auth.isLogin,adminController.adminHome)
-// admin_route.get("/logout",auth.isLogin,adminController.adminLogout)
-admin_route.get('/dashboard',adminController.loadAdminHome)
+admin_route.get('/',adminController.loadAdminLogin)
+
+admin_route.post('/',adminController.adminLogin)
+admin_route.get('/dashboard',adminController.adminHome)
+admin_route.get("/logout",adminController.adminLogout)
+
 // admin_route.get('/users',adminAuth,usersController.usersMnagement)
 
 
@@ -36,6 +36,6 @@ admin_route.post('/delete-category',categoryController.deleteCategory)
 // Product Mangement
 admin_route.get('/products',productController.loadProducts)
 admin_route.get('/add_product',productController.loadAddProduct)
-admin_route.post('/add_product',productController.addProduct)
+admin_route.post('/add_product',upload.any(),productController.addProduct)
 
 module.exports = admin_route

@@ -7,20 +7,20 @@ const path = require('path')
 const multer = require('multer')
 
 exports.loadProducts = async (req,res)=>{
-    // const Products= await Product.find({})
-    // try{
-    //     res.render('admin/products', { layout: 'layout/admin', title: 'Products',Products});
-    // }catch(error){
-    //     console.log(error)
-    // }
+    const Products= await Product.find({})
+    console.log(Products)
+    try{
+        res.render('admin/products', { layout: 'layout/admin', title: 'Products',Products});
+    }catch(error){
+        console.log(error)
+    }
 }
 
 exports.loadAddProduct = async(req,res)=>{
     try{
         console.log('ahkdh')
-        const categories = await Category.find({isBlocked:false})
-        console.log(categories)
-        const brands = await Brand.find({isBlocked:false})
+        const categories = await Category.find({is_delete:false})
+        const brands = await Brand.find({is_delete:false})
         res.render('admin/add_product', { layout: 'layout/admin', title: 'Products',categories,brands });
     }catch(error){
         console.log(error)
@@ -36,46 +36,43 @@ const storage = multer.diskStorage({
     }
 });
 
-const fileFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-        cb(null, true);
-    } else {
-        cb(new Error('Only image files are allowed!'), false);
-    }
-};
+const upload = multer({ storage: storage });
 
-const upload = multer({ storage:storage, fileFilter:fileFilter });
-
-exports.addProduct = async (req,res)=>{
-    upload.array('productImages', 4)(req, res, async function(err) {
-        if (err) {
-            return res.status(400).send('Error uploading images.');
+exports.addProduct = async (req, res) => {
+        try {
+            const { productName, category, brand, stock, color, price, size, description } = req.body;
+            const uploadedImages = req.files;
+    
+            const imagePaths = uploadedImages.map(file => `/public/uploads/${file.filename}`); // Only store relative path
+            console.log(productName, category, brand, stock, color, price, size, description)
+            console.log(imagePaths)
+            // Create a new product object
+            const newProduct = new Product({
+                product_name: productName,
+                category_id: category,
+                brand_id: brand,
+                variants: [
+                    {
+                        stock: stock,
+                        color: color,
+                        price: price,
+                        size: size,
+                        images: imagePaths // Store only the relative paths of the images
+                    }
+                ],
+                description: description,
+                is_delete: false
+            });
+            console.log(newProduct)
+    
+            await newProduct.save();
+    
+            res.json({
+                success:true,
+                message: 'Product added successfully!',
+            });
+        } catch (error) {
+            console.log(error);
+            
         }
-    try{ 
-        const { productName, category, brand, stock, color, price, size, description } = req.body;
-        
-        const images = req.files.map(file => file.path);
-        const newProduct = new Product({
-            product_name: productName,
-            category_id: category,
-            brand_id: brand,
-            variants: [
-                {
-                    stock: stock,
-                    color: color,
-                    price: price,
-                    size: size
-                }
-            ],
-            description: description,
-            images: images, 
-            is_delete: false 
-        });
-        await newProduct.save()
-        res.redirect('/admin/products')
-}catch(error){
-    console.log(error)
-    res.status(500).json({message:'Internal Server Error'})
-  }
-})
-}
+    }
