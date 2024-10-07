@@ -71,10 +71,18 @@
 											<i class="icon-user" aria-hidden="true"></i>
 										</button>
 										<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-											<li><a class="dropdown-item" href="/login">LogIn</a></li>
-											<li><a class="dropdown-item" href="/register">SignUp</a></li>
+											<% if (user) { %>
+												<li><a class="dropdown-item" href="/profile">Profile</a></li>
+												<li><a class="dropdown-item" href="/cart">Cart</a></li>
+												<li><a class="dropdown-item" href="/wishlist">Wishlist</a></li>
+												<li><a class="dropdown-item" href="/logout">Log Out</a></li>
+											<% } else { %>
+												<li><a class="dropdown-item" href="/login">Log In</a></li>
+												<li><a class="dropdown-item" href="/register">Sign Up</a></li>
+											<% } %>
 										</ul>
 									</div>
+									
 									
 									<li class="cart"><a href="cart.html"><i class="icon-heart"></i>[0]</a></li>
 									<li class="cart"><a href="cart.html"><i class="icon-cart"></i>[0]</a></li>

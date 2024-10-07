@@ -5,6 +5,9 @@ const nodemailer = require('nodemailer')
 const bcrypt = require('bcrypt')
 const env  = require('dotenv').config()
 const Product = require('../../models/productSchema')
+
+
+
 exports.loadLogin =async (req,res) => {
     try {
         res.render('user/login')
@@ -14,49 +17,55 @@ exports.loadLogin =async (req,res) => {
    
 }
 
-exports.userLogin = async(req,res)=>{
-    try{
-        const {email,password} = req.body
-        const userData = await User.findOne({email:email})
-        console.log(userData)
 
-     if(!userData){
-        console.log("hii user");
-        res.json({success:false,message:"User doesn't find Enter valid email"})
-      return  
-     }
-     const isMatch = await bcrypt.compare(userData.password,password);
-     if(!isMatch){
-        console.log('hello')
-        res.json({success:false,message:"Password does't match"})
-        return 
-     }
-     console.log('hey')
-     return res.json({success:true})
-     
-    }catch(error){
-        console.log(error.message)
-    }
-}
-// exports.notFound= async(req,res)=>{
-//     try{
-//         res.render('user/error_page')
-//     }catch(error){
-//         console.log(error.message)
-//     }
+
     
-// }
-exports.loadHome = async (req, res) => {
-   try{
-    return res.render('user/home')
-   }catch(error){
-    console.error("Error loading home page:", error.message);
-    res.status(500).render('user/error', {
-        message: 'Please try again later.',
-        errorCode: 500
-    });
-  }
+exports.userLogin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const userData = await User.findOne({ email: email });
+
+        console.log(userData);
+
+        if (!userData) {
+            console.log("User not found");
+            return res.json({ success: false, message: "User doesn't exist. Enter a valid email." });
+        }
+
+        const isMatch = await bcrypt.compare(password, userData.password);
+        if (!isMatch) {
+            console.log('Password does not match');
+            return res.json({ success: false, message: "Password doesn't match." });
+        }
+        req.session.user = {
+            id: userData._id,
+            email: userData.email,
+        };
+
+        console.log('Login successful');
+        return res.json({ success: true });
+        
+    } catch (error) {
+        console.error("Error during login:", error.message);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
 };
+
+
+
+exports.loadHome = async (req, res) => {
+    try {
+        return res.render('user/home.ejs');
+    } catch (error) {
+        console.error("Error loading home page:", error.message);
+        return res.status(500).render('user/error', {
+            message: 'Please try again later.',
+            errorCode: 500
+        });
+    }
+};
+
+
 
 exports.loadRegister = async(req,res)=>{
     try {
@@ -82,25 +91,7 @@ exports.loadUserHome = async(req,res)=>{
 exports. verifyOtp = (req,res)=>{
     res.render('user/verify_otp'); 
 }
-// exports.register = async(req,res)=>{
-//     const {username,email,phone,password} = req.body
-//       try {
-//         const newUser = new User({
-//             username,
-//             email,
-//             phone,
-//             password
-//         })
-//            await newUser.save()
-//            return res.redirect('user/login') 
-//       } catch (error) {
-//         console.log('error:',error.message)
-//         res.status(500).render('user/error', {
-//             message: 'Please try again later.',
-//             errorCode: 500
-//         });
-//       }
-// }
+
    function generateOtp(){
     return Math.floor(100000 + Math.random() * 900000)
    }
@@ -108,7 +99,7 @@ exports. verifyOtp = (req,res)=>{
     try {
         const transporter = nodemailer.createTransport({
             service: "gmail",
-            secure: false, // true for 465, false for other ports
+            secure: false,
             requireTLS: true,
             host: "smtp.gmail.com",
             port: 587,
@@ -145,19 +136,17 @@ exports.register = async (req, res) => {
             return res.render("user/register", { message: "User already exists" });
         }
 
-        // Generate OTP
         const otp = generateOtp();
         req.session.userOtp = otp
         console.log('Generated OTP:', otp);
 
-        // Send OTP to the user
         const sentEmail = await sentVerificationEmail(email, otp);
         console.log('1')
         if (!sentEmail) {
             console.error("Email not sent");
             return res.json("Email not sent");
         }
-           
+
         const recordOtp = new Otp({ email, otp });
         await recordOtp.save();
         req.session.userData = {username,email,phone,password}
@@ -182,14 +171,7 @@ const securePassword = async (password) => {
     }
 }
 
-function generateNumericReferralCode(length = 6) {
-    const numbers = '0123456789';
-    let referralCode = '';
-    for (let i = 0; i < length; i++) {
-        referralCode += numbers.charAt(Math.floor(Math.random() * numbers.length));
-    }
-    return referralCode;
-}
+
 
 exports.verityOtp = async (req,res)=>{
     try{
@@ -204,7 +186,6 @@ exports.verityOtp = async (req,res)=>{
         if(!otpRecord){
             return res.status(400).json({success:false,message:'OTP not found'})
         }
-        const referralCode = generateNumericReferralCode(); // Generates a 6-digit numeric referral code
 
         if(String(otpInput) === String(otpRecord.otp)){
             console.log("checking 1")
@@ -215,7 +196,6 @@ exports.verityOtp = async (req,res)=>{
                 email:user.email,
                 phone:user.phone,
                 password:passwordHash,
-                googleId:referralCode
             })
             await newUser.save()
             console.log("thish is user now",newUser)
@@ -230,42 +210,15 @@ exports.verityOtp = async (req,res)=>{
 }
 
 
-
-
-// exports.resendOtp = async (req, res) => {
-//     try {
-//         const {email} = req.session.userData; // Assuming user data is stored in the session
-
-//         if (!email) {
-//             return res.status(400).json({ success: false, message: 'User session expired or not logged in.' });
-//         }
-//          const otp = generateOtp()
-//         req.session.userotp = otp
-//         const sentEmail = await sentVerificationEmail(email, otp);
-//         if (sentEmail) {
-//             console.error("Resend otp :",otp);
-//             return res.status(200).json("Otp Send sussussfully");
-//         }else{
-//             res.status(500).json({success:false,message:'Internal Server Error'})
-//         }
-//         const recordOtp = new Otp({ email, otp });
-//         await recordOtp.save();
-//         console.log('OTP sent:', otp);
-//     } catch (error) {
-//         console.error('Error in resending OTP:', error);
-//         return res.status(500).json({ success: false, message: 'Internal server error.' });
-//     }
-// };
-
 exports.resendOtp = async (req, res) => {
     try {
-        const { email } = req.session.userData; // Assuming session holds user email
+        const { email } = req.session.userData;
 
         if (!email) {
-            return res.status(400).json({ success: false, message: 'User session expired or not logged in.' });
+            return res.status(400).json({ success: false, message: 'User session expired' });
         }
 
-        // Generate a new OTP
+        
         const otp = generateOtp(); 
         req.session.userotp = otp; 
 
@@ -278,7 +231,6 @@ exports.resendOtp = async (req, res) => {
         await resentotp.save();
         console.log('New OTP saved:', otp);
 
-        // Send the OTP to the user's email
         const sentEmail = await sentVerificationEmail(email, otp);
 
         if (sentEmail) {
@@ -294,34 +246,30 @@ exports.resendOtp = async (req, res) => {
 };
 
 
-
-exports.loadUserInterface = async(req,res)=>{
-    try{
-        res.render('user/user_interface')
-    }catch(error){
-        console.log(error.message)
-    }
-}
-
 exports.loadShop = async(req,res)=>{
     try{
-        console.log("hi");
-const products = await Product.find({});
-res.render('user/shop', { products: products }); // Corrected variable name
-
+        const products = await Product.find({});
+        res.render('user/shop', { products: products }); 
     }catch(error){
         console.log(error.message)
     }
 }
 
 
-exports.productView = async(req,res)=>{
-    try{
-        res.render('user/product_detail')
-    }catch(error){
-        console.log(error.message)
+exports.productView = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id).populate('category_id').populate('brand_id');
+
+        if (!product) {
+            return res.status(404).send('Product not found');
+        }
+
+        res.render('user/product_detail.ejs', { product });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server Error');
     }
-}
+};
 
 exports.loadAbout = async(req,res)=>{
     try{
@@ -337,4 +285,14 @@ exports.loadContact = async(req,res)=>{
     }catch(error){
         console.log(error.message)
     }
+}
+exports.userLogout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error("Error during logout:", err.message);
+            return res.status(500).json({ success: false, message: "Could not log out. Please try again." });
+        }
+
+        return res.redirect('/login'); 
+    });
 }

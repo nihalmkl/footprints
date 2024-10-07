@@ -10,18 +10,16 @@ passport.use(new GoogleStrategy({
         callbackURL:'/auth/google/callback'
     },
     async (accessToken, refreshToken, profile, done) => {
-        // finding existing user
         try {
-          let user = await User.findOne({ googleId: profile.id });
+          let user = await User.findOne({email: profile.emails[0].value});
           if (!user) {
             user = await User.create({
-              googleId: profile.id,
               username: profile.displayName,
               email: profile.emails[0].value,
-              // profilePic: profile.photos[0].value
             });
+            await user.save()
           }
-          await user.save()
+
           return done(null, user);
         } catch (err) {
           return done(err, false);

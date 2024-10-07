@@ -143,7 +143,8 @@
     // Get form input values
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim(); 
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/
+
     const passRegex = /^(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
     const emailError = document.getElementById('email-error')
     const passwordError = document.getElementById('password-error')
@@ -175,7 +176,7 @@
     const data = await response.json()
      console.log("asodfhasodjfsad",data)
     if(data.success){
-        window.location.href = "/user-home"
+        window.location.href = "/"
     }else{
         
         Swal.fire({

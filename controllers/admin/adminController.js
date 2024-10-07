@@ -1,60 +1,61 @@
-const User = require('../../models/userSchema')
-const bcrypt = require('bcrypt')
+const User = require("../../models/userSchema");
+const bcrypt = require("bcrypt");
 
-
-exports.loadAdminLogin = async(req,res)=>{
-    console.log(req.session.admin)
-    try{
-            res.redirect('/admin/dashboard',{layout:'layout/admin',title:'Dashboard'})
-        
-    }catch(err){
-      console.log(err)
+exports.loadAdminLogin = async (req, res) => {
+  try {
+    if (req.session.admin) {
+      cosnole.log("admin login");
+      res.redirect("/admin/dashboard", {
+        layout: "layout/admin",
+        title: "Dashboard",
+      });
+    } else {
+      res.render("admin/adm-login", { layout: false });
     }
-    
-}
-exports.adminLogin = async (req,res) => {
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log(email, password);
+    const admin = await User.findOne({ email: email, isAdmin: true });
+    console.log(admin);
+    if (!admin) {
+      return res.json({ success: false });
+    }
+    if (admin) {
+      const passwordMatch = bcrypt.compare(password, admin.password);
+      if (!passwordMatch) {
+        return res.json({ success: false });
+      }
+      req.session.admin = admin;
+      res.json({ success: true });
+    }
+  } catch (error) {
+    console.log("Login", error);
+  }
+};
+
+exports.adminHome = async (req, res) => {
+  try {
+    res.render("admin/dashboard", {
+      layout: "layout/admin",
+      title: "Dashboard",
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+exports.adminLogout = async (req, res) => {
     try {
-        const {email,password} = req.body
-        const admin = await User.findOne({email,isAdmin:true})
-        if(admin){
-            const passwordMatch = bcrypt.compare(password,admin.password)
-            if(passwordMatch){
-                req.session.admin = true
-                return res.redirect('/admin/dashboard',{layout:'layout/admin',title:'Dashboard'})
-            }else{
-                return res.redirect('admin/adm-login')
-            }
-        }else{
-            res.redirect('/admin/adm-login')
-        }
-    } catch (error) {
-        console.log(error)
+      delete req.session.admin;
+      res.send(); 
+    } catch (err) {
+      console.log("Unexpected error during logout:", err);
     }
-}
-
-
-
-
-exports.adminHome = async (req,res)=>{
-    try {
-       res.render('admin/dashboard',{layout:'layout/admin',title:'Dashboard'})
-    } catch (error) {
-        console.log(error.message)
-    }
-    
-   
-}
-
-
-exports.adminLogout = async(req,res)=>{
-    try{
-        req.session.destroy(err =>{
-            if(err){
-                console.log("Error destrouing session",err)
-            }
-            res.redirect('/admin/adm-login')
-        })
-    }catch(err){
-       console.log('unexpected error during logout',error)
-    }
-}
+  };
+  

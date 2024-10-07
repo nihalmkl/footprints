@@ -1,4 +1,3 @@
-
 <div class="container mt-5">
     <div class="d-flex justify-content-end align-items-center mb-4">
         <a href="/admin/add_product">
@@ -18,7 +17,6 @@
                 <th>Category</th>
                 <th>Brand</th>
                 <th>Size</th>
-                <th>Color</th>
                 <th>Stock</th>
                 <th>Price</th>
                 <th>Image</th>
@@ -26,37 +24,139 @@
             </tr>
         </thead>
         <tbody>
-            <% Products.forEach((product, index) => { %>
+            <% if (Products && Products.length > 0) { %>
+                <% Products.forEach((product, index) => { %>
+                    <tr>
+                        <!-- Product Index -->
+                        <td><%= index + 1 %></td>
+
+                        <!-- Product Name -->
+                        <td><%= product.product_name %></td> 
+
+                        <!-- Category Name (Check if category exists) -->
+                        <td><%= product.category_id ? product.category_id.category_name : 'No category' %></td> 
+
+                        <!-- Brand Name (Check if brand exists) -->
+                        <td><%= product.brand_id ? product.brand_id.brand_name : 'No brand' %></td> 
+
+                        <!-- Loop through variants to display size -->
+                        <td>
+                            <% if (product.variants && product.variants.length > 0) { %>
+                                <% product.variants.forEach(variant => { %>
+                                    <%= variant.size %><br>
+                                <% }) %>
+                            <% } else { %>
+                                No variants
+                            <% } %>
+                        </td>
+
+                        <!-- Loop through variants to display color -->
+                        
+
+                        <!-- Loop through variants to display stock -->
+                        <td>
+                            <% if (product.variants && product.variants.length > 0) { %>
+                                <% product.variants.forEach(variant => { %>
+                                    <% if (variant.stock > 0) { %>
+                                        <%= variant.stock %> <span class="in-stock">In Stock</span><br>
+                                    <% } else { %>
+                                        <span class="out-of-stock">Out of Stock</span><br>
+                                    <% } %>
+                                <% }) %>
+                            <% } else { %>
+                                No stock information
+                            <% } %>
+                        </td>
+
+                        <!-- Assuming first variant's price to be shown -->
+                        <td>
+                            <% if (product.variants && product.variants.length > 0) { %>
+                                $<%= product.variants[0].price %>
+                            <% } else { %>
+                                No price available
+                            <% } %>
+                        </td>
+
+                        <!-- Display product image (if exists) -->
+                        <td>
+                            <% if ( product.images.length > 0) { %>
+                                <img src="<%= product.images[0] %>" class="img-fluid img-thumbnail pro-img-width" alt="Product Image" style="height: 3rem; width: 4rem;">
+                            <% } else { %>
+                                No image
+                            <% } %>
+                        </td>
+
+                        <!-- Edit and Delete Buttons -->
+                        <td class="action-btns">
+                            <a href="/admin/edit_product/<%= product._id %>">
+                                <button class="btn btn-success btn-sm">Edit</button>
+                            </a>
+                            <td class="action-btns">
+                                <% if (product.is_delete) { %>
+                                    <form class="delete-form" data-product-id="<%= product._id %>" style="display:inline;">
+                                        <button type="button" class="btn btn-warning btn-sm delete-btn">Restore</button>
+                                    </form>
+                                <% } else { %>
+                                    <form class="delete-form" data-product-id="<%= product._id %>" style="display:inline;">
+                                        <button type="button" class="btn btn-danger btn-sm delete-btn">Delete</button>
+                                    </form>
+                                <% } %>
+                            </td>
+                            
+                            
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
                 <tr>
-                    <td><%= index + 1 %></td>
-                    <td><%= product.paroduct_name %></td>
-                    <td><%= product.category %></td>
-                    <td><%= product.brand %></td>
-                    <td><%= product.size %></td>
-                    <td><%= product.color %></td>
-                    <td>
-                        <% if (product.stock > 0) { %>
-                            <%= product.stock %> In Stock
-                        <% } else { %>
-                            <span class="out-of-stock">Out of Stock</span>
-                        <% } %>
-                    </td>
-                    <td>$<%= product.price %></td>
-                    <td>
-                        <% if (product.images && product.images.length > 0) { %>
-                            <img src="<%= product.images[0] %>" class="img-fluid img-thumbnail pro-img-width" alt="Product Image">
-                        <% } %>
-                    </td>
-                    <td class="action-btns">
-                        <a href="/admin/edit_product/<%= product._id %>">
-                            <button class="btn btn-success btn-sm">Edit</button>
-                        </a>
-                        <form action="/admin/delete_product/<%= product._id %>" method="POST" style="display:inline;">
-                            <button class="btn btn-danger btn-sm">Delete</button>
-                        </form>
-                    </td>
+                    <td colspan="10" class="text-center">No products available</td>
                 </tr>
-            <% }) %>
+            <% } %>
         </tbody>
     </table>  
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get all delete forms
+        const deleteForms = document.querySelectorAll('.delete-form');
+
+        deleteForms.forEach(form => {
+            form.addEventListener('click', function (event) {
+                event.preventDefault();  // Prevent the default form action
+                
+                const productId = form.getAttribute('data-product-id');  // Get product ID
+                const deleteButton = form.querySelector('.delete-btn');  // Get the button
+                
+                fetch(`/admin/delete_product/${productId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'  // Ensure AJAX request
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.delete) {
+                        // Toggle the button text and class based on is_delete flag
+                        if (deleteButton.classList.contains('btn-danger')) {
+                            deleteButton.classList.remove('btn-danger');
+                            deleteButton.classList.add('btn-warning');
+                            deleteButton.textContent = 'Restore';
+                        } else {
+                            deleteButton.classList.remove('btn-warning');
+                            deleteButton.classList.add('btn-danger');
+                            deleteButton.textContent = 'Delete';
+                        }
+                    } else {
+                        alert('Error occurred while toggling product status.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred.');
+                });
+            });
+        });
+    });
+</script>

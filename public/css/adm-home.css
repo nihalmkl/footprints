@@ -262,7 +262,10 @@ a.sidebar-link:hover {
         color: red;
         font-weight: bold;
     }
-
+    .in-stock {
+        color: rgba(11, 64, 2, 0.882);
+        font-weight: bold;
+    }
     .cust-btn {
         background-color: #88c8bc;
         color: white;

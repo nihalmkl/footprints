@@ -80,7 +80,7 @@
                         <input type="text" name="categoryId" id="fadf" hidden>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button  type="submit" class="btn btn-primary">Save changes</button> <!-- Change this to type="submit" -->
+                            <button  type="submit" class="btn btn-primary">Save changes</button> 
                         </div>
                     </form>
                 </div>
@@ -141,7 +141,6 @@
     });
 }
 
-// Handle editing category
 async function handleEditCategory(event, categoryId) {
     event.preventDefault();
 
@@ -150,11 +149,7 @@ async function handleEditCategory(event, categoryId) {
     const categoryError =  document.getElementById('categoryError');
     categoryError.innerHTML=""
 
-    const categoryRegex = /^[A-Z][a-z]+$/
 
-    if(!categoryRegex.test(categoryName)){
-         return categoryError.innerHTML="Enter a valid category"
-    }
 
    const response = await fetch(`/admin/edit-category/${categoryId}`, {
         method: 'POST',
@@ -174,7 +169,18 @@ async function handleEditCategory(event, categoryId) {
         setTimeout(() => {
             window.location.reload()
         }, 1500);
-    }else{
+    }else if(data.exist){
+        Swal.fire({
+            icon: "error",
+            title: "error",
+            text: data.message,
+            timer: 1500
+        });
+        setTimeout(() => {
+            window.location.reload()
+        }, 1500);
+    }
+    else{
         Swal.fire({
             icon: "error",
             title: "Oops",
@@ -184,13 +190,7 @@ async function handleEditCategory(event, categoryId) {
     }
 }
 
-
-
-
-// Form validation for adding/editing categories
-
   
-
 function displayErrorMessage(elementId, message) {
     const errorElement = document.getElementById(elementId);
     errorElement.textContent = message;
@@ -201,6 +201,7 @@ function clearErrorMessages() {
     document.getElementById('name-error').innerText = '';
     document.getElementById('name-error').style.display = 'none';
 }
+
 async function deleteCategory(categoryId){ 
   const response = await fetch("/admin/delete-category", {
         method: 'POST',
@@ -211,17 +212,28 @@ async function deleteCategory(categoryId){
     })
     const data = await response.json();
         console.log("sjotoskasdfjals",data)
-    if(data.success){
+    if(data.deleted){
         Swal.fire({
             icon: "success",
-            title: "Deleted",
+            title: "success",
             text: data.message,
             timer: 1500
         });
         setTimeout(() => {
             window.location.reload()
         }, 1500);
-    }else{
+    }else if(data.restored){
+        Swal.fire({
+            icon: "success",
+            title: "success",
+            text: data.message,
+            timer: 1500
+        });
+        setTimeout(() => {
+            window.location.reload()
+        }, 1500);
+    }
+    else{
         Swal.fire({
             icon: "Error",
             title: "Somthing went wrong",

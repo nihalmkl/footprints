@@ -1,0 +1,242 @@
+<div class="container mt-5 container-add">
+    <form action="/add_product" method="POST" id="add-product" enctype="multipart/form-data">
+    
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="productName" class="form-label">Product Name</label>
+                <input type="text" class="form-control" id="productName" placeholder="Enter product name"
+                    name="productName" required>
+                <small id="name-error" class="text-danger"></small>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" id="category" name="category" required>
+                    <option selected disabled>Select Category</option>
+                    <% categories.forEach(category=> { %>
+                        <option value="<%= category._id %>">
+                            <%= category.category_name %>
+                        </option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="brand" class="form-label">Brand</label>
+                <select class="form-select" id="brand" name="brand" required>
+                    <option selected disabled>Select Brand</option>
+                    <% brands.forEach(brand=> { %>
+                        <option value="<%= brand._id %>">
+                            <%= brand.brand_name %>
+                        </option>
+                    <% }); %>
+                </select>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <label class="form-label">Variants</label>
+                <div id="variantContainer">
+                    <div class="row mb-3 variantRow">
+                        <div class="col-md-4">
+                            <label for="size" class="form-label">Size</label>
+                            <input type="text" class="form-control" name="sizes[]" placeholder="Enter size" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="stock" class="form-label">Stock</label>
+                            <input type="number" class="form-control" name="stocks[]" placeholder="Enter stock quantity" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="number" class="form-control" name="prices[]" placeholder="Enter price" required>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary" id="addVariant">Add Another Variant</button>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3"
+                placeholder="Enter product description"></textarea>
+            <small id="disc-error" class="text-danger"></small>
+        </div>
+        <div class="mb-4">
+            <label for="productImages" class="form-label">Upload Product Images (Max 4)</label>
+            <div class="row" id="imageUploadContainer">
+                <% for(let i=0; i < 4; i++) { %>
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <label class="form-label">Image Previews</label>
+                            <div id="imagePreviews<%= i %>" class="row"></div>
+                        </div>
+                        <input class="form-control" type="file" id="productImages<%= i %>" name="productImages[]"
+       accept="image/*" onchange="previewImage(this,'<%= i %>')" required>
+
+                    </div>
+                <% } %>
+            </div>
+            <small id="image-error" class="text-danger"></small>
+            <div class="form-text">You can upload up to 4 images.</div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <button type="submit" class="btn cust-btn">Add Product</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('addVariant').addEventListener('click', () => {
+        const variantContainer = document.getElementById('variantContainer');
+        const variantRow = document.createElement('div');
+        variantRow.className = 'row mb-3 variantRow';
+        variantRow.innerHTML = `
+            <div class="col-md-4">
+                <label for="size" class="form-label">Size</label>
+                <input type="text" class="form-control" name="sizes[]" placeholder="Enter size" required>
+            </div>
+            <div class="col-md-4">
+                <label for="stock" class="form-label">Stock</label>
+                <input type="number" class="form-control" name="stocks[]" placeholder="Enter stock quantity" required>
+            </div>
+            <div class="col-md-4">
+                <label for="price" class="form-label">Price</label>
+                <input type="number" class="form-control" name="prices[]" placeholder="Enter price" required>
+            </div>
+        `;
+        variantContainer.appendChild(variantRow);
+    });
+
+    document.getElementById('add-product').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const productName = document.getElementById('productName').value.trim();
+    const brand = document.getElementById('brand').value;
+    const category = document.getElementById('category').value;
+    const description = document.getElementById('description').value.trim();
+    
+    const sizes = Array.from(document.getElementsByName('sizes[]')).map(input => input.value.trim());
+    const stocks = Array.from(document.getElementsByName('stocks[]')).map(input => input.value.trim());
+    const prices = Array.from(document.getElementsByName('prices[]')).map(input => input.value.trim());
+
+
+    stocks.forEach((stock, index) => {
+        if (stock < 0) {
+            return Swal.fire({
+                    title: "error",
+                    text: "stock must be positive",
+                    icon: "error",
+                    timer: 1500,
+            })
+        }
+    });
+    sizes.forEach((size, index) => {
+        if (size < 0) {
+            return Swal.fire({
+                    title: "error",
+                    text: "size must be positive",
+                    icon: "error",
+                    timer: 1500,
+            })
+        }
+    });
+
+    prices.forEach((price, index) => {
+        if (price < 0) {
+          return  Swal.fire({
+                    title: "error",
+                    text: "price must be positive",
+                    icon: "error",
+                    timer: 1500,
+            })
+        }
+    });
+    const productImages = [];
+    for (let i = 0; i < 4; i++) {
+        const imageInput = document.getElementById(`productImages${i}`);
+        if (imageInput && imageInput.files.length > 0) {
+            productImages.push(imageInput.files[0]);
+        }
+    }
+    const formData = new FormData();
+    formData.append('productName', productName);
+    formData.append('brand', brand);
+    formData.append('category', category);
+    formData.append('description', description);
+    
+    sizes.forEach((size, index) => {
+        if (size) {
+            formData.append(`sizes[]`, size);
+            formData.append(`stocks[]`, stocks[index]);
+            formData.append(`prices[]`, prices[index]);
+        }
+    });
+
+    for (let i = 0; i < productImages.length; i++) {
+        formData.append(`productImages`, productImages[i]);
+    }
+
+    try {
+        const response = await fetch('/admin/add-product', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            Swal.fire({
+                    title: "success",
+                    text: "Add Product successfully!",
+                    icon: "success",
+                    timer: 1500,
+            })
+            setTimeout(() => {
+                window.location.href = "/admin/products";
+            }, 1500);
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+                    title: "Error",
+                    text: "Any error occured",
+                    icon: "error",
+                    timer: 1500,
+            })
+    }
+});
+
+function previewImage(input, index) {
+    const previewContainer = document.getElementById(`imagePreviews${index}`);
+    previewContainer.innerHTML = ""; // Clear any existing previews
+
+    const files = input.files; // Get the selected files
+
+    // Loop through each selected file
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file) {
+            const reader = new FileReader();
+
+            // When the file is read successfully, display the image
+            reader.onload = function (e) {
+                const img = document.createElement('img');
+                img.src = e.target.result; 
+                img.classList.add('img-thumbnail', 'mb-2'); 
+                img.style.width = '14rem';  
+                img.style.height = '8rem';   
+              
+                previewContainer.appendChild(img); // Append the image to the preview container
+            }
+
+            reader.readAsDataURL(file); // Convert the file to a data URL
+        }
+    }
+}
+
+</script>

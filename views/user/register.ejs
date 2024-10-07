@@ -149,7 +149,8 @@
 
     const emailValidate = () => {
         const emailVal = emailId.value.trim();
-        const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[com]{3}$/;
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
         if (!emailPattern.test(emailVal)) {
             error2.style.display = "block";
             error2.innerHTML = "Invalid email format";
@@ -176,14 +177,15 @@
     const passwordValidate = () => {
         const passwordVal = passwordId.value.trim();
         const cPassVal = cPasswordId.value.trim();
-        const passPattern = /^(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-        if (!passPattern.test(passwordVal)) {
-            error2.style.display = "block";
-            error2.innerHTML = "Invalid email format";
-        }else if (passwordVal.length < 8) {
+        const passPattern = /^(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/; // At least one number, one special character, and at least 8 characters
+        
+        if (passwordVal.length < 8) {
             error4.style.display = "block";
             error4.innerHTML = "Password should contain at least 8 characters";
-        }else {
+        } else if (!passPattern.test(passwordVal)) {
+            error4.style.display = "block";
+            error4.innerHTML = "Password must contain at least one number and one special character";
+        } else {
             error4.style.display = "none";
             error4.innerHTML = "";
         }
@@ -203,6 +205,8 @@
             emailValidate();
             phoneValidate();
             passwordValidate();
+
+            // Check if any error message is visible
             if (error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML || error5.innerHTML) {
                 event.preventDefault(); // Prevent form submission if any errors exist
             }

@@ -65,9 +65,8 @@
         </li>
     </ul>
     <div class="sidebar-footer">
-        <a href="/admin/logout" class="sidebar-link">
-            <i class="lni lni-exit"></i>
-            <span>Logout</span>
+        <a onclick="logout()" class="sidebar-link">
+            <i onclick="logout()" class="lni lni-exit"></i>
         </a>
     </div>
 </aside>
@@ -79,4 +78,24 @@
     toggleBtn.addEventListener('click', () => {
         sidebar.classList.toggle('expand');
     });
+
+    function logout() {
+    fetch('/admin/adminLogout', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.href = '/admin/';  // Redirect to the admin login page after successful logout
+        } else {
+            console.error("Logout failed");
+        }
+    })
+    .catch(error => {
+        console.error("Unexpected error during logout:", error);
+    });
+}
+
 </script>

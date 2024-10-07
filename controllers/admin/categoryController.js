@@ -13,29 +13,32 @@ exports.loadCategory = async (req, res) => {
   }
 };
 exports.editCategory = async (req, res) => {
-  const categoryId = req.params.id; // Confirm this is correct
+  const categoryId = req.params.id; 
   const { categoryName } = req.body;
 
   try {
     const category = await Category.findOne({
-      category_name: new RegExp(categoryName, "i"),
+      category_name: new RegExp(`^${categoryName}$`, "i"), 
+      _id: { $ne: categoryId } 
     });
+
     if (category) {
-      return res.json({ success: false });
+      return res.json({ exist: true, message: "Category name already exists" });
     }
+
     const existCategory = await Category.findOneAndUpdate(
       { _id: categoryId },
-      { category_name: categoryName }
+      { category_name: categoryName },
+      { new: true } 
     );
-    if (!existCategory) {
-      return res.json({ success: false });
-    }
-    res.json({ success: true, message: "category name updated " });
+
+    res.json({ success: true, message: "Category name updated successfully" });
   } catch (error) {
-    console.error("Error in updating category: ", error); // Log the error for debugging
+    console.error("Error in updating category: ", error); 
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 exports.addCategory = async (req, res) => {
   const { categoryName } = req.body;
@@ -54,7 +57,6 @@ exports.addCategory = async (req, res) => {
       is_delete: false,
     });
 
-    // Saving the new category
     await newCategory.save();
     return res.json("Category Added Successfully");
   } catch (error) {
@@ -64,7 +66,6 @@ exports.addCategory = async (req, res) => {
 };
 
 exports.deleteCategory = async (req, res) => {
-  console.log("hi");
   try {
     console.log(req.body);
 
@@ -73,23 +74,21 @@ exports.deleteCategory = async (req, res) => {
     console.log("hi");
 
     const category = await Category.findOne({ _id: categoryId });
-    console.log("sdifsdfj",category)
 
     if (!category) {
       return res.json({ success: false });
     }
     if (category.is_delete) {
       console.log("Restoring category...");
-      await Category.updateOne({ _id: categoryId }, { is_delete: false }); // Restore category
-     return res.json({success:true ,message:"category restored"})
+      await Category.updateOne({ _id: categoryId }, { is_delete: false }); 
+      return res.json({deleted:true ,message:"category restored"})
 
   } else {
       console.log("Deleting category...");
-      await Category.updateOne({ _id: categoryId }, { is_delete: true }); // Soft-delete category
-   return res.json({success:true,message:"category deleted" })
+      await Category.updateOne({ _id: categoryId }, { is_delete: true }); 
+      return res.json({restored:true,message:"category deleted" })
 
   }
-    //  res.redirect('/admin/category')
   } catch (error) {
     console.log(error)
   }
