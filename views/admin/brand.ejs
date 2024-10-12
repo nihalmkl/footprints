@@ -1,0 +1,191 @@
+<div class="container">
+    <div class="d-flex justify-content-end mb-4">
+        <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#addBrandModal">+ Add</button>
+    </div>
+
+    <div class="table-container">
+        <table class="table table-hover table-borderless table-responsive">
+            <thead class="table-dark">
+                <tr>
+                    <th>Brand ID</th>
+                    <th>Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% brands.forEach(function(brand, index) { %>
+                <tr>
+                    <td>#<%= index + 1 %></td>
+                    <td><%= brand.brand_name %></td>
+                    <td>
+                        <button class="action-btn" data-bs-toggle="modal" data-bs-target="#editBrandModal-<%= index %>">
+                            <i class="fas fa-edit text-warning"></i>
+                        </button>
+                        <button class="action-btn" onclick="deleteBrand('<%= brand._id %>')">
+                            <% if (brand.is_delete) { %>
+                                <i class="fas fa-undo-alt text-success"></i>
+                            <% } else { %>
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            <% } %>
+                        </button>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Brand Modal -->
+<div class="modal fade" id="addBrandModal" tabindex="-1" aria-labelledby="addBrandModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addBrandModalLabel">Add New Brand</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addBrandForm" onsubmit="handleAddBrand(event)">
+                    <div class="mb-3">
+                        <label for="brandName" class="form-label">Brand Name</label>
+                        <input type="text" class="form-control" id="brandName-formEdit" placeholder="Enter brand name" name="brandName">
+                        <div id="name-error" class="text-danger"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Add Brand</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Brand Modals -->
+<% brands.forEach(function(brand, index) { %>
+    <div class="modal fade" id="editBrandModal-<%= index %>" tabindex="-1" aria-labelledby="editBrandModalLabel-<%= index %>" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editBrandModalLabel-<%= index %>">Edit Brand</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="#" method="POST" onsubmit="handleEditBrand(event, '<%= brand._id %>')">
+                        <div class="mb-3">
+                            <label for="editBrandName-<%= index %>" class="form-label">Brand Name</label>
+                            <input type="text" class="form-control" id="editBrandName-Form-edit" value="<%= brand.brand_name %>">
+                            <small id="brandError" style="color: red;"></small>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<% }) %>
+
+    
+    
+    
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+   async function handleAddBrand(event) {
+    event.preventDefault();
+
+    const brandName = document.getElementById('brandName-formEdit').value.trim();
+    let isValid = true;
+
+    if (brandName === '') {
+        displayErrorMessage('name-error', "Please enter a name");
+        isValid = false;
+    } else if (!/^[a-zA-Z\s]+$/.test(brandName)) {
+        displayErrorMessage('name-error', "Brand name should contain only alphabets");
+        isValid = false;
+    }
+    if(!isValid){
+        return;
+    }
+
+    fetch('/admin/add-brand', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ brandName })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.error);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        location.reload();
+    })
+    .catch(err => {
+        Swal.fire({
+            icon: "error",
+            title: "Oops",
+            text: err.message === 'Brand already exists' ? "Brand already exists" : "Something went wrong",
+            timer: 3000,
+            showConfirmButton: false,
+        });
+    });
+}
+
+async function handleEditBrand(event, brandId) {
+    event.preventDefault();
+
+    const brandName = document.getElementById(`editBrandName-Form-edit`).value.trim();
+    let isValid = true;
+
+    if (brandName === '') {
+        displayErrorMessage('brandError', "Please enter a brand name");
+        isValid = false;
+    } else if (!/^[a-zA-Z\s]+$/.test(brandName)) {
+        displayErrorMessage('brandError', "Brand name should contain only alphabets");
+        isValid = false;
+    }
+    if(!isValid){
+        return;
+    }
+
+    fetch(`/admin/edit-brand/${brandId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ brandName })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.error);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        location.reload();
+    })
+    .catch(err => {
+        Swal.fire({
+            icon: "error",
+            title: "Oops",
+            text: err.message === 'Brand already exists' ? "Brand already exists" : "Something went wrong",
+            timer: 3000,
+            showConfirmButton: false,
+        });
+    });
+}
+
+
+</script>

@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 const env = require('dotenv').config()
 const connectDB = async()=>{
     try {
-        // disabling strict mode for mongoose
         mongoose.set('strictQuery',false)
         const conn = await  mongoose.connect(process.env.MONGO_URI)
         console.log(`MongoDB connected: ${conn.connection.host}`)

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #5a5a5a;
+        }
+        .input-field {
+            width: 90%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            transition: border-color 0.3s;
+        }
+        .input-field:focus {
+            border-color: #88c8bc;
+            outline: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #88c8bc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #69d99f;
+        }
+        .link {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .link a {
+            color: #3f3f3f;
+            text-decoration: none;
+        }
+        .link a:hover {
+            color: #02466b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Forgot Password</h2>
+        <p>Please enter your email to reset your password</p>
+        <form id="forgotPasswordForm">
+            <input type="email" id="emailInput" class="input-field" placeholder="Enter your email" required>
+            <button type="button" class="btn" onclick="sendResetEmail()">Send Reset Link</button>
+        </form>
+        <div class="link">
+            <a href="/login">Back to Login</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function sendResetEmail() {
+            const email = document.getElementById('emailInput').value.trim();
+
+            if (!email) {
+                Swal.fire({
+                    title: "Error!",
+                    text: "Please enter a valid email address.",
+                    icon: "error",
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                return;
+            }
+
+            fetch('/forgot-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email })
+            })
+            .then(response => response.json())
+            .then(res => {
+                if (res.success) {
+                    Swal.fire({
+                        title: "Email Sent",
+                        text: "A password reset link has been sent to your email.",
+                        icon: "success",
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Error",
+                        text: res.message || "Something went wrong, please try again.",
+                        icon: "error",
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    title: "Error!",
+                    text: "Something went wrong, please try again later.",
+                    icon: "error",
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            });
+        }
+    </script>
+
+</body>
+</html>

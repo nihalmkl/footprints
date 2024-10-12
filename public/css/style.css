@@ -395,9 +395,22 @@ mark,
     content: "\2014 \00A0"; }
 
 .img-fluid {
-  max-width: 100%;
-  height: auto; }
-
+  max-width: 85%;
+  height: 246px;
+}
+.img-fluid-logo{
+  max-width: 102%;
+  height: 135px;
+}
+.product-entry .icons {
+  display: flex;
+  justify-content: center; 
+  margin-top: 10px; 
+}
+.product-entry .icons a {
+  margin: 0 10px;
+  font-size: 1.2em; 
+}
 .img-thumbnail {
   padding: 0.25rem;
   background-color: #fff;
@@ -8430,7 +8443,32 @@ input[type="text"] {
       padding-right: 10px; }
       .colorlib-social-icons li a i {
         font-size: 20px; }
-
+        .related-products {
+          margin-top: 50px;
+      }
+      
+      .related-products h3 {
+          margin-bottom: 20px;
+      }
+      
+      .related-products .product {
+          text-align: center;
+      }
+      
+      .related-products img {
+          width: 100%;
+          height: auto;
+      }
+      
+      .related-products h4 {
+          font-size: 18px;
+          margin-top: 10px;
+      }
+      
+      .related-products p {
+          font-size: 16px;
+          color: #333;
+      }
 .colorlib-heading {
   margin-bottom: 5em; }
   .colorlib-heading h2 {

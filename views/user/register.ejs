@@ -177,7 +177,7 @@
     const passwordValidate = () => {
         const passwordVal = passwordId.value.trim();
         const cPassVal = cPasswordId.value.trim();
-        const passPattern = /^(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/; // At least one number, one special character, and at least 8 characters
+        const passPattern = /^(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         
         if (passwordVal.length < 8) {
             error4.style.display = "block";

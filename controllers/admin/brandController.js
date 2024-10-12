@@ -1,85 +1,86 @@
-// const Brand = require('../../models/brandSchema')
+const Brand = require("../../models/brandSchema");
 
-// // Load Brands
-// exports.loadBrand = async(req, res) => {
-//     try {
-//         let brands = await Brand.find({}) // Fetch all brands
-//         const newBrandName = req.body.brandName;
-//         const newId = brands.length ? brands[brands.length - 1].id + 1 : 1; // Generate new ID if needed
-//         res.render('admin/brand', { layout: 'layout/admin', title: 'Brands', brands, newBrandName, newId });
-//     } catch (error) {
-//         console.log(error);
-//     }
-// };
+exports.loadBrand = async (req, res) => {
+  try {
+    let brands = await Brand.find({});
+    res.render("admin/brand", {
+      layout: "layout/admin",
+      title: "Brands",
+      brands,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-// // Edit Brand
-// exports.editBrand = async (req, res) => {
-//     const brandId = req.params.id;
-//     const { brandName } = req.body;
+exports.editBrand = async (req, res) => {
+  const brandId = req.params.id; 
+  const { brandName } = req.body;
 
-//     try {
-//         const existBrand = await Brand.findOne({ brand_name: brandName }); // Check if brand name already exists
-//         console.log(brand);
-//         if (existBrand) {
-//             return res.status(404).json({ error: 'Brand already exists, please choose another name' });
-//         }
-        
-//         const updateBrand = await Brand.findByIdAndUpdate(brandId, { $set: { brand_name: brandName } }, { new: true }); // Update the brand name
-//         console.log(updateBrand);
-        
-//         if (updateBrand) {
-//             res.redirect('/admin/brand');
-//         }
-//     } catch (error) {
-//         res.status(500).json({ message: 'Internal Server Error' });
-//     }
-// };
+  try {
+    const brand = await Brand.findOne({
+      brand_name: new RegExp(`^${brandName}$`, "i"), 
+      _id: { $ne: brandId } 
+    });
 
-// // Add Brand
-// exports.addBrand = async(req, res) => {
-//     const { brandName } = req.body;
-//     console.log(brandName);
+    if (brand) {
+      return res.json({ exist: true, message: "Brand name already exists" });
+    }
 
-//     try {
-//         const existBrand = await Brand.find({ brand_name: { $regex: new RegExp('^' + brandName + '$', 'i') } }); // Check for existing brand with case-insensitive matching
-//         console.log(existBrand);
-        
-//         if (existBrand.length > 0) {
-//             return res.status(400).json('Brand Already Exists');
-//         }
-        
-//         const newBrand = new Brand({
-//             brand_name: brandName,
-//             is_delete: false
-//         });
+    await Brand.findOneAndUpdate(
+      { _id: brandId },
+      { brand_name: brandName },
+      { new: true } 
+    );
 
-//         await newBrand.save();
-//         return res.json('Brand Added Successfully');
-//     } catch (error) {
-//         return res.status(500).json('Internal Server Error');
-//     }
-// };
+    res.json({ success: true, message: "Brand name updated successfully" });
+  } catch (error) {
+    console.error("Error in updating brand: ", error); 
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
-// // Delete Brand (soft delete)
-// exports.deleteBrand = async(req, res) => {
-//     const brandId = req.params.id;
+exports.addBrand = async (req, res) => {
+  const { brandName } = req.body;
+  try {
+    const existBrand = await Brand.find({
+      brand_name: { $regex: new RegExp(`^\\s*${brandName}\\s*$`, "i") }, 
+    });
 
-//     try {
-//         await Brand.updateOne({ _id: brandId }, { is_delete: true }); // Soft delete the brand
-//         res.redirect('/admin/brand');
-//     } catch (error) {
-//         res.status(500).json({ message: 'Internal Server Error' });
-//     }
-// };
+    if (existBrand.length > 0) {
+      return res.status(400).json("Brand Already Exists");
+    }
 
-// // Restore Brand (un-delete)
-// exports.restoreBrand = async(req, res) => {
-//     const brandId = req.params.id;
+    const newBrand = new Brand({
+      brand_name: brandName,
+      is_delete: false,
+    });
 
-//     try {
-//         await Brand.updateOne({ _id: brandId }, { is_delete: false }); // Restore soft-deleted brand
-//         res.redirect('/admin/brand');
-//     } catch (error) {
-//         res.status(500).json({ message: 'Internal Server Error' });
-//     }
-// };
+    await newBrand.save();
+    return res.json("Brand Added Successfully");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json("Internal Server Error");
+  }
+};
+
+exports.deleteBrand = async (req, res) => {
+  try {
+    const { brandId } = req.body;
+
+    const brand = await Brand.findOne({ _id: brandId });
+
+    if (!brand) {
+      return res.json({ success: false });
+    }
+    if (brand.is_delete) {
+      await Brand.updateOne({ _id: brandId }, { is_delete: false }); 
+      return res.json({ deleted: true, message: "Brand restored" });
+    } else {
+      await Brand.updateOne({ _id: brandId }, { is_delete: true }); 
+      return res.json({ restored: true, message: "Brand deleted" });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};

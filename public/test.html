@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout Page</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Checkout</h2>
+        
+        <!-- Address selection -->
+        <h4>Select Shipping Address</h4>
+        <div id="address-list">
+            <% addresses.forEach(function(address) { %>
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h5 class="card-title"><%= address.name %></h5>
+                        <p class="card-text"><%= address.addressLine1 %>, <%= address.city %>, <%= address.state %> - <%= address.zip %></p>
+                        <button class="btn btn-primary" onclick="editAddress('<%= address._id %>')">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteAddress('<%= address._id %>')">Delete</button>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+        
+        <!-- Add new address -->
+        <h4>Add New Address</h4>
+        <form id="address-form">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" class="form-control" id="name" required>
+            </div>
+            <div class="form-group">
+                <label for="addressLine1">Address Line 1</label>
+                <input type="text" class="form-control" id="addressLine1" required>
+            </div>
+            <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" class="form-control" id="city" required>
+            </div>
+            <div class="form-group">
+                <label for="state">State</label>
+                <input type="text" class="form-control" id="state" required>
+            </div>
+            <div class="form-group">
+                <label for="zip">ZIP Code</label>
+                <input type="text" class="form-control" id="zip" required>
+            </div>
+            <button type="submit" class="btn btn-success">Save Address</button>
+        </form>
+    </div>
+
+    <script>
+        // Handle form submission to save address
+        document.getElementById('address-form').onsubmit = function(e) {
+            e.preventDefault();
+            const addressData = {
+                name: document.getElementById('name').value,
+                addressLine1: document.getElementById('addressLine1').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                zip: document.getElementById('zip').value
+            };
+
+            fetch('/api/addresses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(addressData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Success!', 'Address saved successfully!', 'success');
+                    location.reload(); // Reload to show updated address list
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(err => console.error(err));
+        };
+
+        // Function to edit an address
+        function editAddress(addressId) {
+            // Fetch address data and populate the form for editing (implementation not shown)
+            // Call the appropriate API to update the address
+        }
+
+        // Function to delete an address
+        function deleteAddress(addressId) {
+            fetch(`/api/addresses/${addressId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Deleted!', 'Address has been deleted.', 'success');
+                        location.reload();
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+    </script>
+</body>
+</html>

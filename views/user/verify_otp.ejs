@@ -90,46 +90,36 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
   document.addEventListener("DOMContentLoaded", function() {
-    // Timer variables
     let countdownTime = 30; 
     const timerElement = document.getElementById('timer');
     const resendLink = document.getElementById('resendLink');
     const resendButton = document.getElementById('resendButton');
     const verifyButton = document.getElementById('verifyButton');
-    let countdown; // Declare countdown outside for clearInterval
+    let countdown; 
     
-    // Function to start the countdown
     function startCountdown() {
         countdown = setInterval(() => {
-            // Calculate minutes and seconds
             const minutes = Math.floor(countdownTime / 60);
             const seconds = countdownTime % 60;
 
-            // Format the time to MM:SS
             timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-            // Decrease the countdown time
             countdownTime--;
-
-            // When the countdown reaches zero
             if (countdownTime < 0) {
-                clearInterval(countdown); // Clear interval
+                clearInterval(countdown); 
                 timerElement.textContent = "00:00";
-                resendLink.style.display = "block"; // Show "Didn’t you receive the OTP?" link
-                resendButton.style.display = "block"; // Show "Resend OTP" button
+                resendLink.style.display = "block"; 
+                resendButton.style.display = "block"; 
             }
-        }, 1000); // Update every second
+        }, 1000); 
     }
 
-    // Start initial countdown
     startCountdown();
 
-    // Event listener for the "Resend OTP" button
     resendButton.addEventListener('click', () => {
         document.getElementById("otpInput").disabled = true;
         resendButton.disabled = true;
 
-        // Call the resend OTP API using Fetch
         fetch('/resend-otp', {
             method: 'POST',
             headers: {
@@ -147,11 +137,10 @@
                     showConfirmButton: false
                 });
 
-                // Reset countdown time and restart the timer
-                clearInterval(countdown); // Clear the previous countdown interval
-                countdownTime = 30; // Reset countdown time
-                startCountdown(); // Restart the countdown
-
+                clearInterval(countdown); 
+                countdownTime = 30; 
+                startCountdown();
+                
                 document.getElementById("otpInput").disabled = false;
                 resendButton.disabled = false;
                 resendLink.style.display = "none";

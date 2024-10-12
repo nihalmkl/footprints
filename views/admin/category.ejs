@@ -15,7 +15,7 @@
             <tbody>
                 <% categories.forEach(function(category, index) { %>
                 <tr>
-                    <td>#<%= category.id %></td>
+                    <td>#<%= index+1 %></td>
                     <td><%= category.category_name %></td>
                     <td>
                         <button class="action-btn" data-bs-toggle="modal" data-bs-target="#editCategoryModal-<%= index %>">
@@ -36,7 +36,6 @@
     </div>
 </div>
 
-<!-- Add New Category Modal -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -61,7 +60,6 @@
     </div>
 </div>
 
-<!-- Edit Category Modals -->
 <% categories.forEach(function(category, index) { %>
     <div class="modal fade" id="editCategoryModal-<%= index %>" tabindex="-1" aria-labelledby="editCategoryModalLabel-<%= index %>" aria-hidden="true">
         <div class="modal-dialog">

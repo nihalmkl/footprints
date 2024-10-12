@@ -27,19 +27,14 @@
             <% if (Products && Products.length > 0) { %>
                 <% Products.forEach((product, index) => { %>
                     <tr>
-                        <!-- Product Index -->
                         <td><%= index + 1 %></td>
 
-                        <!-- Product Name -->
                         <td><%= product.product_name %></td> 
 
-                        <!-- Category Name (Check if category exists) -->
                         <td><%= product.category_id ? product.category_id.category_name : 'No category' %></td> 
 
-                        <!-- Brand Name (Check if brand exists) -->
                         <td><%= product.brand_id ? product.brand_id.brand_name : 'No brand' %></td> 
 
-                        <!-- Loop through variants to display size -->
                         <td>
                             <% if (product.variants && product.variants.length > 0) { %>
                                 <% product.variants.forEach(variant => { %>
@@ -49,11 +44,6 @@
                                 No variants
                             <% } %>
                         </td>
-
-                        <!-- Loop through variants to display color -->
-                        
-
-                        <!-- Loop through variants to display stock -->
                         <td>
                             <% if (product.variants && product.variants.length > 0) { %>
                                 <% product.variants.forEach(variant => { %>
@@ -68,7 +58,6 @@
                             <% } %>
                         </td>
 
-                        <!-- Assuming first variant's price to be shown -->
                         <td>
                             <% if (product.variants && product.variants.length > 0) { %>
                                 $<%= product.variants[0].price %>
@@ -76,8 +65,6 @@
                                 No price available
                             <% } %>
                         </td>
-
-                        <!-- Display product image (if exists) -->
                         <td>
                             <% if ( product.images.length > 0) { %>
                                 <img src="<%= product.images[0] %>" class="img-fluid img-thumbnail pro-img-width" alt="Product Image" style="height: 3rem; width: 4rem;">
@@ -86,7 +73,6 @@
                             <% } %>
                         </td>
 
-                        <!-- Edit and Delete Buttons -->
                         <td class="action-btns">
                             <a href="/admin/edit_product/<%= product._id %>">
                                 <button class="btn btn-success btn-sm">Edit</button>

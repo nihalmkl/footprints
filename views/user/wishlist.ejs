@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlist</title>
+    <link rel="stylesheet" href="/path/to/bootstrap.css"> 
+    <style>
+        body {
+    background-color: #f8f9fa;  
+}
+
+h1 {
+    margin-bottom: 30px; /* Space below the heading */
+    color: #343a40; /* Dark color for the title */
+}
+
+.card {
+    transition: transform 0.2s; /* Smooth transition for hover effect */
+    border: 1px solid #ced4da; /* Light border around cards */
+}
+
+.card:hover {
+    transform: scale(1.05); /* Slightly enlarge card on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
+}
+
+.card-img-top {
+    height: 200px; /* Fixed height for images */
+    object-fit: cover; /* Cover to maintain aspect ratio */
+}
+
+.card-body {
+    background-color: #fff; /* White background for card body */
+    border-top: 1px solid #ced4da; /* Border to separate image from text */
+}
+
+.card-title {
+    font-size: 1.25rem; /* Increase font size for title */
+    font-weight: 600; /* Bold title */
+}
+
+.card-text {
+    font-size: 1rem; /* Standard font size for text */
+    color: #6c757d; /* Slightly muted text color */
+}
+
+.btn-primary {
+    background-color: #007bff; /* Primary button color */
+    border: none; /* Remove default border */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+}
+
+.btn-danger {
+    background-color: #dc3545; /* Danger button color */
+    border: none; /* Remove default border */
+}
+
+.btn-danger:hover {
+    background-color: #c82333; /* Darker shade on hover */
+}
+
+.text-center {
+    margin-top: 20px; 
+}
+
+.mt-5 {
+    margin-top: 3rem !important; 
+}
+
+@media (max-width: 768px) {
+    .col-md-4 {
+        flex: 0 0 100%; 
+        max-width: 100%;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">My Wishlist</h1>
+
+        <% if (products.length === 0) { %>
+            <p class="text-center"><%= message %></p>
+        <% } else { %>
+            <div class="row">
+                <% products.forEach(product => { %>
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="<%= product.images[0] %>" class="card-img-top" alt="<%= product.product_name %>">
+                            <div class="card-body">
+                                <h5 class="card-title"><%= product.product_name %></h5>
+                                <p class="card-text"><%= product.description %></p>
+                                <p class="card-text"><strong>Price:</strong> $<%= product.variants[0].price %></p>
+                                <a href="/product/<%= product._id %>" class="btn btn-primary">View Product</a>
+                                <button class="btn btn-danger" onclick="removeFromWishlist('<%= product._id %>')">Remove from Wishlist</button>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script>
+        function removeFromWishlist(productId) {
+            fetch('/wishlist/remove', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: "Removed!",
+                        text: data.message,
+                        icon: "success",
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    setTimeout(() => {
+                        window.location.reload(); // Refresh the page
+                    }, 1000);
+                } else {
+                    Swal.fire({
+                        title: "Error!",
+                        text: data.message,
+                        icon: "error",
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: "Error!",
+                    text: "Something went wrong. Please try again.",
+                    icon: "error",
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            });
+        }
+        function addToCart(userId, productId, quantity) {
+    const selectedQuantity = quantity && quantity.trim() !== '' ? quantity : 1;  // Default to 1 if no quantity provided
+
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, productId, quantity: selectedQuantity }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: "Success!",
+                text: data.message,
+                icon: "success",
+                timer: 1500,
+                showConfirmButton: false
+            });
+            setTimeout(() => {
+                window.location.reload()
+            }, 1000);
+        } else {
+            Swal.fire({
+                title: "Error!",
+                text: data.message,
+                icon: "error",
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: "Error!",
+            text: "Something went wrong. Please try again.",
+            icon: "error",
+            timer: 1500,
+            showConfirmButton: false
+        });
+    });
+}
+    </script>
+

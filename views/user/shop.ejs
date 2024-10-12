@@ -116,30 +116,51 @@
             </div>
             <div class="col-lg-9 col-xl-9">
                 <div class="row row-pb-md">
-                    <!-- ikk -->
-                     <% if(products.length > 0){ %>
-                    <% products.forEach((product) => { %>
-                        <div class="col-lg-4 mb-4 text-center">
-                          <div class="product-entry border">
-                            <a href="/product-view/<%= product._id %>" class="prod-img">
-                                <img src="<%= product.images[0] %>" class="img-fluid" alt="Product Image">
-                            </a>
-                            
-                            <div class="desc">
-                              <h2><a href="#"><%= product.product_name %></a></h2>
-                              <span class="price">$<%= product.variants[0].price %></span>
+                    <% if (products.length > 0) { %>
+                        <% products.forEach((product) => { %>
+                            <div class="col-lg-4 mb-4 text-center">
+                                <div class="product-entry border">
+                                    <a href="/product-view/<%= product._id %>" class="prod-img">
+                                        <img src="<%= product.images[0] %>" class="img-fluid" alt="Product Image">
+                                    </a>
+            
+                                    <div class="desc">
+                                        <h2><a href="/product_view/<%= product._id%>"><%= product.product_name %></a></h2>
+                                        <span class="price">$<%= product.variants[0].price %></span>
+                                        <div class="icons d-flex justify-content-center mt-2">
+                                            <p class="addtowishlist">
+                                                <% if (user) { %>
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            onclick="addToWishlist('<%= user._id %>', '<%= product._id %>')">
+                                                        <i class="fa fa-heart" aria-hidden="true"></i> Add to Wishlist
+                                                    </button>
+                                                <% } else { %>
+                                                    <p>Please <a href="/login">log in</a> to add to wishlist.</p>
+                                                <% } %>
+                                            </p>
+                                            <p class="addtocart">
+                                                <% if (user) { %>
+                                                    <button type="button" class="btn btn-success" 
+                                                            onclick="addToCart('<%= user._id %>', '<%= product._id %>', 1)">
+                                                        <i class="fa fa-shopping-cart" aria-hidden="true"></i> Add to Cart
+                                                    </button>
+                                                <% } else { %>
+                                                    <p>Please <a href="/login">log in</a> to add to cart.</p>
+                                                <% } %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                          </div>
-                        </div>
-                      <% }); %>
-                      <%} else{%>
+                        <% }); %>
+                    <% } else { %>
                         <div>
                             <h1>No Products</h1>
                         </div>
-                        <% } %>
-                      
-                    
+                    <% } %>
                 </div>
+            </div>
+            
                 <div class="row">
                     <div class="col-md-12 text-center">
                         <div class="block-27">
@@ -169,21 +190,100 @@
         </div>
         <div class="row">
             <div class="col partner-col text-center">
-                <img src="public/images/brand-1.jpg" class="img-fluid" alt="Free html4 bootstrap 4 template">
+                <img src="public/images/brand-1.jpg" class="img-fluid-logo" alt="Free html4 bootstrap 4 template">
             </div>
             <div class="col partner-col text-center">
-                <img src="public/images/brand-2.jpg" class="img-fluid" alt="Free html4 bootstrap 4 template">
+                <img src="public/images/brand-2.jpg" class="img-fluid-logo" alt="Free html4 bootstrap 4 template">
             </div>
             <div class="col partner-col text-center">
-                <img src="public/images/brand-3.jpg" class="img-fluid" alt="Free html4 bootstrap 4 template">
+                <img src="public/images/brand-3.jpg" class="img-fluid-logo" alt="Free html4 bootstrap 4 template">
             </div>
             <div class="col partner-col text-center">
-                <img src="public/images/brand-4.jpg" class="img-fluid" alt="Free html4 bootstrap 4 template">
+                <img src="public/images/brand-4.jpg" class="img-fluid-logo" alt="Free html4 bootstrap 4 template">
             </div>
             <div class="col partner-col text-center">
-                <img src="public/images/brand-5.jpg" class="img-fluid" alt="Free html4 bootstrap 4 template">
+                <img src="public/images/brand-5.jpg" class="img-fluid-logo" alt="Free html4 bootstrap 4 template">
             </div>
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function addToWishlist(userId, productId) {
+    fetch('/wishlist/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, productId }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: "Added!",
+                text: data.message,
+                icon: "success",
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: "Error!",
+            text: "Something went wrong. Please try again.",
+            icon: "error",
+            timer: 1500,
+            showConfirmButton: false
+        });
+    });
+}
+function addToCart(userId, productId, quantity) {
+    const selectedQuantity = quantity && quantity.trim() !== '' ? quantity : 1;  
+
+    fetch('/cart/addOne', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, productId, quantity: selectedQuantity }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: "Success!",
+                text: data.message,
+                icon: "success",
+                timer: 1500,
+                showConfirmButton: false
+            });
+            setTimeout(() => {
+                window.location.reload();  
+            }, 1000);
+        } else {
+            Swal.fire({
+                title: "Error!",
+                text: data.message,
+                icon: "error",
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: "Error!",
+            text: "Something went wrong. Please try again.",
+            icon: "error",
+            timer: 1500,
+            showConfirmButton: false
+        });
+    });
+}
+
+</script>
 <%- include('../partials/footer.ejs') %>

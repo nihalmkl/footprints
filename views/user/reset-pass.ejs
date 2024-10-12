@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #5a5a5a;
+        }
+        .input-field {
+            width: 90%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            transition: border-color 0.3s;
+        }
+        .input-field:focus {
+            border-color: #88c8bc;
+            outline: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #88c8bc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #69d99f;
+        }
+        .link {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .link a {
+            color: #3f3f3f;
+            text-decoration: none;
+        }
+        .link a:hover {
+            color: #02466b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Reset Password</h2>
+        <p>Please enter your current password and new password</p>
+        <form id="resetPasswordForm">
+            <input type="password" id="currentPassword" class="input-field" placeholder=" Password" required>
+            <small  class="password-error text-danger"></small>
+
+            <input type="password" id="newPassword" class="input-field" placeholder="conform Password" required>
+            <small  class="cpassword-error text-danger"></small>
+            <button type="button" class="btn" onclick="resetPassword()">Reset Password</button>
+        </form>
+        <div class="link">
+            <a href="/login">Back to Login</a>
+        </div>
+    </div>
+
+<script>
+    const token = window.location.pathname.split('/').pop();
+
+    function resetPassword() {
+        const currentPassword = document.getElementById('currentPassword').value.trim();
+            const newPassword = document.getElementById('newPassword').value.trim();
+            const passRegex = /^(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
+            const passwordError = document.getElementById('password-error')
+            const cpasswordError = document.getElementById('cpassword-error')
+            
+         passwordError.innerHTML = ""
+         cpasswordError.innerHTML = ""
+ 
+    if(!passRegex.test(currentPassword)){
+        passwordError.innerHTML ="give valied password"
+    }else if(currentPassword.length()<8){
+        passwordError ="Atleast 8 charecters"
+    }else{
+        return passwordError =""
+    }
+    if(newPassword!== currentPassword){
+        return cpasswordError.innerHTML ="Passoword doesnot match"
+    }
+
+        fetch('/reset-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password, token })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Password reset successful.');
+                window.location.href = '/login';  
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => alert('Something went wrong.'));
+    }
+</script>
