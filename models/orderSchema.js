@@ -2,26 +2,33 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema; 
 const OrdersSchema = new Schema(
   {
+    order_id: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    cart_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Cart',
+    },
     user_id: {
       type: Schema.Types.ObjectId,
       required: true,
       ref: "User" 
-    },
-    order_status: {
-      type: String,
-      required: true,
     },
     address_id: {
       type: Schema.Types.ObjectId,
       required: true,
       ref: "Address" 
     },
+    order_status: {
+      type: String,
+      required: true,
+      enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+      default: 'Pending' 
+    },
     items: [
       {
-        item_status: { 
-          type: String,
-          required: true 
-        },
         product_id: {
           type: Schema.Types.ObjectId,
           required: true,
@@ -41,40 +48,35 @@ const OrdersSchema = new Schema(
       {
         code: {
           type: String,
-          required: false,
         },
         discount_percentage: {
           type: Number,
-          required: false,
         },
       },
     ],
-    payments: [
-      {
-        amount: {
-          type: Number,
-          required: true,
-        },
-        date: {
-          type: Date,
-          required: true,
-          default: Date.now 
-        },
-        payment_id: {
-          type: Schema.Types.ObjectId,
-          required: true,
-        },
-        payment_method: {
-          type: String,
-          required: true,
-        },
-        payment_status: {
-          type: String,
-          required: true,
-          enum: ["Pending", "Completed", "Failed"], 
-        },
-      },
-    ],
+    total_amount: {
+      type: Number,
+      required: true,
+    },
+    placed_at: {
+      type: Date,
+      default: Date.now 
+    },
+    payment_method: {
+      type: String,
+      required: true,
+      enum: ['Cash on Delivery', 'Bank Transfer']
+    },
+    delivery_charge: {
+      type: Number,
+      default: 0
+    },
+    payment_status: {
+      type: String,
+      required: true,
+      enum: ["Pending", "Completed", "Failed"], 
+      default: 'Pending'
+    },
   },
   { timestamps: true }
 );

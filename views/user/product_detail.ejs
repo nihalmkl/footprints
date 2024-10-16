@@ -84,7 +84,7 @@
                         <div class="col-sm-12 text-center">
                             <p class="addtocart">
                                 <% if (user) { %>
-                                    <button type="button" class="btn btn-success btn-lg btn-addtocart" id="add-to-cart-btn" 
+                                    <button type="button" class="btn btn-success btn-sm btn-addtocart" id="add-to-cart-btn" 
                                             onclick="addCart('<%= user._id %>', '<%= product._id %>', document.getElementById('quantity').value)">
                                         <i class="icon-shopping-cart"></i> Add to Cart
                                     </button>
@@ -202,13 +202,13 @@
 <script>
     document.querySelector('.quantity-right-plus').addEventListener('click', function() {
     let quantity = parseInt(document.getElementById('quantity').value);
-    document.getElementById('quantity').value = quantity + 1;
+    document.getElementById('quantity').value = quantity 
 });
 
 document.querySelector('.quantity-left-minus').addEventListener('click', function() {
     let quantity = parseInt(document.getElementById('quantity').value);
     if (quantity > 1) {
-        document.getElementById('quantity').value = quantity - 1;
+        document.getElementById('quantity').value = quantity 
     }
 });
 

@@ -21,6 +21,7 @@ const sessionChecker = async (req, res, next) => {
             let user = res.locals.user || await User.findById(req.session.user.id);
 
             if (user) {
+                req.user = user; 
                 res.locals.user = user; 
                 return next();  
             } else {

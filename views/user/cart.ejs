@@ -59,7 +59,7 @@
                             </div>
                             <div class="one-eight text-center">
                                 <div class="display-tc">
-                                   <button  class="btn btn-secondary" onclick="removeFromCart('<%= cart.user_id %>', '<%= item.product_id._id %>')">Delete</button>
+                                   <button class="btn btn-secondary" onclick="removeFromCart('<%= cart.user_id %>', '<%= item.product_id._id %>')">Delete</button>
                                 </div>
                             </div>
                         </div>
@@ -85,7 +85,13 @@
                                     <p><span><strong>Total:</strong></span> <span>$<%= cart.total_price %></span></p>
                                 </div>
                                 <div>
-                                    <button class="btn btn-primary" onclick="checkout()">Checkout</button>
+                                    <% if (cart.items.length > 0) { %>
+                                        <div>
+                                            <a href="/checkout" class="btn btn-primary">Checkout</a>
+                                        </div>
+                                    <% }else{ %>
+                                        <a href="/shop" class="btn btn-primary">add products</a>
+                                        <%}%>
                                 </div>
                             </div>
                         </div>
@@ -108,7 +114,7 @@
                         </a>
                         <div class="desc">
                             <h2><a href="#"><%= product.product_name %></a></h2>
-                            <span class="price">$<%= product.price %></span> <!-- Using price from the cart -->
+                            <span class="price">$<%= product.price %></span> 
                         </div>
                     </div>
                 </div>
@@ -151,6 +157,7 @@ function removeFromCart(userId, productId) {
         });
     });
 }
+
 
 </script>
 <%- include('../partials/footer.ejs') %>

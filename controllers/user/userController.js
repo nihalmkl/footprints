@@ -7,7 +7,7 @@ const env  = require('dotenv').config()
 const Product = require('../../models/productSchema')
 const session = require('express-session')
 const crypto = require('crypto') 
-const Address = require('../../models/addressSchema');
+const Address = require('../../models/addressSchema')
 const Cart = require('../../models/cartSchema')
 const Wishlist = require('../../models/wishlistSchema')
 
@@ -58,7 +58,8 @@ exports.userLogin = async (req, res) => {
 
 exports.loadHome = async (req, res) => {
     try {
-        const products = await Product.find();
+        const products = await Product.find({is_delete:false});
+        
         return res.render('user/home.ejs',{products});
     } catch (error) {
         console.error("Error loading home page:", error.message);
@@ -246,7 +247,7 @@ exports.resendOtp = async (req, res) => {
 
 exports.loadShop = async(req,res)=>{
     try{
-        const products = await Product.find({});
+        const products = await Product.find({is_delete:false});
         res.render('user/shop', { products: products }); 
     }catch(error){
         console.log(error.message)
@@ -369,7 +370,7 @@ exports.productView = async (req, res) => {
 exports.editAddress = async (req, res) =>{
     const { full_name, street_address, pincode, city, state, country, phone } = req.body;
     const addressId = req.params.addressId;
-  
+      console.log(addressId,"dklajioaj")
     try {
       const addressRecord = await Address.findOneAndUpdate(
         { "address._id": addressId, user_id: req.user._id }, 
@@ -392,7 +393,7 @@ exports.editAddress = async (req, res) =>{
   
       res.redirect('/profile/' + req.user._id);  
     } catch (error) {
-      console.error(error);
+      console.error(error)
       res.status(500).send('Error updating address');
     }
   }
@@ -406,7 +407,7 @@ exports.addAddress = async (req, res) =>{
   
     try {
       let addressRecord = await Address.findOne({ user_id: req.user._id });
-  
+      
       if (!addressRecord) {
         addressRecord = new Address({
           user_id: req.user._id,
@@ -441,7 +442,7 @@ exports.addAddress = async (req, res) =>{
   }
   
 
-exports.loadProfile = async (req, res) =>{
+  exports.loadProfile = async (req, res) => {
     try {
       const userId = req.params.userId;
       const user = await User.findById(userId);
@@ -449,16 +450,64 @@ exports.loadProfile = async (req, res) =>{
         return res.status(404).send('User not found');
       }
   
-      const addresses = await Address.findOne({ user_id: userId });
-  
-      res.render('user/profile', { user, addresses: addresses ? addresses.address : [] });
+      const addresses = await Address.findOne({ user_id: userId }) || []; 
+      console.log(addresses)
+      res.render('user/profile', { user, addresses });
     } catch (error) {
       console.error(error);
       res.status(500).send('Server Error');
     }
-  }
+  };
 
 
+  exports.editProfile = async (req, res) => {
+    const { username, phone } = req.body;
+    const userId = req.params.userId; 
+    console.log(userId)
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { username, phone},
+            { new: true} 
+        );
+       console.log(updatedUser)
+        if (!updatedUser) {
+            return res.status(404).send('User not found');
+        }
+
+        res.redirect('/profile/' + userId);
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).send('Server error');
+    }
+};
+
+exports.deleteAddress = async (req, res) => {
+    const addressId = req.params.id
+    const userId = req.user._id
+    console.log(userId)
+    try {
+      let addressRecord = await Address.findOne({ user_id: userId });
+  
+      if (!addressRecord) {
+        return res.status(404).json({ message: 'Address record not found.' });
+      }
+  
+      const updatedAddresses = addressRecord.address.filter(add => add._id.toString() !== addressId);
+  
+      if (updatedAddresses.length === 0) {
+        await Address.deleteOne({ user_id: userId });
+      } else {
+        addressRecord.address = updatedAddresses;
+        await addressRecord.save();
+      }
+  
+      res.status(200).json({ message: 'Address deleted successfully.' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error deleting address.' });
+    }
+  };
 
 
 
@@ -517,15 +566,18 @@ exports.loadCart =  async (req, res) => {
 
 exports.addCart = async (req, res) => {
     const { userId, productId, quantity } = req.body;
-    const quant = parseInt(quantity, 10);
+    const quant = parseInt(quantity, 5);
     console.log(quant)
+    if (quant === 0) {
+        return res.status(400).json({ message: 'Quantity Atleast one' });
+    }
     try {
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        if (product.variants[0].stock < quant) {
+        if (product.variants[0].stock < quant ) {
             return res.status(400).json({ message: 'Insufficient stock available' });
         }
 
@@ -543,8 +595,11 @@ exports.addCart = async (req, res) => {
         if (existingItemIndex > -1) {
             const newQuantity = cart.items[existingItemIndex].quantity + quant;
 
-            if (newQuantity > product.variants[0].stock) {
+            if (newQuantity > product.variants[0].stock ) {
                 return res.status(400).json({ message: 'Insufficient stock for the updated quantity' });
+            }
+            if(newQuantity>5){
+                return res.status(400).json({success:false,message:"Maximum quantity reached"})
             }
 
             cart.items[existingItemIndex].quantity = newQuantity;
@@ -670,57 +725,52 @@ exports.removeWishlistItem =  async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' })
     }
 }
-
-// exports.searchProducts = async (req, res) => {
-//     const { sortBy, searchQuery } = req.query; 
-//     let sortOption = {};
-
-//     try {
-//         let query = {};
-//         if (searchQuery) {
-//             query = {
-//                 $or: [
-//                     { product_name: { $regex: searchQuery, $options: 'i' } },
-//                     { description: { $regex: searchQuery, $options: 'i' } }
-//                 ]
-//             };
-//         }
-
-//         switch (sortBy) {
-//             case 'priceLowToHigh':
-//                 sortOption = { 'variants.price': 1 };
-//                 break;
-//             case 'priceHighToLow':
-//                 sortOption = { 'variants.price': -1 };
-//                 break;
-//             case 'newArrivals':
-//                 sortOption = { createdAt: -1 }; 
-//                 break;
-//             case 'aToZ':
-//                 sortOption = { product_name: 1 }; 
-//                 break;
-//             case 'zToA':
-//                 sortOption = { product_name: -1 }; 
-//                 break;
-//             default:
-//                 sortOption = {}
-//         }
-
-//         const products = await Product.find(query).sort(sortOption);
-        
-//         res.render('user/products', { products, sortBy,searchQuery });
-//     } catch (error) {
-//         console.error('Error in searchProducts:', error);
-//         res.status(500).json({ message: 'Server error' });
-//     }
-// };
-
-
-
-exports.loadProfile = async(req,res)=>{
-    try{
-        res.render('user/profile')
-    }catch(error){
-      console.log(error)
-    }
+exports.loadCheckout = async (req,res)=>{
+    
 }
+
+exports.searchProducts = async (req, res) => {
+    const { sortBy, searchQuery } = req.query; 
+    let sortOption = {};
+
+    try {
+        let query = {};
+        if (searchQuery) {
+            query = {
+                $or: [
+                    { product_name: { $regex: searchQuery, $options: 'i' } },
+                    { description: { $regex: searchQuery, $options: 'i' } }
+                ]
+            };
+        }
+
+        switch (sortBy) {
+            case 'priceLowToHigh':
+                sortOption = { 'variants.price': 1 };
+                break;
+            case 'priceHighToLow':
+                sortOption = { 'variants.price': -1 };
+                break;
+            case 'newArrivals':
+                sortOption = { createdAt: -1 };
+                break;
+            case 'aToZ':
+                sortOption = { product_name: 1 };
+                break;
+            case 'zToA':
+                sortOption = { product_name: -1 };
+                break;
+            default:
+                sortOption = {};
+        }
+
+        const products = await Product.find(query).sort(sortOption);
+
+        res.json({ products });
+    } catch (error) {
+        console.error('Error in searchProducts:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
