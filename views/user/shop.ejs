@@ -147,27 +147,43 @@
                                     <div class="desc">
                                         <h2><a href="/product_view/<%= product._id%>"><%= product.product_name %></a></h2>
                                         <span class="price">$<%= product.variants[0].price %></span>
+                                        <p class="star">
+                                            <span style="color: rgb(227, 211, 29);">
+                                                <i class="icon-star-full"></i>
+                                                <i class="icon-star-full"></i>
+                                                <i class="icon-star-full"></i>
+                                                <i class="icon-star-full"></i>
+                                                <i class="icon-star-empty"></i>
+                                            </span>
+                                            (85%)
+                                        </p>
                                         <div class="icons d-flex justify-content-center mt-2">
                                             <p class="addtowishlist">
                                                 <% if (user) { %>
                                                     <button type="button" class="btn btn-outline-danger" 
                                                             onclick="addToWishlist('<%= user._id %>', '<%= product._id %>')">
-                                                        <i class="fa fa-heart" aria-hidden="true"></i> Add to Wishlist
+                                                        <i class="fa fa-heart" aria-hidden="true"></i>
                                                     </button>
                                                 <% } else { %>
-                                                    <p>Please <a href="/login">log in</a> to add to wishlist.</p>
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            onclick="goToLogin()">
+                                                        <i class="fa fa-heart" aria-hidden="true"></i>
+                                                    </button>
                                                 <% } %>
                                             </p>
                                             <p class="addtocart">
                                                 <% if (user) { %>
                                                     <button type="button" class="btn btn-success" 
                                                             onclick="addToCart('<%= user._id %>', '<%= product._id %>', 1)">
-                                                        <i class="fa fa-shopping-cart" aria-hidden="true"></i> Add to Cart
+                                                        <i class="fa fa-shopping-cart" aria-hidden="true"></i>
                                                     </button>
                                                 <% } else { %>
-                                                    <p>Please <a href="/login">log in</a> to add to cart.</p>
+                                                    <button type="button" class="btn btn-success" 
+                                                            onclick="goToLogin()">
+                                                        <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                                                    </button>
                                                 <% } %>
-                                            </p>
+                                            </p>                                            
                                         </div>
                                     </div>
                                 </div>
@@ -260,10 +276,12 @@
         });
     });
 }
-function addToCart(userId, productId, quantity) {
-    const selectedQuantity = quantity && quantity.trim() !== '' ? quantity : 1;  
 
-    fetch('/cart/addOne', {
+  function addToCart(userId, productId, quantity) {
+    console.log('hello') 
+    const selectedQuantity = quantity    
+    console.log(selectedQuantity)
+    fetch('/cart/add', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -335,5 +353,10 @@ function addToCart(userId, productId, quantity) {
             })
             .catch(error => console.error('Error fetching products:', error));
     });
+</script>
+<script>
+function goTologin(){
+    window.location.href = '/login'
+}
 </script>
 <%- include('../partials/footer.ejs') %>

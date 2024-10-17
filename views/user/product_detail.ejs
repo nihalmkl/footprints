@@ -1,18 +1,16 @@
 <%- include('../partials/header.ejs') %>
 <style>
-    .btn-addtocart {
+.btn-addtocart {
     font-size: 16px;
-    padding: 10px 20px;
-    border-radius: 8px;
-    background-color: #28a745; /* Green color */
-    color: white;
-    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    
 }
 
 .btn-addtocart:hover {
-    background-color: #218838; /* Darker green on hover */
+    background-color: #29302a; 
 }
-
 </style>
 <div class="breadcrumbs">
     <div class="container">
@@ -49,10 +47,22 @@
                 <div class="product-desc">
                     <h3><%= product.product_name %></h3>
                     <p class="price">
-                        <span class="original-price">$<%= product.variants[0].price %></span>
-                        <span class="discount-price">$<%= product.variants[0].price * 0.9 %></span> 
-                        <br>
-                        <span>Stock available: <%= product.variants[0].stock %></span>
+                        <span class="original-price">$<%= product.variants[0].price.toFixed(2) %></span>
+                        <span class="discount-price">$<%= product.variants[0].price.toFixed(2) * 0.9 %></span> 
+                    </p>
+                    <span class="<%= product.variants[0].stock < 0 ? 'text-danger' : 'text-success' %>">
+                        Available Stock: <%= product.variants[0].stock %>
+                    </span>                    
+                    <p class="star">
+                        <span>
+                            <i class="icon-star-full"></i>
+                            <i class="icon-star-full"></i>
+                            <i class="icon-star-full"></i>
+                            <i class="icon-star-full"></i>
+                            <i class="icon-star-empty"></i>
+                            (85%)
+                        </span>
+                        <span>10 Reviews</span>
                     </p>
                     <p><%= product.description %></p>
                     <div class="size-wrap">
@@ -84,9 +94,9 @@
                         <div class="col-sm-12 text-center">
                             <p class="addtocart">
                                 <% if (user) { %>
-                                    <button type="button" class="btn btn-success btn-sm btn-addtocart" id="add-to-cart-btn" 
+                                    <button type="button" class="btn btn-secondary btn-sm btn-addtocart" id="add-to-cart-btn" 
                                             onclick="addCart('<%= user._id %>', '<%= product._id %>', document.getElementById('quantity').value)">
-                                        <i class="icon-shopping-cart"></i> Add to Cart
+                                        Add to Cart
                                     </button>
                                 <% } else { %>
                                     <p>Please <a href="/login">log in</a> to add to cart.</p>

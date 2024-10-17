@@ -49,4 +49,6 @@ admin_route.post('/delete-image',productController.deleteImage)
 //order Management
 
 admin_route.get('/orders',orderController.loadOrderPage)
+admin_route.post('/update-status/:id',orderController.updateStatus)
+
 module.exports = admin_route

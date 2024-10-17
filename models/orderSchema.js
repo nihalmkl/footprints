@@ -7,10 +7,7 @@ const OrdersSchema = new Schema(
       unique: true,
       required: true,
     },
-    cart_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Cart',
-    },
+    
     user_id: {
       type: Schema.Types.ObjectId,
       required: true,
@@ -27,23 +24,21 @@ const OrdersSchema = new Schema(
       enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
       default: 'Pending' 
     },
-    items: [
-      {
-        product_id: {
-          type: Schema.Types.ObjectId,
-          required: true,
-          ref: "Product",
-        },
-        purchased_price: {
-          type: Schema.Types.Decimal128,
-          required: true,
-        },
-        quantity: {
-          type: Number,
-          required: true,
-        },
+    items: [{
+      product_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true,
       },
-    ],
+      price: {
+        type: Number,
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+    }],
     promocode_info: [
       {
         code: {
@@ -77,9 +72,13 @@ const OrdersSchema = new Schema(
       enum: ["Pending", "Completed", "Failed"], 
       default: 'Pending'
     },
+    isCancelled:{
+      type:Boolean,
+      default:false
+    }
   },
   { timestamps: true }
-);
+)
 
 const Orders = mongoose.model("Orders", OrdersSchema);
 module.exports = Orders;

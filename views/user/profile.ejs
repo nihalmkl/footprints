@@ -379,89 +379,97 @@
             });
 
             $('#orderLink').click(function (e) {
-                e.preventDefault();
-                $('#dynamicContent').html(`
-                    <div class="container my-5">
-    <h1 class="text-center mb-4">Order Management</h1>
+    e.preventDefault();
 
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Order ID</th>
-                <th>User ID</th>
-                <th>Items</th>
-                <th>Payment Type</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>#321</td>
-                <td>12</td>
-                <td>2</td>
-                <td>Online Payment</td>
-                <td>$99.99</td>
-                <td><span class="badge bg-warning">Pending</span></td>
-                <td>
-                    <button class="btn btn-sm btn-primary">View</button>
-                    <button class="btn btn-sm btn-danger">Cancel</button>
-                </td>
-            </tr>
-            <tr>
-                <td>#322</td>
-                <td>34</td>
-                <td>2</td>
-                <td>Online Payment</td>
-                <td>$99.99</td>
-                <td><span class="badge bg-success">Delivered</span></td>
-                <td>
-                    <button class="btn btn-sm btn-primary">View</button>
-                </td>
-            </tr>
-            <tr>
-                <td>#456</td>
-                <td>54</td>
-                <td>1</td>
-                <td>COD</td>
-                <td>$99.99</td>
-                <td><span class="badge bg-warning">Pending</span></td>
-                <td>
-                    <button class="btn btn-sm btn-primary">View</button>
-                    <button class="btn btn-sm btn-danger">Cancel</button>
-                </td>
-            </tr>
-            <tr>
-                <td>#565</td>
-                <td>78</td>
-                <td>1</td>
-                <td>COD</td>
-                <td>$99.99</td>
-                <td><span class="badge bg-danger">Cancelled</span></td>
-                <td>
-                    <button class="btn btn-sm btn-primary">View</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    $.ajax({
+        url: '/orders',
+        type: 'GET',
+        success: function (orders) {
+            let orderTable = `
+                <div class="container my-5">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product Name</th>
+                                <th>Payment Method</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
 
-    <nav aria-label="Page navigation example">
-        <ul class="pagination justify-content-center">
-            <li class="page-item disabled">
-                <a class="page-link">Previous</a>
-            </li>
-            <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item">
-                <a class="page-link" href="#">Next</a>
-            </li>
-        </ul>
-    </nav>
-    </div>
-                `);
+            orders.forEach(function(order) {
+                orderTable += `
+                    <tr>
+                        <td>${order.order_id}</td>
+                        <td>`;
+                
+                order.items.forEach(function(item) {
+                    orderTable += `*${item.product_id.product_name}<br>`; 
+                });
+
+                orderTable += `</td>
+                        <td>${order.payment_method === 'Cash on Delivery' ? 'COD' : order.payment_method}</td>
+                        <td>$${order.total_amount.toFixed(2)}</td>
+                        <td>`;
+                
+                if (order.order_status === 'Pending') {
+                    orderTable += `<span class="badge bg-warning">Pending</span>`;
+                } else if (order.order_status === 'Delivered') {
+                    orderTable += `<span class="badge bg-success">Delivered</span>`;
+                } else if (order.order_status === 'Cancelled') {
+                    orderTable += `<span class="badge bg-danger">Cancelled</span>`;
+                } else {
+                    orderTable += `<span class="badge bg-info">${order.order_status}</span>`;
+                }
+
+                orderTable += `</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary view-order" data-order-id="${order._id}">View</button>`;
+                
+                if (order.order_status === 'Pending') {
+                    orderTable += `<button class="btn btn-sm btn-danger">Cancel</button>`;
+                }
+
+                orderTable += `
+                        </td>
+                    </tr>`;
             });
+
+            orderTable += `
+                        </tbody>
+                    </table>
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link">Previous</a>
+                            </li>
+                            <li class="page-item"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>`;
+
+            $('#dynamicContent').html(orderTable);
+            
+            $('.view-order').click(function () {
+    const orderId = $(this).data('order-id');
+    console.log("Navigating to order details for ID:", orderId);
+    window.location.href = `/order/${orderId}`; 
+})
+        },
+        error: function () {
+            $('#dynamicContent').html('<p>Error fetching orders</p>');
+        }
+    });
+});
+
 
             $('#walletLink').click(function (e) {
                 e.preventDefault();

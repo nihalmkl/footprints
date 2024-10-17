@@ -1,78 +1,116 @@
-
 <div class="container my-5">
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
             <tr>
                 <th>Order ID</th>
-                <th>User ID</th>
+                <th>User</th>
+                <th>Date & Time</th>
                 <th>Items</th>
-                <th>Payment Type</th>
+                <th>Payment Method</th>
                 <th>Amount</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
+            <% orders.forEach(function(order) { %>
             <tr>
-                <td>#321</td>
-                <td>12</td>
-                <td>2</td>
-                <td>Online Payment</td>
-                <td>$99.99</td>
-                <td><span class="badge bg-warning">Pending</span></td>
+                <td><%= order.order_id %></td>
+                <td><%= order.user_id.username %></td>
+                <td><%= order.createdAt.toLocaleString() %></td>
+                <td><%= order.items.length %></td>
+                <td><%= order.payment_method %></td>
+                <td>$<%= order.total_amount %></td>
                 <td>
-                    <button class="btn btn-sm btn-primary">View</button>
-                    <button class="btn btn-sm btn-danger">Cancel</button>
+                    <select name="order_status" class="form-select" data-order-id="<%= order._id %>" 
+                        onchange="updateStatus(this)" <%= order.order_status === 'Delivered' ? 'disabled' : '' %>>
+                        <option value="Pending" <%= order.order_status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                        <option value="Processing" <%= order.order_status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                        <option value="Shipped" <%= order.order_status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                        <option value="Delivered" <%= order.order_status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                        <option value="Cancelled" <%= order.order_status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                    </select>
+                </td>
+                <td>
+                    <a href="/orders/<%= order._id %>" class="btn btn-sm btn-primary">View</a>
                 </td>
             </tr>
-            <tr>
-                <td>#322</td>
-                <td>34</td>
-                <td>2</td>
-                <td>Online Payment</td>
-                <td>$99.99</td>
-                <td><span class="badge bg-success">Delivered</span></td>
-                <td>
-                    <button class="btn btn-sm btn-primary">View</button>
-                </td>
-            </tr>
-            <tr>
-                <td>#456</td>
-                <td>54</td>
-                <td>1</td>
-                <td>COD</td>
-                <td>$99.99</td>
-                <td><span class="badge bg-warning">Pending</span></td>
-                <td>
-                    <button class="btn btn-sm btn-primary">View</button>
-                    <button class="btn btn-sm btn-danger">Cancel</button>
-                </td>
-            </tr>
-            <tr>
-                <td>#565</td>
-                <td>78</td>
-                <td>1</td>
-                <td>COD</td>
-                <td>$99.99</td>
-                <td><span class="badge bg-danger">Cancelled</span></td>
-                <td>
-                    <button class="btn btn-sm btn-primary">View</button>
-                </td>
-            </tr>
+            <% }); %>
         </tbody>
     </table>
 
     <nav aria-label="Page navigation example">
         <ul class="pagination justify-content-center">
-            <li class="page-item disabled">
-                <a class="page-link">Previous</a>
-            </li>
-            <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item">
-                <a class="page-link" href="#">Next</a>
-            </li>
+            <% if (currentPage > 1) { %>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
+                </li>
+            <% } else { %>
+                <li class="page-item disabled">
+                    <a class="page-link">Previous</a>
+                </li>
+            <% } %>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                    <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                </li>
+            <% } %>
+            <% if (currentPage < totalPages) { %>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
+                </li>
+            <% } else { %>
+                <li class="page-item disabled">
+                    <a class="page-link">Next</a>
+                </li>
+            <% } %>
         </ul>
     </nav>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    async function updateStatus(selectElement) {
+        const orderId = selectElement.getAttribute('data-order-id');
+        const newStatus = selectElement.value;
+
+        const confirmResult = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You want to update the order status?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'update it!',
+            cancelButtonText: 'cancel!'
+        });
+
+        if (confirmResult.isConfirmed) {
+            try {
+                const response = await fetch(`/admin/update-status/${orderId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ order_status: newStatus })
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        title: 'Updated!',
+                        text: 'Order status has been updated.',
+                        icon: 'success',
+                    });
+                } else {
+                    throw new Error('Failed to update order status');
+                }
+            } catch (error) {
+                console.error('Error updating order status:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'There was a problem updating the order status.',
+                    icon: 'error',
+                });
+            }
+        } else {
+            selectElement.value = selectElement.getAttribute('data-original-status');
+        }
+    }
+</script>

@@ -10,7 +10,7 @@ const crypto = require('crypto')
 const Address = require('../../models/addressSchema')
 const Cart = require('../../models/cartSchema')
 const Wishlist = require('../../models/wishlistSchema')
-
+const Orders = require('../../models/orderSchema')
 exports.loadLogin =async (req,res) => {
     try {
         res.render('user/login')
@@ -318,7 +318,9 @@ exports.resetPasswordPage = (req, res) => {
 };
 
 exports.resetPassword = async (req, res) => {
-    const { password, token } = req.body;
+    console.log(req.body);
+    
+    const { newPassword, token } = req.body;
 
     try {
         if (!req.session.resetToken || token !== req.session.resetToken) {
@@ -330,7 +332,7 @@ exports.resetPassword = async (req, res) => {
             return res.status(400).json({ success: false, message: 'User not found.' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         user.password = hashedPassword;
         await user.save();
@@ -451,7 +453,7 @@ exports.addAddress = async (req, res) =>{
       }
   
       const addresses = await Address.findOne({ user_id: userId }) || []; 
-      console.log(addresses)
+      console.log("jdjkkdh",addresses)
       res.render('user/profile', { user, addresses });
     } catch (error) {
       console.error(error);
@@ -565,20 +567,20 @@ exports.loadCart =  async (req, res) => {
 }
 
 exports.addCart = async (req, res) => {
+    console.log('hi')
     const { userId, productId, quantity } = req.body;
     const quant = parseInt(quantity, 5);
-    console.log(quant)
     if (quant === 0) {
-        return res.status(400).json({ message: 'Quantity Atleast one' });
+        return res.status(400).json({ success:false,message: 'Quantity Atleast one' });
     }
     try {
         const product = await Product.findById(productId);
         if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
+            return res.status(404).json({ success:false,message: 'Product not found' });
         }
 
         if (product.variants[0].stock < quant ) {
-            return res.status(400).json({ message: 'Insufficient stock available' });
+            return res.status(400).json({success:false, message: 'Insufficient stock available' });
         }
 
         let cart = await Cart.findOne({ user_id: userId });
@@ -618,8 +620,9 @@ exports.addCart = async (req, res) => {
         product.variants[0].stock -= quant;
         await product.save();
 
-        res.status(200).json({ message: 'Product added to cart', cart });
+        res.status(200).json({success:true, message: 'Product added to cart', cart });
     } catch (error) {
+        console.log('hello')
         console.error('Error adding to cart:', error);
         res.status(500).json({ message: 'Server error' });
     }
@@ -632,13 +635,13 @@ exports.deleteCartItems = async (req, res) => {
     try {
         const cart = await Cart.findOne({ user_id: userId })
         if (!cart) {
-            return res.status(404).json({ message: 'Cart not found' })
+            return res.status(404).json({success:false, message: 'Cart not found' })
         }
 
         const itemIndex = cart.items.findIndex(item => item.product_id.toString() === productId)
 
         if (itemIndex === -1) {
-            return res.status(404).json({ message: 'Product not found in cart' })
+            return res.status(404).json({success:false, message: 'Product not found in cart' })
         }
 
         const removedItem = cart.items[itemIndex]
@@ -654,10 +657,10 @@ exports.deleteCartItems = async (req, res) => {
 
         await cart.save()
 
-        res.status(200).json({ message: 'Product removed from cart', cart })
+        res.status(200).json({ success:true,message: 'Product removed from cart', cart })
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error' })
+        res.status(500).json({ success:false,message: 'Server error' })
     }
 };
 
@@ -774,3 +777,95 @@ exports.searchProducts = async (req, res) => {
 };
 
 
+exports.loadCheckout = async (req, res) => {
+         const userId = req.user._id
+    try { 
+        const cart = await Cart.findOne({ user_id: userId });
+        const addresses = await Address.findOne({ user_id: userId }) || []; 
+                console.log(cart);
+                
+        if (!cart) {
+            return res.status(404).json({ message: "Cart not found" });
+        }
+        const userAddresses = addresses ? addresses.address : []
+        return res.render('user/checkout',{cart,addresses:userAddresses,userId})
+    } catch (error) {
+        console.error('Error fetching cart:', error.message);
+        return res.status(500).json({ message: 'Server Error' });
+    }
+}
+
+
+function generateOrderId() {
+    const randomDigits = Math.floor(1000 + Math.random() * 9000)
+    return `ORD${randomDigits}`
+  }
+
+exports.placeOrder = async (req, res) => {
+    const { address_id, payment_method } = req.body;
+      console.log(address_id)
+      console.log(47927982,req.body);
+      
+    if (!address_id || !payment_method) {
+        return res.status(400).json({ message: "Address and payment method are required." });
+    }
+
+    try {
+        const userCart = await Cart.findOne({ user_id: req.user._id }).populate('items.product_id');
+
+        if (!userCart) {
+            return res.status(400).json({ message: "No cart found for the user." });
+        }
+         console.log(userCart,"dyq")
+        const newOrder = new Orders({
+            order_id: generateOrderId(), 
+            cart_id: userCart._id,  
+            user_id: req.user._id, 
+            address_id,
+            payment_method,
+            items: userCart.items,  
+            total_amount: userCart.total_price, 
+        });
+
+        await newOrder.save()
+          console.log(678994,newOrder)
+          userCart.items = []
+          userCart.total_price = 0
+          await userCart.save()
+
+        res.status(200).json({ message: "Order placed successfully and cart deleted!" });
+    } catch (error) {
+        console.error("Error placing the order:", error);
+        res.status(500).json({ message: "Failed to place the order." });
+    }
+};
+exports.getOrder = async (req, res) => {
+    try {
+      const orders = await Orders.find({}).populate('items.product_id'); 
+      res.json(orders);
+    } catch (error) {
+      res.status(500).send({ message: 'Error fetching orders' });
+    }
+  }
+ exports.getOrderDetails = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+
+        const order = await Orders.findById(orderId).populate('items.product_id')
+        console.log(order)
+        const addressDocument = await Address.findOne({ 'address._id': order.address_id });
+
+      if (!addressDocument) {
+          return res.status(404).send({ message: 'Address not found' });
+      }
+
+      const address = addressDocument.address[0]
+        if (!order) {
+            return res.status(404).send({ message: 'Order not found' });
+        }
+          res.render('user/order-view', { order,address});
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: 'Error fetching order details' });
+    }
+}

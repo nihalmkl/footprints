@@ -72,13 +72,12 @@
 
     <div class="container">
         <h2>Reset Password</h2>
-        <p>Please enter your current password and new password</p>
         <form id="resetPasswordForm">
-            <input type="password" id="currentPassword" class="input-field" placeholder=" Password" required>
-            <small  class="password-error text-danger"></small>
+            <input type="password" id="currentPassword" name="password" class="input-field" placeholder=" Password" required>
+            <small  class="text-danger" id="password-error"></small>
 
-            <input type="password" id="newPassword" class="input-field" placeholder="conform Password" required>
-            <small  class="cpassword-error text-danger"></small>
+            <input type="password" id="newPassword" name="cpassword" class="input-field" placeholder="conform Password" required>
+            <small  class=" text-danger" id="cpassword-error"></small>
             <button type="button" class="btn" onclick="resetPassword()">Reset Password</button>
         </form>
         <div class="link">
@@ -86,6 +85,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const token = window.location.pathname.split('/').pop();
 
@@ -99,33 +99,60 @@
          passwordError.innerHTML = ""
          cpasswordError.innerHTML = ""
  
-    if(!passRegex.test(currentPassword)){
-        passwordError.innerHTML ="give valied password"
-    }else if(currentPassword.length()<8){
-        passwordError ="Atleast 8 charecters"
-    }else{
-        return passwordError =""
+         if (!passRegex.test(currentPassword)) {
+        passwordError.innerHTML = "include a number and a special character.";
+        return;
     }
-    if(newPassword!== currentPassword){
-        return cpasswordError.innerHTML ="Passoword doesnot match"
+    if (currentPassword.length < 8) {
+        passwordError.innerHTML = "Password must be at least 8 characters long";
+        return;
     }
+
+    if (newPassword !== currentPassword) {
+        cpasswordError.innerHTML = "Passwords do not match.";
+        return;
+    }
+
+    
 
         fetch('/reset-password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ password, token })
+            body: JSON.stringify({ newPassword, token })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Password reset successful.');
-                window.location.href = '/login';  
+                Swal.fire({
+                    title: "Success",
+                    text: data.message,
+                    icon: "success",
+                    timer: 1000,
+                    showConfirmButton: false
+                })
+                setTimeout(()=>{
+                    window.location.href = '/login';
+                },1500)
+                 
             } else {
-                alert('Error: ' + data.message);
+                Swal.fire({
+                    title: "Error",
+                    text: dara.message,
+                    icon: "error",
+                    timer: 1500,
+                    showConfirmButton: false
+                })
             }
         })
-        .catch(err => alert('Something went wrong.'));
+        .catch(err => Swal.fire({
+                    title: "Error",
+                    text: "Internal Server Error",
+                    icon: "error",
+                    timer: 1500,
+                    showConfirmButton: false
+                })
+            )
     }
 </script>

@@ -111,25 +111,41 @@
 										<h2><a href="#"><%= product.product_name %></a></h2>
 										<span class="price">$<%= product.variants[0].price %></span>
 									</div>
+									<p class="star">
+										<span style="color: rgb(227, 211, 29);">
+											<i class="icon-star-full"></i>
+											<i class="icon-star-full"></i>
+											<i class="icon-star-full"></i>
+											<i class="icon-star-full"></i>
+											<i class="icon-star-empty"></i>
+										</span>
+										(85%)
+									</p>
 									<div class="icons d-flex justify-content-center mt-2">
 										<p class="addtowishlist">
 											<% if (user) { %>
 												<button type="button" class="btn btn-outline-danger" 
 														onclick="addToWishlist('<%= user._id %>', '<%= product._id %>')">
-													<i class="fa fa-heart" aria-hidden="true"></i> Add to Wishlist
+													<i class="fa fa-heart" aria-hidden="true"></i>
 												</button>
 											<% } else { %>
-												<p>Please <a href="/login">log in</a> to add to wishlist.</p>
+												<button type="button" class="btn btn-outline-danger" 
+														onclick="goTologin()">
+													<i class="fa fa-heart" aria-hidden="true"></i>
+												</button>
 											<% } %>
 										</p>
 										<p class="addtocart">
 											<% if (user) { %>
 												<button type="button" class="btn btn-success" 
 														onclick="addToCart('<%= user._id %>', '<%= product._id %>', 1)">
-													<i class="fa fa-shopping-cart" aria-hidden="true"></i> Add to Cart
+													<i class="fa fa-shopping-cart" aria-hidden="true"></i>
 												</button>
 											<% } else { %>
-												<p>Please <a href="/login">log in</a> to add to cart.</p>
+												<button type="button" class="btn btn-success" 
+														onclick="goTologin()">
+													<i class="fa fa-shopping-cart" aria-hidden="true"></i>
+												</button>
 											<% } %>
 										</p>
 									</div>
@@ -211,14 +227,14 @@
     });
 }
 function addToCart(userId, productId, quantity) {
-    const selectedQuantity = quantity && quantity.trim() !== '' ? quantity : 1;  
+ 
 
     fetch('/cart/add', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId, productId, quantity: selectedQuantity }),
+        body: JSON.stringify({ userId, productId, quantity}),
     })
     .then(response => response.json())
     .then(data => {
@@ -254,7 +270,11 @@ function addToCart(userId, productId, quantity) {
         });
     });
 }
-
+</script>
+<script>
+	function goTologin(){
+	 window.location.href = '/login'
+}
 </script>
 <%- include('../partials/footer.ejs') %>
 		

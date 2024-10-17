@@ -146,9 +146,9 @@ exports.editProduct = async (req, res) => {
         product.brand_id = brand;
         product.description = description;
  
-        console.log(  req.body[sizeKey],
-            req.body[`stock${index}`], 
-            req.body[`price${index}`] )
+        
+        req.body[`stock${index}`], 
+        req.body[`price${index}`] 
         
         const variants = [];
         const sizeKeys = Object.keys(req.body).filter(key => key.startsWith('size'));

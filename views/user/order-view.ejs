@@ -1,0 +1,56 @@
+<%- include('../partials/header') %>
+<style>
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+}
+
+.card-title {
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<div class="container my-5">
+    <h1 class="mb-4">Order Details</h1>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Order ID: <%= order.order_id %></h5>
+            
+            <p class="card-text"><strong>Address:</strong></p>
+    <ul>
+        <li><strong>Full Name:</strong> <%= address.full_name %></li>
+        <li><strong>Street Address:</strong> <%= address.street_address %></li>
+        <li><strong>City:</strong> <%= address.city %></li>
+        <li><strong>State:</strong> <%= address.state %></li>
+        <li><strong>Postal Code:</strong> <%= address.pincode %></li>
+        <li><strong>Country:</strong> <%= address.country %></li>
+        <li><strong>Phone:</strong> <%= address.phone %></li>
+    </ul>
+    <h6 class="card-title">Status: <%= order.payment_status %></h6>
+
+            <h2 class="mt-4">Items</h2>
+            <ul class="list-group">
+                <% order.items.forEach(function(item) { %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <img src="<%= item.product_id.images[0] %>" class="img-fluid" alt="Product Image" style="width: 50px; height: 50px; margin-right: 10px;">
+                            <div>
+                                <strong>Product Name:</strong> <%= item.product_id.product_name %><br>
+                                <strong>Quantity:</strong> <%= item.quantity %><br>
+                                <strong>Price:</strong> $<%= item.price.toFixed(2) %>
+                            </div>
+                        </div>
+                    </li>
+                <% }); %>
+            </ul>
+            <a href="/profile/<%= user._id %>" class="btn btn-primary mt-3">Back to Orders</a>
+        </div>
+    </div>
+</div>
+    <%- include('../partials/footer') %>
