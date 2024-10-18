@@ -1,5 +1,21 @@
 
 <%- include('../partials/header.ejs') %>
+<style>
+    .dropdown {
+        margin-top: 20px;
+    }
+
+    .form-select {
+        width: 200px;
+        border-radius: 0.375rem; 
+        border: 1px solid #88c8bc
+    }
+
+    .form-select:focus {
+        border-color: #88c8bc; 
+        box-shadow: 0 0 0 0.2rem rgba(88, 172, 124, 0.25);
+    }
+</style>
 <div class="breadcrumbs">
     <div class="container">
         <div class="row">
@@ -32,7 +48,7 @@
                 <div class="featured">
                     <div class="featured-img featured-img-2" style="background-image: url(https://imgs.search.brave.com/CLEn4x1-baB7XnAC9nsuWsLY_X5GA_dC7wdMDoG5JBM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9oaXBz/LmhlYXJzdGFwcHMu/Y29tL3ZhZGVyLXBy/b2QuczMuYW1hem9u/YXdzLmNvbS8xNjg0/MzM0Mjk0LXcxMjAw/LXE2MC02NDY0ZTZj/ZWFkZWMzLmpwZz9j/cm9wPTEuMDB4dzow/Ljc1MXhoOzAsMC4y/NDl4aCZyZXNpemU9/OTgwOio);">
                         <h2>Casuals</h2>
-                        <p><a href="#" class="btn btn-primary btn-lg">Shop now</a></p>
+                        <p><a href="/shop/category" class="btn btn-primary btn-lg">Shop now</a></p>
                     </div>
                 </div>
             </div>
@@ -40,7 +56,7 @@
                 <div class="featured">
                     <div class="featured-img featured-img-2" style="background-image: url(https://imgs.search.brave.com/fehoFDrCyURUnNCCRwSEtBZ8Tjm_Tvhl31vRYZqL4TA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/ZnJlZS1waG90by9k/ZXJieS1zaG9lcy1t/ZW4tZm9ybWFsLXdl/YXJfNTM4NzYtOTY2/MDkuanBnP3NpemU9/NjI2JmV4dD1qcGc);">
                         <h2>Formels</h2>
-                        <p><a href="#" class="btn btn-primary btn-lg">Shop now</a></p>
+                        <p><a href="/shop/category" class="btn btn-primary btn-lg">Shop now</a></p>
                     </div>
                 </div>
             </div>
@@ -48,31 +64,28 @@
                 <div class="featured">
                     <div class="featured-img featured-img-2" style="background-image: url(public/images/item-11.jpg);">
                         <h2>Sports</h2>
-                        <p><a href="#" class="btn btn-primary btn-lg">Shop now</a></p>
+                        <p><a href="/shop/category" class="btn btn-primary btn-lg">Shop now</a></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<div>
-    <!-- Search and Sort Form -->
-    <input 
-        type="text" 
-        id="searchQuery" 
-        placeholder="Search for products..." 
-        value="search">
-
-    <select id="sortBy">
-        <option value="">Sort by</option>
-        <option value="priceLowToHigh">Price: Low to High</option>
-        <option value="priceHighToLow">Price: High to Low</option>
-        <option value="newArrivals">New Arrivals</option>
-        <option value="aToZ">A to Z</option>
-        <option value="zToA">Z to A</option>
-    </select>
-
-    <button id="searchBtn">Search</button>
+<div class="container">
+    <div class="row">
+        <div class="col text-end"> 
+            <div class="dropdown">
+                <select id="sortBy" class="form-select" aria-label="Sort by">
+                    <option value="">Sort by</option>
+                    <option value="priceLowToHigh">Price: Low to High</option>
+                    <option value="priceHighToLow">Price: High to Low</option>
+                    <option value="newArrivals">New Arrivals</option>
+                    <option value="aToZ">A to Z</option>
+                    <option value="zToA">Z to A</option>
+                </select>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="productsContainer"></div>
@@ -325,34 +338,10 @@
 
 </script>
 <script>
-    document.getElementById('searchBtn').addEventListener('click', function() {
-        const searchQuery = document.getElementById('searchQuery').value;
-        const sortBy = document.getElementById('sortBy').value;
-
-        fetch(`/products/search?searchQuery=${searchQuery}&sortBy=${sortBy}`)
-            .then(response => response.json())
-            .then(data => {
-                const productsContainer = document.getElementById('productsContainer');
-                productsContainer.innerHTML = '';
-
-                if (data.products.length > 0) {
-                    data.products.forEach(product => {
-                        const productItem = `
-                            <div>
-                                <h3>${product.product_name}</h3>
-                                <p>${product.description}</p>
-                                <p>Price: ${product.variants[0].price}</p>
-                                <!-- Add other product details here -->
-                            </div>
-                        `;
-                        productsContainer.innerHTML += productItem;
-                    });
-                } else {
-                    productsContainer.innerHTML = '<p>No products found.</p>';
-                }
-            })
-            .catch(error => console.error('Error fetching products:', error));
-    });
+    document.getElementById('sortBy').addEventListener('change', function() {
+        const sorting = this.value
+        window.location.href = `/shop?sorting=${sorting}`
+    })
 </script>
 <script>
 function goTologin(){

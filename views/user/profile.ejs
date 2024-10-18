@@ -220,8 +220,8 @@
                             Edit 
                             </button>
                             <button type="button" class="btn btn-danger" onclick="deleteAddress('<%= address._id %>')">
-                             Delete
-                            </button>
+    Delete
+</button>
                             <div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -430,7 +430,7 @@
                             <button class="btn btn-sm btn-primary view-order" data-order-id="${order._id}">View</button>`;
                 
                 if (order.order_status === 'Pending') {
-                    orderTable += `<button class="btn btn-sm btn-danger">Cancel</button>`;
+                    orderTable += `<button class="btn btn-sm btn-danger cancel-order" data-order-id="${order._id}">Cancel</button>`;
                 }
 
                 orderTable += `
@@ -468,8 +468,35 @@
             $('#dynamicContent').html('<p>Error fetching orders</p>');
         }
     });
-});
-
+    $(document).on('click', '.cancel-order', function() {
+    const orderId = $(this).data('order-id');
+    console.log(orderId);
+    
+    $.ajax({
+        url: `/orders/${orderId}`,
+        type: 'PUT',
+        success: function(response) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Order Cancelled',
+                text: 'The order was cancelled successfully!',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                location.reload()
+            });
+        },
+        error: function(err) {
+            console.error('Error cancelling order:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Cancellation Failed',
+                text: 'Failed to cancel the order. Please try again later.',
+                confirmButtonText: 'OK'
+            });
+         }
+      })
+    })
+})
 
             $('#walletLink').click(function (e) {
                 e.preventDefault();
@@ -492,23 +519,39 @@
             });
         });
     </script>
-    <script>
-        function deleteAddress(addressId) {
-    if (confirm('Are you sure?')) {
-        fetch('/delete-address/' + addressId, {
-            method: 'DELETE',
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message || 'Address deleted successfully');
-            location.reload();  
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error deleting address');
+
+<script>
+    function deleteAddress(addressId) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Delete!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes!",
+            cancelButtonText: "cancel",
+            dangerMode: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('/delete-address/' + addressId, {
+                    method: 'DELETE',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.fire("Success!", data.message || "Address deleted successfully!", "success")
+                    .then(() => {
+                        location.reload();
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire("Error", "There was a problem deleting the address.", "error");
+                });
+            } else {
+                Swal.fire("Cancelled", "Your address is safe!", "info");
+            }
         });
     }
-}
+</script>
 
-    </script>
+   
 <%- include('../partials/footer') %>

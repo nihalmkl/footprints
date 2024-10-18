@@ -33,8 +33,10 @@ body {
         <li><strong>Phone:</strong> <%= address.phone %></li>
     </ul>
     <h6 class="card-title">Status: <%= order.payment_status %></h6>
-
-            <h2 class="mt-4">Items</h2>
+    <% if (order.order_status === 'Pending') { %>
+        <p><strong>Expected Delivery Date:</strong> <%= order.placed_at ? order.placed_at.toDateString() : 'TBD' %></p>
+    <% } %>
+            <h4 class="mt-4">Items</h4>
             <ul class="list-group">
                 <% order.items.forEach(function(item) { %>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -49,7 +51,7 @@ body {
                     </li>
                 <% }); %>
             </ul>
-            <a href="/profile/<%= user._id %>" class="btn btn-primary mt-3">Back to Orders</a>
+            <a href="/profile/<%= user._id %>" class="btn  mt-3" style="width: 6rem; background-color: #88c8bc;">Back</a>
         </div>
     </div>
 </div>

@@ -38,7 +38,7 @@
                     </div>
                 </div>
                         
-                <form  method="POST" class="colorlib-form">
+                <form method="POST" class="colorlib-form">
                     <h2>Address Details</h2>
                     <div class="row">
                         <div class="col-md-6">
@@ -48,7 +48,7 @@
                                 <small id="fullNameErr" class="text-danger"></small>
                             </div>
                         </div>
-                    
+                
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="address">Address</label>
@@ -56,7 +56,7 @@
                                 <small id="addressErr" class="text-danger"></small>
                             </div>
                         </div>
-                    
+                
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -73,42 +73,45 @@
                                 </div>
                             </div>
                         </div>
-                        
+                
                         <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="stateprovince">State</label>
-                                <input type="text" id="stateprovince" class="form-control" placeholder="State ">
-                                <small id="stateErr" class="text-danger"></small>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="stateprovince">State</label>
+                                    <input type="text" id="stateprovince" class="form-control" placeholder="State ">
+                                    <small id="stateErr" class="text-danger"></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="zippostalcode">ZipCode</label>
+                                    <input type="text" id="zippostalcode" class="form-control" placeholder="ZipCode">
+                                    <small id="zipErr" class="text-danger"></small>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="zippostalcode">ZipCode</label>
-                                <input type="text" id="zippostalcode" class="form-control" placeholder="ZipCode">
-                                <small id="zipErr" class="text-danger"></small>
+                
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="email">E-mail Address</label>
+                                    <input type="text" id="email" class="form-control" placeholder="Email">
+                                    <small id="emailErr" class="text-danger"></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="text" id="phone" class="form-control" placeholder="Phone Number">
+                                    <small id="phoneErr" class="text-danger"></small>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="email">E-mail Address</label>
-                                <input type="text" id="email" class="form-control" placeholder="Email">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="phone">Phone Number</label>
-                                <input type="text" id="phone" class="form-control" placeholder="Phone Number">
-                                <small id="phoneErr" class="text-danger"></small>
-                            </div>
-                        </div>
-                    </div>
-                        <button  class="btn btn-primary address-button " onclick="createAddress()">create</button>
                         
+                        <button class="btn btn-primary address-button" onclick="createAddress(event)">Create</button>
                     </div>
                 </form>
+                
             </div>
 
             <div class="col-lg-4">
@@ -159,59 +162,59 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function createAddress() {
-        const fullName = document.getElementById('fname').value;
-        const address = document.getElementById('address').value;
-        const city = document.getElementById('towncity').value;
-        const state = document.getElementById('stateprovince').value;
-        const zipcode = document.getElementById('zippostalcode').value;
-        const phone = document.getElementById('phone').value;
-        const country = document.getElementById('country').value;
-        const email = document.getElementById('email').value;
-        const phoneErr = document.getElementById('phoneErr');
-        const zipErr = document.getElementById('zipErr');
-        const fullNameErr = document.getElementById('fullNameErr');
-        const addressErr = document.getElementById('addressErr');
-        const cityErr = document.getElementById('cityErr');
-        const stateErr = document.getElementById('stateErr');
-        const countryErr = document.getElementById('countryErr');
-        const emailErr = document.getElementById('emailErr')
-        const phoneRegex = /^[0-9]{10}$/
-        const zipRegex = /^[0-9]{5}(?:-[0-9]{4})?$/; 
-        phoneErr.innerHTML = "";
-        zipErr.innerHTML = "";
-        fullNameErr.innerHTML = "";
-        addressErr.innerHTML = "";
-        cityErr.innerHTML = "";
-        stateErr.innerHTML = "";
-        countryErr.innerHTML = "";
-        emailErr.innerHTML = "";
+    function createAddress(event) {
+    event.preventDefault();
 
-        if (!phoneRegex.test(phone)) {
-        return phoneErr.innerHTML ="Invalid phone number"
-          }
-       
-         let isValid = true;
+    const fullName = document.getElementById('fname').value;
+    const address = document.getElementById('address').value;
+    const city = document.getElementById('towncity').value;
+    const state = document.getElementById('stateprovince').value;
+    const zipcode = document.getElementById('zippostalcode').value;
+    const phone = document.getElementById('phone').value;
+    const country = document.getElementById('country').value;
+    const email = document.getElementById('email').value;
 
+    const phoneErr = document.getElementById('phoneErr');
+    const zipErr = document.getElementById('zipErr');
+    const fullNameErr = document.getElementById('fullNameErr');
+    const addressErr = document.getElementById('addressErr');
+    const cityErr = document.getElementById('cityErr');
+    const stateErr = document.getElementById('stateErr');
+    const countryErr = document.getElementById('countryErr');
+    const emailErr = document.getElementById('emailErr');
+
+    // Clear previous errors
+    [phoneErr, zipErr, fullNameErr, addressErr, cityErr, stateErr, countryErr, emailErr].forEach(err => {
+        if (err) err.innerHTML = '';
+    });
+
+    // Regex for phone and zip validation
+    const phoneRegex = /^[0-9]{10}$/;
+    const zipRegex = /^[0-9]{5}(?:-[0-9]{4})?$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    let isValid = true;
+
+    if (!phoneRegex.test(phone)) {
+        phoneErr.innerHTML = "Invalid phone number";
+        isValid = false;
+    }
 
     if (fullName === "") {
         fullNameErr.innerHTML = "Full name is required";
         isValid = false;
     }
 
-    // Validate Address
     if (address === "") {
         addressErr.innerHTML = "Address is required";
         isValid = false;
     }
 
-    // Validate City
     if (city === "") {
         cityErr.innerHTML = "City is required";
         isValid = false;
     }
 
-    // Validate State
     if (state === "") {
         stateErr.innerHTML = "State is required";
         isValid = false;
@@ -227,36 +230,38 @@
         isValid = false;
     }
 
-
     if (!zipRegex.test(zipcode)) {
         zipErr.innerHTML = "Invalid Zip Code";
         isValid = false;
     }
 
-    return isValid; 
-    
-        if (!fullName || !address || !city || !state || !zipcode || !phone || !country || !email) {
-            Swal.fire({
-                title: "Error!",
-                text: "please enter all field",
-                icon: "error",
-                timer: 1500,
-                showConfirmButton: false
-            });
-            return
-        }
-        const userId = "<%= userId %>"
-        const data = {
-            full_name: fullName,
-            street_address: address,
-            pincode: zipcode,
-            city: city,
-            phone: phone,
-            country: country,
-            state: state,
-            user_id:userId  
-        };
+    if (!isValid) {
+        Swal.fire({
+            title: "Error!",
+            text: "Please fill all fields correctly.",
+            icon: "error",
+            timer: 1500,
+            showConfirmButton: false
+        });
+        return;
+    }
 
+    // Submit or further process data
+    const userId = "<%= userId %>"; // Assuming this is available
+    const data = {
+        full_name: fullName,
+        street_address: address,
+        pincode: zipcode,
+        city: city,
+        phone: phone,
+        country: country,
+        state: state,
+        user_id: userId
+    };
+
+    console.log("Form is valid. Proceed with submission.", data);
+
+            console.log(data)
         fetch('/address/add-address', {
             method: 'POST',
             headers: {
@@ -366,5 +371,5 @@
         placeOrder(); 
     })
 </script>
-
+    
 <%- include('../partials/footer.ejs') %>

@@ -50,5 +50,6 @@ admin_route.post('/delete-image',productController.deleteImage)
 
 admin_route.get('/orders',orderController.loadOrderPage)
 admin_route.post('/update-status/:id',orderController.updateStatus)
+admin_route.get('/order-details/:orderId',orderController.loadOrderDetails)
 
 module.exports = admin_route

@@ -33,3 +33,23 @@ exports.updateStatus = async (req, res) => {
         res.status(500).json({ message: 'Error updating order status' })
     }
 }
+
+exports.loadOrderDetails = async (req,res) => {
+    try {
+        const orderId = req.params.orderId
+        console.log("herr",orderId)
+        const order = await Orders.findById(orderId).populate('items.product_id')
+        console.log("3456",order)
+        if(!order){
+            res.redirect('admin/orders')
+        }
+        res.render('admin/order-details', {
+            layout: "layout/admin",
+            title: "Orders",
+            orders: order, 
+        })
+    } catch (error) {
+        console.error(err);
+        res.status(500).send('Orders error')
+    }
+}

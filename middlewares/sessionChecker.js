@@ -38,7 +38,7 @@ const sessionChecker = async (req, res, next) => {
         res.locals.user = null;  
         return res.redirect('/login');      
     }
-};
+}
 
 
 
