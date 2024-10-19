@@ -83,7 +83,7 @@
                                 <i class="icon-minus2"></i>
                             </button>
                         </span>
-                        <input type="text" id="quantity" name="quantity" class="form-control input-number" value="1" min="1" max="100" readonly>
+                        <input type="text" id="quantity" name="quantity" class="form-control input-number" value="1" min="1" max="5" readonly>
                         <span class="input-group-btn ml-1">
                             <button type="button" class="quantity-right-plus btn" data-type="plus" data-field="">
                                 <i class="icon-plus2"></i>
@@ -211,16 +211,39 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.querySelector('.quantity-right-plus').addEventListener('click', function() {
-    let quantity = parseInt(document.getElementById('quantity').value);
-    document.getElementById('quantity').value = quantity 
-});
+        let quantity = parseInt(document.getElementById('quantity').value)
+       
+   
+        if (quantity < 5) {
+            document.getElementById('quantity').value = quantity++
+            console.log(quantity)
+        } else {
+            Swal.fire({
+                title: "Error",
+                text: "Maximum 5 quantity allowed",
+                icon: "error",
+                timer: 1500,
+                showConfirmButton: false
+            })
+        }
+    })
+    document.querySelector('.quantity-left-minus').addEventListener('click', function() {
+        let quantity = parseInt(document.getElementById('quantity').value)
 
-document.querySelector('.quantity-left-minus').addEventListener('click', function() {
-    let quantity = parseInt(document.getElementById('quantity').value);
-    if (quantity > 1) {
-        document.getElementById('quantity').value = quantity 
-    }
-});
+        
+        if (quantity > 1) {
+            document.getElementById('quantity').value = quantity--
+            console.log(quantity)
+        } else {
+            Swal.fire({
+                title: "Error",
+                text: "At least 1 quantity required",
+                icon: "error",
+                timer: 1500,
+                showConfirmButton: false
+            })
+        }
+    })
 
 function addCart(userId, productId, quantity) {
     const selectedQuantity = quantity && quantity.trim() !== '' ? quantity : 1;

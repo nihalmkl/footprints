@@ -169,7 +169,6 @@
 });
 
     
-    // OTP Verification using Fetch
     function validateForm() {
         const otpInput = document.getElementById('otpInput').value.trim();
     
@@ -189,7 +188,7 @@
                     icon: "success",
                     timer: 1500,
                     showConfirmButton: false
-                }).then(() => window.location.href = res.redirectUrl);
+                }).then(() => window.location.href = res.redirectUrl)
             } else {
                 Swal.fire({
                     title: "Error!",

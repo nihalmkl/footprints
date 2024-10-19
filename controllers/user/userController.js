@@ -615,6 +615,7 @@ exports.addCart = async (req, res) => {
     console.log('hi')
     const { userId, productId, quantity } = req.body;
     const quant = parseInt(quantity, 5);
+    console.log(req.body    )
     if (quant === 0) {
         return res.status(400).json({ success:false,message: 'Quantity Atleast one' });
     }
@@ -727,6 +728,8 @@ exports.loadWishlist = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 }
+
+
 exports.addWishlist = async (req, res) => {
     const { userId, productId } = req.body
 
@@ -752,6 +755,8 @@ exports.addWishlist = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' })
     }
 }
+
+
 exports.removeWishlistItem =  async (req, res) => {
     const { productId} = req.body
     const userId = req.session.user.id
@@ -773,9 +778,7 @@ exports.removeWishlistItem =  async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' })
     }
 }
-exports.loadCheckout = async (req,res)=>{
-    
-}
+
 
 exports.loadCheckout = async (req, res) => {
          const userId = req.user._id
@@ -865,6 +868,8 @@ exports.getOrder = async (req, res) => {
       res.status(500).send({ message: 'Error fetching orders' });
     }
   }
+
+
  exports.getOrderDetails = async (req, res) => {
     try {
         const orderId = req.params.id;
@@ -887,6 +892,7 @@ exports.getOrder = async (req, res) => {
         res.status(500).send({ message: 'Error fetching order details' });
     }
 }
+
 
 exports.cancelOrder = async (req, res) => {
     try {

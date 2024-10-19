@@ -35,9 +35,9 @@ const sessionChecker = async (req, res, next) => {
             return res.status(500).send('Server Error');
         }
     } else {
-        res.locals.user = null;  
-        return res.redirect('/login');      
+        res.locals.user = null;          
     }
+    next()
 }
 
 

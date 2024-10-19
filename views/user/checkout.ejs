@@ -183,14 +183,12 @@
     const countryErr = document.getElementById('countryErr');
     const emailErr = document.getElementById('emailErr');
 
-    // Clear previous errors
     [phoneErr, zipErr, fullNameErr, addressErr, cityErr, stateErr, countryErr, emailErr].forEach(err => {
         if (err) err.innerHTML = '';
     });
 
-    // Regex for phone and zip validation
     const phoneRegex = /^[0-9]{10}$/;
-    const zipRegex = /^[0-9]{5}(?:-[0-9]{4})?$/;
+    const zipRegex = /^[0-9]{6}(?:-[0-9]{4})?$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     let isValid = true;
@@ -202,11 +200,6 @@
 
     if (fullName === "") {
         fullNameErr.innerHTML = "Full name is required";
-        isValid = false;
-    }
-
-    if (address === "") {
-        addressErr.innerHTML = "Address is required";
         isValid = false;
     }
 
@@ -246,8 +239,7 @@
         return;
     }
 
-    // Submit or further process data
-    const userId = "<%= userId %>"; // Assuming this is available
+    const userId = "<%= userId %>";
     const data = {
         full_name: fullName,
         street_address: address,
@@ -298,78 +290,83 @@
 </script>
 <script>
     async function placeOrder() {
-        console.log('heiaoifd')
-        const addressId = document.getElementById("address").value;
-        const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+    console.log('heiaoifd')
+    const addressId = document.getElementById("address").value;
+    const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+    
+    if (addressId === "#") {
+        Swal.fire({
+            title: "Error",
+            text: "please select address",
+            icon: "error",
+            timer: 1500,
+            showConfirmButton: false
+        });
+        return;
+    }
+    
+    if (!paymentMethod) {
+        Swal.fire({
+            title: "Error",
+            text: "please select payment method",
+            icon: "error",
+            timer: 1500,
+            showConfirmButton: false
+        });
+        return;
+    }
 
-        if (addressId === "#") {
+    const orderData = {
+        address_id: addressId,
+        payment_method: paymentMethod.value,
+    };
+
+    try {
+        const response = await fetch('/place-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderData),
+        });
+
+        if (response.ok) {
+            const result = await response.json();
             Swal.fire({
-                title: "Error",
-                text: "please select address",
-                icon: "error",
+                title: 'Success',
+                icon: "success",
+                text: "Order placed successfully!",
                 timer: 1500,
                 showConfirmButton: false
-            })
-            return;
-        }
-        if(!paymentMethod){
-            Swal.fire({
-                title: "Error",
-                text: "please select payment method",
-                icon: "error",
-                timer: 1500,
-                showConfirmButton: false
-            })
-            return
-        }
-        const orderData = {
-            address_id: addressId,
-            payment_method: paymentMethod.value,
-        };
-
-        try {
-            const response = await fetch('/place-order', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(orderData),
+            }).then(() => {
+                window.location.href = '/shop'; 
             });
-
-            if (response.ok) {
-                const result = await response.json();
-                Swal.fire({
-                    title:'Success',
-                    icon:"success",
-                    text:"Order placed successfully!",
-                    timer:1500,
-                    showConfirmButton:false
-                })
-                return
-            } else {
-                Swal.fire({
+            return;
+        } else {
+            Swal.fire({
                 title: "Error",
                 text: "Failed to place the order. Please try again.",
                 icon: "error",
                 timer: 1500,
                 showConfirmButton: false
-            })
-            }
-        } catch (error) {
-            Swal.fire({
-                title: "Error",
-                text: "Internal server error",
-                icon: "error",
-                timer: 1500,
-                showConfirmButton: false
-            })
+            });
         }
+    } catch (error) {
+        Swal.fire({
+            title: "Error",
+            text: "Internal server error",
+            icon: "error",
+            timer: 1500,
+            showConfirmButton: false
+        });
     }
+}
 
-    document.querySelector('.place-order').addEventListener('click', (event) => {
-        event.preventDefault();  
-        placeOrder(); 
-    })
+document.querySelector('.place-order').addEventListener('click', (event) => {
+    event.preventDefault();  
+    placeOrder(); 
+});
+
 </script>
     
 <%- include('../partials/footer.ejs') %>

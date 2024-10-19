@@ -3,108 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout Page</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Order Success</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.order-success-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+}
+
+.order-card {
+    background-color: #fff;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+}
+
+.circle {
+    background-color: #88c8bc;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px;
+}
+
+.tick-mark {
+    font-size: 50px;
+    color: white;
+}
+
+.order-id {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 20px;
+}
+.order-card h1 {
+    font-size: 28px;
+    color: #88c8bc;
+    margin-bottom: 10px;
+}
+
+.order-card p {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 20px;
+}
+.order-id span {
+    font-weight: bold;
+    color: #000;
+}
+
+.shop-button {
+    padding: 10px 20px;
+    background-color: #88c8bc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.shop-button:hover {
+    background-color: #2d7d6d;
+}
+
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2>Checkout</h2>
-        
-        <!-- Address selection -->
-        <h4>Select Shipping Address</h4>
-        <div id="address-list">
-            <% addresses.forEach(function(address) { %>
-                <div class="card mb-2">
-                    <div class="card-body">
-                        <h5 class="card-title"><%= address.name %></h5>
-                        <p class="card-text"><%= address.addressLine1 %>, <%= address.city %>, <%= address.state %> - <%= address.zip %></p>
-                        <button class="btn btn-primary" onclick="editAddress('<%= address._id %>')">Edit</button>
-                        <button class="btn btn-danger" onclick="deleteAddress('<%= address._id %>')">Delete</button>
-                    </div>
-                </div>
-            <% }); %>
+    <div class="order-success-container">
+        <div class="order-card">
+            <div class="circle">
+                <span class="tick-mark">&#10004;</span>
+            </div>
+            <h1>Order Successful!</h1>
+            <p>Thank you for your purchase.</p>
+            <div class="order-id">
+                <p>Your Order ID:</p>
+                <span id="order-id">#123456</span> 
+            </div>
+            <button class="shop-button" onclick="window.location.href='/shop'">Back to Shop</button>
         </div>
-        
-        <!-- Add new address -->
-        <h4>Add New Address</h4>
-        <form id="address-form">
-            <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" class="form-control" id="name" required>
-            </div>
-            <div class="form-group">
-                <label for="addressLine1">Address Line 1</label>
-                <input type="text" class="form-control" id="addressLine1" required>
-            </div>
-            <div class="form-group">
-                <label for="city">City</label>
-                <input type="text" class="form-control" id="city" required>
-            </div>
-            <div class="form-group">
-                <label for="state">State</label>
-                <input type="text" class="form-control" id="state" required>
-            </div>
-            <div class="form-group">
-                <label for="zip">ZIP Code</label>
-                <input type="text" class="form-control" id="zip" required>
-            </div>
-            <button type="submit" class="btn btn-success">Save Address</button>
-        </form>
     </div>
-
-    <script>
-        // Handle form submission to save address
-        document.getElementById('address-form').onsubmit = function(e) {
-            e.preventDefault();
-            const addressData = {
-                name: document.getElementById('name').value,
-                addressLine1: document.getElementById('addressLine1').value,
-                city: document.getElementById('city').value,
-                state: document.getElementById('state').value,
-                zip: document.getElementById('zip').value
-            };
-
-            fetch('/api/addresses', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(addressData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire('Success!', 'Address saved successfully!', 'success');
-                    location.reload(); // Reload to show updated address list
-                } else {
-                    Swal.fire('Error!', data.message, 'error');
-                }
-            })
-            .catch(err => console.error(err));
-        };
-
-        // Function to edit an address
-        function editAddress(addressId) {
-            // Fetch address data and populate the form for editing (implementation not shown)
-            // Call the appropriate API to update the address
-        }
-
-        // Function to delete an address
-        function deleteAddress(addressId) {
-            fetch(`/api/addresses/${addressId}`, { method: 'DELETE' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire('Deleted!', 'Address has been deleted.', 'success');
-                        location.reload();
-                    } else {
-                        Swal.fire('Error!', data.message, 'error');
-                    }
-                })
-                .catch(err => console.error(err));
-        }
-    </script>
 </body>
+</html>
+
 </html>
