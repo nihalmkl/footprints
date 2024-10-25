@@ -38,17 +38,16 @@ const OrdersSchema = new Schema(
         type: Number,
         required: true,
       },
+      discount:{
+        type:Number,
+        default:0,
+      }
     }],
-    promocode_info: [
-      {
-        code: {
-          type: String,
-        },
-        discount_percentage: {
-          type: Number,
-        },
-      },
-    ],
+    coupon_applied: {  
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Coupon',
+      required: false
+  },
     total_amount: {
       type: Number,
       required: true,
@@ -60,11 +59,7 @@ const OrdersSchema = new Schema(
     payment_method: {
       type: String,
       required: true,
-      enum: ['Cash on Delivery', 'Bank Transfer']
-    },
-    delivery_charge: {
-      type: Number,
-      default: 0
+      enum: ['COD', 'card']
     },
     payment_status: {
       type: String,
@@ -75,7 +70,24 @@ const OrdersSchema = new Schema(
     isCancelled:{
       type:Boolean,
       default:false
-    }
+    },
+    razorpay_id:{
+      type:String,
+      default:null,
+      sparse:true
+    },
+    discount_amount: {  
+      type: Number,
+      default: 0
+  },
+  used_amount: {
+      type: Number,
+      default: 0
+  },
+  pay_able_amount: {
+    type: Number,
+    required: true
+},
   },
   { timestamps: true }
 )

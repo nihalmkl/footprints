@@ -1,11 +1,16 @@
 const express = require('express')
 const user_route = express.Router()
 const passport = require('passport')
+
 const userController = require('../controllers/user/userController')
-const session = require('../middlewares/sessionChecker');    
+const orderController = require('../controllers/user/orderController')
+const cartController = require('../controllers/user/cartController')
+const wishlistController = require('../controllers/user/wishlistController')
+const profileController = require('../controllers/user/profileController')
+
 const Orders = require('../models/orderSchema')
-const Product = require('../models/productSchema')
-const Cart = require('../models/cartSchema')
+const session = require('../middlewares/sessionChecker');    
+
 user_route.get('/login', userController.loadLogin)
 user_route.post('/login', userController.userLogin)
 user_route.get('/register', userController.loadRegister)
@@ -29,60 +34,62 @@ user_route.get('/auth/google/callback',passport.authenticate('google', { failure
 
  user_route.get('/',session.sessionLogin,userController.loadHome) 
  user_route.get('/shop',session.sessionLogin, userController.loadShop)
+ 
  user_route.use(session.sessionChecker)
+
  user_route.get('/logout', userController.userLogout)
- user_route.get('/profile/:userId', userController.loadProfile)
- user_route.post('/address/add-address', userController.addAddress)
- user_route.post('/address/:addressId', userController.editAddress)
- user_route.post('/profile/:userId', userController.editProfile)
- user_route.get('/cart/:userId', userController.loadCart)
- user_route.post('/cart/add',userController.addCart)
- user_route.post('/cart/remove',userController.deleteCartItems)
- user_route.post('/wishlist/add',userController.addWishlist)
- user_route.get('/wishlist/:userId', userController.loadWishlist)
- user_route.post('/wishlist/remove',userController.removeWishlistItem)
-//  user_route.get('/shop/category/:categoryId', userController.serachCategory)
- user_route.get('/about', userController.loadAbout)
- user_route.get('/contact', userController.loadContact)
+ user_route.get('/profile/:userId', profileController.loadProfile)
+ user_route.post('/address/add-address', profileController.addAddress)
+ user_route.post('/address/:addressId', profileController.editAddress)
+ user_route.post('/profile/:userId', profileController.editProfile)
+ user_route.delete('/delete-address/:id',profileController.deleteAddress)
  user_route.get('/product-view/:id', userController.productView) 
- user_route.delete('/delete-address/:id',userController.deleteAddress);
- user_route.get('/checkout',userController.loadCheckout)
- user_route.post('/place-order',userController.placeOrder)
- user_route.get('/orders', userController.getOrder)
- user_route.get('/order/:id',userController.getOrderDetails)
-user_route.put('/orders/:id',userController.cancelOrder)
-user_route.post('/quantityUpdate', async (req, res) => {
-      if (!req.user) {
-            return res.status(401).send('User not authenticated');
-        }
-        
-      const { product_id, quantity } = req.body; 
-    
+
+ user_route.get('/cart/:userId', cartController.loadCart)
+ user_route.post('/cart/add',cartController.addCart)
+ user_route.post('/cart/remove',cartController.deleteCartItems)
+
+ user_route.post('/wishlist/add',wishlistController.addWishlist)
+ user_route.get('/wishlist/:userId', wishlistController.loadWishlist)
+ user_route.post('/wishlist/remove',wishlistController.removeWishlistItem)
+
+
+user_route.get('/checkout',orderController.loadCheckout)
+user_route.post('/place-order',orderController.placeOrder)
+user_route.get('/orders', orderController.getOrder)
+user_route.get('/order/:id',orderController.getOrderDetails)
+user_route.put('/orders/:id',orderController.cancelOrder)
+user_route.post('/quantityUpdate',orderController.qantityUpdate)
+  
+user_route.get('/about', userController.loadAbout)
+user_route.get('/contact', userController.loadContact)
+
+user_route.post('/orders/:orderId/request-return', async (req, res) => {
       try {
-          const cart = await Cart.findOne({ user_id: req.user._id });
-          if (!cart) {
-              console.log('Cart not found!');
-              return res.status(404).send('Cart not found');
+        const orderId = req.params.orderId
+        const { return_reason } = req.body
+    
+        const order = await Orders.findById(orderId)
+    
+        if (order) {
+          if (!order.return_request) {
+            order.return_request = true
+            order.return_reason = return_reason
+            order.admin_accepted = 'Pending' // Set status to pending
+            await order.save()
+    
+            // Notify admin (this can be an email or message in admin panel)
+            // Example: Notify the admin by setting up an admin notification system
+    
+            return res.redirect(`/orders/${orderId}`)
+          } else {
+            return res.status(400).send('Return already requested')
           }
-  
-          const item = cart.items.find(item => item._id.toString() === product_id);
-          console.log(item)
-          if (!item) {
-              console.log('Item not found in the cart!');
-              return res.status(404).send('Item not found');
-          }
-  
-          item.quantity = quantity;
-  
-          cart.total_price = cart.items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  
-          await cart.save();
-  
-          res.json({ total_price: cart.total_price });
+        } else {
+          return res.status(404).send('Order not found')
+        }
       } catch (error) {
-          console.error('Error updating cart:', error);
-          res.status(500).send('Internal Server Error');
+        return res.status(500).send('Server error')
       }
-  });
-  
+    })
 module.exports = user_route;

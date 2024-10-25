@@ -51,7 +51,39 @@ body {
                     </li>
                 <% }); %>
             </ul>
-            <a href="/profile/<%= user._id %>" class="btn  mt-3" style="width: 6rem; background-color: #88c8bc;">Back</a>
+          <a href="/profile/<%= user._id %>" class="btn  mt-3" style="width: 6rem; background-color: #88c8bc;">Back</a>
+            <% if (!order.return_request) { %>
+                <button type="button" class="btn btn-warning mt-3" style="width: 6rem;" data-bs-toggle="modal" data-bs-target="#returnModal">
+                  Request Return
+                </button>
+              
+                <!-- Modal -->
+                <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="returnModalLabel">Return Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <form action="/orders/<%= order._id %>/request-return" method="POST">
+                          <div class="mb-3">
+                            <label for="returnReason" class="form-label">Reason for Return</label>
+                            <textarea class="form-control" id="returnReason" name="return_reason" required></textarea>
+                          </div>
+                          <button type="submit" class="btn btn-primary">Submit Request</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% } else if (order.admin_accepted === 'Pending') { %>
+                <p class="text-muted mt-3">Return Requested (Pending Admin Approval)</p>
+              <% } else if (order.admin_accepted === 'Accepted') { %>
+                <p class="text-success mt-3">Return Accepted</p>
+              <% } else if (order.admin_accepted === 'Rejected') { %>
+                <p class="text-danger mt-3">Return Rejected</p>
+              <% } %>     
         </div>
     </div>
 </div>

@@ -9,7 +9,13 @@ const userSchema = new Schema({
     email:{
         type:String,
         required:true,
-        unique:true
+        unique:true,
+        validate: {
+            validator: function(v) {
+                return /^\S+@\S+\.\S+$/.test(v);
+            },
+            message: props => `${props.value} is not a valid email!`
+        },
     },
     phone:{
         type:String,
@@ -26,7 +32,14 @@ const userSchema = new Schema({
     isAdmin:{
         type:Boolean,
         default:false
-    }
+    },
+    referralId: {
+        type: String,
+        unique: true
+    },
+    refferedById: {
+        type: String,
+    },
 },{timestamps:true})
    
 const User = mongoose.model('User',userSchema)

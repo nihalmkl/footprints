@@ -2508,9 +2508,8 @@ input[type="button"].btn-block {
 .dropright,
 .dropdown,
 .dropleft {
-  position: relative;
-  padding-left: 100%;
-  top: 32px; }
+  display: inline-block;
+ }
 
 .dropdown-toggle::after {
   display: inline-block;
@@ -7400,6 +7399,52 @@ h1, h2, h3, h4, h5,
     .colorlib-nav .top-menu .search-wrap .submit-search i {
       padding: 0; }
 
+      .icon-container {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .icon {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .icon img {
+        width: 50px; /* Size of the icon */
+        height: 50px;
+    }
+    
+    .badge {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: red;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 50%;
+        font-size: 12px;
+    }
+    .cart {
+      position: relative;
+      display: inline-block;
+  }
+  
+  .icon-heart, .icon-cart {
+      font-size: 24px;
+      color: #88c8bc;
+  }
+  
+  .badge {
+    position: absolute;
+    top: -6px;
+    right: 2px;
+    background-color: #d51458;
+    color: white;
+    padding: 3px 6px;
+    border-radius: 100%;
+    font-size: 12px;
+  }
+      
 .colorlib-nav .sale {
   padding: 14px 0;
   background: #88c8bc; }

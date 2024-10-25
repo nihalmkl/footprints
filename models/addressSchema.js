@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const addressSchema = new Schema({
-  address:[{
     full_name: {
       type: String,
       required: true,
@@ -22,7 +21,6 @@ const addressSchema = new Schema({
     phone: {
       type: Number,
       required: true,
-      unique: true,
     },
     country: {
       type: String,
@@ -32,7 +30,6 @@ const addressSchema = new Schema({
       type: String,
       required: true,
     },
-  }],
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,

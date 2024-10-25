@@ -1,7 +1,15 @@
 <%= include('../partials/header.ejs') %>
 <form method="GET" action="/products/search">
     <input type="text" name="searchQuery" placeholder="Search products" value="<%= searchQuery || '' %>">
-
+    <div class="col-sm-5 col-md-3">
+        <form action="" method="GET" class="search-wrap">
+            <div class="form-group">
+                <input type="search" name="search" class="form-control search" placeholder="Search products..." value="">
+                <button class="btn btn-primary submit-search text-center" type="submit">
+                    <i class="icon-search"></i>
+                </button>
+            </div>
+ </div>
     <select name="sortBy" onchange="this.form.submit()">
         <option value="" <%= sortBy === '' ? 'selected' : '' %>>Sort by</option>
         <option value="popularity" <%= sortBy === 'popularity' ? 'selected' : '' %>>Popularity</option>

@@ -1,0 +1,32 @@
+<table class="table">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Return Reason</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% orders.forEach(order => { %>
+        <% if (order.return_request && order.admin_accepted === 'Pending') { %>
+          <tr>
+            <td><%= order.order_id %></td>
+            <td><%= order.return_reason %></td>
+            <td><%= order.admin_accepted %></td>
+            <td>
+              <form action="/admin/orders/<%= order._id %>/respond-return" method="POST" style="display:inline;">
+                <input type="hidden" name="decision" value="Accepted">
+                <button type="submit" class="btn btn-success">Accept</button>
+              </form>
+              <form action="/admin/orders/<%= order._id %>/respond-return" method="POST" style="display:inline;">
+                <input type="hidden" name="decision" value="Rejected">
+                <button type="submit" class="btn btn-danger">Reject</button>
+              </form>
+            </td>
+          </tr>
+        <% } %>
+      <% }) %>
+    </tbody>
+  </table>
+  

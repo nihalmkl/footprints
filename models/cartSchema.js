@@ -22,6 +22,10 @@ const cartSchema = new Schema({
             required:true,
         }
     }],
+    delivery_charge: {
+        type: Number,
+        default: 0
+      },
      total_price:{
         type:Number,
      }

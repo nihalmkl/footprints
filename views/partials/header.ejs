@@ -38,6 +38,33 @@
 	<!-- Theme style  -->
 	<link rel="stylesheet" href="/public/css/style.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.3/dist/sweetalert2.min.css" rel="stylesheet">
+	<style>
+		.top-menu {
+    display: flex;
+    justify-content: space-between; /* Ensure space between logo and dropdown */
+    align-items: center; /* Align items vertically in the center */
+}
+
+.menu-1 {
+    display: flex;
+    list-style: none;
+    gap: 20px; /* Space between the menu items */
+}
+
+.nav-menu {
+    display: flex; /* Display menu items horizontally */
+    align-items: center; /* Center align items */
+}
+
+.user-dropdown {
+    position: relative;
+    margin-left: auto; /* Pushes the user dropdown to the far right */
+}
+
+.cart {
+    position: relative;
+}
+	</style>
 	</head>
 	<body>
 		
@@ -51,15 +78,25 @@
 							<div class="col-sm-7 col-md-9">
 								<div id="colorlib-logo"><a href="/">FOOTPRINTS</a></div>
 							</div>
-							<div class="col-sm-5 col-md-3">
-								<form action="" method="GET" class="search-wrap">
-									<div class="form-group">
-										<input type="search" name="search" class="form-control search" placeholder="Search products..." value="">
-										<button class="btn btn-primary submit-search text-center" type="submit">
-											<i class="icon-search"></i>
-										</button>
-									</div>
-						 </div>
+							<div class="col-sm-5 col-md-3 text-right"> 
+								<div class="dropdown">
+									<button class="btn btn-transparent dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: transparent; border: none;">
+										<i class="icon-user" aria-hidden="true"></i>
+									</button>
+									<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+										<% if (user) { %>
+											<% console.log(user._id) %>
+											<li><a class="dropdown-item" href="/profile/<%= user._id %>">Profile</a></li>
+											<li><a class="dropdown-item" href="/cart/<%= user._id %>">Cart</a></li>
+											<li><a class="dropdown-item" href="/wishlist/<%= user._id %>">Wishlist</a></li>
+											<li><a class="dropdown-item" href="/logout">Log Out</a></li>
+										<% } else { %>
+											<li><a class="dropdown-item" href="/login">Log In</a></li>
+											<li><a class="dropdown-item" href="/register">Sign Up</a></li>
+										<% } %>
+									</ul>
+								</div>
+							</div>
 					 </div>
 						<div class="row">
 							<div class="col-sm-12 text-left menu-1">
@@ -68,29 +105,27 @@
 									<li class="has-dropdown"><a href="/shop">Shop</a></li>
 									<li><a href="/about">About</a></li>
 									<li><a href="contact">Contact</a></li>
-									<div class="dropdown">
-										<button class="btn btn-transparent dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: transparent; border: none;">
-											<i class="icon-user" aria-hidden="true"></i>
-										</button>
-										<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-											<% if (user) { %>
-												<% console.log(user._id) %>
-												<li><a class="dropdown-item" href="/profile/<%= user._id %>">Profile</a></li>
-												<li><a class="dropdown-item" href="/cart/<%= user._id %>">Cart</a></li>
-												<li><a class="dropdown-item" href="/wishlist/<%= user._id %>">Wishlist</a></li>
-												<li><a class="dropdown-item" href="/logout">Log Out</a></li>
-											<% } else { %>
-												<li><a class="dropdown-item" href="/login">Log In</a></li>
-												<li><a class="dropdown-item" href="/register">Sign Up</a></li>
-											<% } %>
-										</ul>
-									</div>
+									
 									
 									<% if (user) { %>
-									<li class="cart"><a href="/wishlist/<%= user._id %>"><i class="icon-heart"></i></a></li>
-									<li class="cart"><a href="/cart/<%=user._id  %>"><i class="icon-cart"></i></a></li>
+										<li class="cart">
+											<a href="/wishlist/<%= user._id %>">
+												<i class="icon-heart"></i>
+												<% if (1 > 0) { %> 
+													<span class="badge">2</span>
+												<% } %>
+											</a>
+										</li>
+										
+										<li class="cart">
+											<a href="/cart/<%= user._id %>">
+												<i class="icon-cart"></i>
+												<% if (1 > 0) { %> 
+													<span class="badge">4</span>
+												<% } %>
+											</a>
+										</li>
 									<% } %>
-								</ul>
 							</div>
 						</div>
 					</div>

@@ -206,9 +206,9 @@
                             <h4>Address Details</h4>
                     
                 
-                        <% if (addresses.address && addresses.address.length > 0 ) { %>
+                        <% if (addresses && addresses.length > 0 ) { %>
                             
-                            <% addresses.address.forEach(function(address) { %>
+                            <% addresses.forEach(function(address) { %>
                             <div class="address-box">
                             <p>
                                 <%= address.full_name %> -
@@ -321,7 +321,7 @@
     <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="/address/add-address" method="POST">  
+            <form action="/address/add-address" method="POST" id="addressForm">  
                 <div class="modal-header">
                     <h5 class="modal-title" id="addAddressModalLabel">Add Address</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -331,31 +331,38 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="full_name">Full Name</label>
-                        <input type="text" class="form-control" id="full_name" name="full_name" required>
+                        <input type="text" class="form-control" id="full_name" name="full_name" minlength="2" maxlength="50" required>
+                        <small id="fullNameErr" class="text-danger"></small>
                     </div>
                     <div class="form-group">
                         <label for="street_address">Street Address</label>
-                        <input type="text" class="form-control" id="street_address" name="street_address" required>
+                        <input type="text" class="form-control" id="street_address" name="street_address" minlength="5" required>
+                        <small id="addressErr" class="text-danger"></small>
                     </div>
                     <div class="form-group">
                         <label for="city">City</label>
-                        <input type="text" class="form-control" id="city" name="city" required>
+                        <input type="text" class="form-control" id="city" name="city" minlength="2" required>
+                        <small id="cityErr" class="text-danger"></small>
                     </div>
                     <div class="form-group">
                         <label for="state">State</label>
-                        <input type="text" class="form-control" id="state" name="state" required>
+                        <input type="text" class="form-control" id="state" name="state" minlength="2" required>
+                        <small id="stateErr" class="text-danger"></small>
                     </div>
                     <div class="form-group">
                         <label for="pincode">Pincode</label>
-                        <input type="number" class="form-control" id="pincode" name="pincode" required>
+                        <input type="text" class="form-control" id="pincode" name="pincode" required>
+                        <small id="zipErr" class="text-danger"></small>
                     </div>
                     <div class="form-group">
                         <label for="country">Country</label>
-                        <input type="text" class="form-control" id="country" name="country" required>
+                        <input type="text" class="form-control" id="country" name="country" minlength="2" required>
+                        <small id="countryErr" class="text-danger"></small>
                     </div>
                     <div class="form-group">
                         <label for="phone">Phone</label>
-                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                        <input type="tel" class="form-control" id="phone" name="phone"required>
+                        <small id="phoneErr" class="text-danger"></small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -366,7 +373,6 @@
         </div>
     </div>
 </div>
-
             `);
         }
 
@@ -552,6 +558,79 @@
         });
     }
 </script>
-
+<script>
+    document.getElementById('addressForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form submission for validation
+    
+        // Get trimmed values
+        const fullName = document.getElementById('full_name').value.trim();
+        const address = document.getElementById('street_address').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const state = document.getElementById('state').value.trim();
+        const pincode = document.getElementById('pincode').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const country = document.getElementById('country').value.trim();
+    
+        // Get error elements
+        const phoneErr = document.getElementById('phoneErr');
+        const zipErr = document.getElementById('zipErr');
+        const fullNameErr = document.getElementById('fullNameErr');
+        const addressErr = document.getElementById('addressErr');
+        const cityErr = document.getElementById('cityErr');
+        const stateErr = document.getElementById('stateErr');
+        const countryErr = document.getElementById('countryErr');
+    
+        // Clear previous errors
+        [phoneErr, zipErr, fullNameErr, addressErr, cityErr, stateErr, countryErr].forEach(err => {
+            err.innerHTML = '';
+        });
+    
+        // Regex patterns
+        const phoneRegex = /^[0-9]{10}$/;
+        const zipRegex = /^[0-9]{6}(?:-[0-9]{4})?$/;
+    
+        let isValid = true;
+    
+        if (!phoneRegex.test(phone)) {
+            phoneErr.innerHTML = "Invalid phone number (must be 10 digits)";
+            isValid = false;
+        }
+    
+        if (fullName.length < 2) {
+            fullNameErr.innerHTML = "Full Name must be at least 2 characters";
+            isValid = false;
+        }
+    
+        if (address.length < 5) {
+            addressErr.innerHTML = "Street Address must be at least 5 characters";
+            isValid = false;
+        }
+    
+        if (city.length < 2) {
+            cityErr.innerHTML = "City must be at least 2 characters";
+            isValid = false;
+        }
+    
+        if (state.length < 2) {
+            stateErr.innerHTML = "State must be at least 2 characters";
+            isValid = false;
+        }
+    
+        if (!zipRegex.test(pincode)) {
+            zipErr.innerHTML = "Invalid Pincode (must be exactly 6 digits)";
+            isValid = false;
+        }
+    
+        if (country.length < 2) {
+            countryErr.innerHTML = "Country must be at least 2 characters";
+            isValid = false;
+        }
+        
+        if (isValid) {
+            this.submit();
+        }
+    });
+    </script>
+    
    
 <%- include('../partials/footer') %>
