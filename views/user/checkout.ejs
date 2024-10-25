@@ -136,8 +136,12 @@
                                     </ul>
                                 </li>
                                 <li id="discount-div"><span>Discount</span> 
-                                <span id="discount-price-div">
-                                    <%= cart.items.product_id.delivery_charge %>
+                                    <span id="discount-price-div">
+                                      0
+                                    </span></li>
+                                <li id="delivery-div"><span>Delivery</span>
+                                <span id="delivery-price-div">
+                                    <%= cart.delivery_charge%>
                                 </span></li>
                                 <li><span>Order Total</span> <span id="ordertotal">
                                         <%= cart.total_price%>

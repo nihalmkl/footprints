@@ -76,10 +76,6 @@ const OrdersSchema = new Schema(
       default:null,
       sparse:true
     },
-    discount_amount: {  
-      type: Number,
-      default: 0
-  },
   used_amount: {
       type: Number,
       default: 0

@@ -12,7 +12,7 @@ exports.loadWishlist = async (req, res) => {
         const wishlist = await Wishlist.findOne({ user_id: userId }).populate('products.product_id');
 
         if (!wishlist || wishlist.products.length === 0) {
-            return res.render('wishlist', { products: [], message: 'Your wishlist is empty.' });
+            return res.render('user/wishlist', { products: [], message: 'Your wishlist is empty.' });
         }
 
         const products = wishlist.products.map(item => item.product_id);
