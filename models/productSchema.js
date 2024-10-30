@@ -40,11 +40,16 @@
             price: {
                 type: Number,
                 required: true
-            }
+            },
+           
         }],
         discount_amount: {  
             type: Number,
             default: 0
+        },
+        offer:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'Offer'
         },
     },{timestamps:true});
 

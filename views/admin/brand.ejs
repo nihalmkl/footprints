@@ -1,3 +1,29 @@
+<style>
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .pagination a {
+        color: #88c8bc;
+        text-decoration: none;
+        margin: 0 5px;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        transition: background-color 0.3s, color 0.3s;
+    }
+    
+    .pagination a.active {
+        background-color: #88c8bc;
+        color: #fff;
+    }
+    
+    .pagination a:hover {
+        background-color: #ddd;
+    }
+    </style>
 <div class="container">
     <div class="d-flex justify-content-end mb-4">
         <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#addBrandModal">+ Add</button>
@@ -35,6 +61,13 @@
         </table>
     </div>
 </div>
+<div class="pagination mt-4">
+    <% for (let i = 1; i <= totalPages; i++) { %>
+      <a href="/admin/brands?page=<%= i %>" class="pagination-link <%= i === currentPage ? 'active' : '' %>">
+        <%= i %>
+      </a>
+    <% } %>
+  </div>
 
 <!-- Add Brand Modal -->
 <div class="modal fade" id="addBrandModal" tabindex="-1" aria-labelledby="addBrandModalLabel" aria-hidden="true">

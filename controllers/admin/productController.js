@@ -8,19 +8,32 @@ const multer = require('multer')
 
 exports.loadProducts = async (req, res) => {
     try {
-        const products = await Product.find().populate('category_id').populate('brand_id'); 
-        console.log(products); 
+        const limit = 4; 
+        const page = parseInt(req.query.page) || 1; 
+        const skip = (page - 1) * limit;
+
+        const products = await Product.find()
+            .skip(skip)
+            .limit(limit)
+            .populate('category_id')
+            .populate('brand_id');
+
+        const totalProducts = await Product.countDocuments();
+        const totalPages = Math.ceil(totalProducts / limit);
 
         res.render('admin/products', {
             layout: 'layout/admin',
             title: 'Products',
-            Products: products
+            Products: products,
+            currentPage: page,
+            totalPages: totalPages > 5 ? 5 : totalPages, 
         });
     } catch (error) {
         console.error('Error fetching products:', error);
-        res.status(500).send('Internal Server Error'); 
+        res.status(500).send('Internal Server Error');
     }
 };
+
 
 
 exports.loadAddProduct = async(req,res)=>{

@@ -2,11 +2,19 @@ const Brand = require("../../models/brandSchema");
 
 exports.loadBrand = async (req, res) => {
   try {
-    let brands = await Brand.find({});
+    const limit = 4 
+    const page = parseInt(req.query.page)||1
+    const skip = (page -1)*limit
+
+    let brands = await Brand.find({}).skip(skip).limit(limit);
+    const totalBrands = await Brand.countDocuments();
+    const totalPages = Math.ceil(totalBrands / limit);
     res.render("admin/brand", {
       layout: "layout/admin",
       title: "Brands",
       brands,
+      currentPage: page,
+      totalPages: totalPages,
     });
   } catch (error) {
     console.log(error);

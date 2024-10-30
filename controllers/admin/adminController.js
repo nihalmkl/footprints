@@ -5,7 +5,6 @@ exports.loadAdminLogin = async (req, res) => {
   try {
     
     if (req.session.admin) {
-      cosnole.log("admin login");
       res.redirect("/admin/dashboard", {
         layout: "layout/admin",
         title: "Dashboard",

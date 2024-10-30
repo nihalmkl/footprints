@@ -74,18 +74,31 @@
 			<nav class="colorlib-nav" role="navigation">
 				<div class="top-menu">
 					<div class="container">
-						<div class="row">
-							<div class="col-sm-7 col-md-9">
-								<div id="colorlib-logo"><a href="/">FOOTPRINTS</a></div>
+						<div class="row align-items-center">
+							<!-- Logo Section -->
+							<div class="col-sm-7 col-md-6 d-flex justify-content-start">
+								<div id="colorlib-logo"><a href="/" class="text-decoration-none">FOOTPRINTS</a></div>
 							</div>
-							<div class="col-sm-5 col-md-3 text-right"> 
+					
+							<!-- Search Bar Section -->
+							<div class="col-sm-5 col-md-4">
+								<div class="search-wrap d-flex">
+									<input type="search" id="searchInput" class="form-control" placeholder="Search" style="border-radius: 0;">
+									<button class="btn btn-primary" onclick="searchProducts()" style="border-radius: 0;">
+										<i class="icon-search"></i>
+									</button>
+								</div>
+							</div>
+							
+					
+							<!-- User Dropdown Section -->
+							<div class="col-md-2 d-flex justify-content-end">
 								<div class="dropdown">
 									<button class="btn btn-transparent dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: transparent; border: none;">
 										<i class="icon-user" aria-hidden="true"></i>
 									</button>
 									<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 										<% if (user) { %>
-											<% console.log(user._id) %>
 											<li><a class="dropdown-item" href="/profile/<%= user._id %>">Profile</a></li>
 											<li><a class="dropdown-item" href="/cart/<%= user._id %>">Cart</a></li>
 											<li><a class="dropdown-item" href="/wishlist/<%= user._id %>">Wishlist</a></li>
@@ -97,7 +110,7 @@
 									</ul>
 								</div>
 							</div>
-					 </div>
+						</div>					
 						<div class="row">
 							<div class="col-sm-12 text-left menu-1">
 								<ul>
@@ -112,7 +125,7 @@
 											<a href="/wishlist/<%= user._id %>">
 												<i class="icon-heart"></i>
 												<% if (1 > 0) { %> 
-													<span class="badge">2</span>
+													<span class="badge"><%= wishlistCount%></span>
 												<% } %>
 											</a>
 										</li>
@@ -121,7 +134,7 @@
 											<a href="/cart/<%= user._id %>">
 												<i class="icon-cart"></i>
 												<% if (1 > 0) { %> 
-													<span class="badge">4</span>
+													<span class="badge"><%= cartCount %></span>
 												<% } %>
 											</a>
 										</li>

@@ -2,7 +2,8 @@
 const env  = require('dotenv').config()
 const Product = require('../../models/productSchema')
 const Cart = require('../../models/cartSchema')
-
+const mongoose = require('mongoose')
+const Wishlist = require('../../models/wishlistSchema')
 
 exports.loadCart =  async (req, res) => {
     console.log('hello')
@@ -10,6 +11,27 @@ exports.loadCart =  async (req, res) => {
     console.log(userId)
     
     try {
+        let cartCount = []
+    let wishlistCount = []
+
+    if (req.session.user) {
+      console.log("User ID:", req.session.user.id)
+
+      // Get cart count
+      cartCount = await Cart.aggregate([
+        { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } }, 
+        { $project: { itemCount: { $size: "$items" } } }
+      ])
+      
+      // Get wishlist count
+      wishlistCount = await Wishlist.aggregate([
+        { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+        { $project: { itemCount: { $size: "$products" } } }
+      ])
+    }
+
+    const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
+    const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
         console.log("hsjaguijdh")
         
         const cart = await Cart.findOne({ user_id: userId }).populate('items.product_id')
@@ -28,7 +50,8 @@ exports.loadCart =  async (req, res) => {
             })
         }
         
-        res.render('user/cart', { cart ,products})
+        res.render('user/cart', { cart ,products,wishlistCount: finalWishlistCount,
+            cartCount: finalCartCount})
     } catch (error) {
         console.error(error)
         res.status(500).json({ message: 'Server error' })

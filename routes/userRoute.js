@@ -7,7 +7,7 @@ const orderController = require('../controllers/user/orderController')
 const cartController = require('../controllers/user/cartController')
 const wishlistController = require('../controllers/user/wishlistController')
 const profileController = require('../controllers/user/profileController')
-
+const Wallet = require('../models/walletSchema')
 const Orders = require('../models/orderSchema')
 const session = require('../middlewares/sessionChecker');    
 
@@ -55,12 +55,25 @@ user_route.get('/auth/google/callback',passport.authenticate('google', { failure
 
 
 user_route.get('/checkout',orderController.loadCheckout)
-user_route.post('/place-order',orderController.placeOrder)
+user_route.post('/order/place_order',orderController.placeOrder)
 user_route.get('/orders', orderController.getOrder)
 user_route.get('/order/:id',orderController.getOrderDetails)
 user_route.put('/orders/:id',orderController.cancelOrder)
 user_route.post('/quantityUpdate',orderController.qantityUpdate)
-  
+user_route.get('/wallet', async (req, res) => {
+  try {
+    console.log("djkak")
+    const wallet = await Wallet.findOne({ user: req.user._id })
+   console.log(wallet)
+    if (!wallet) {
+      return res.render('user/wallet', { wallet: null })
+    }
+    res.render('user/wallet', { wallet })
+  } catch (error) {
+    console.error('Error fetching wallet data:', error)
+    res.status(500).send('Internal Server Error')
+  }
+})
 user_route.get('/about', userController.loadAbout)
 user_route.get('/contact', userController.loadContact)
 

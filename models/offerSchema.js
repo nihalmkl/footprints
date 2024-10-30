@@ -3,29 +3,16 @@ const mongoose = require('mongoose')
 const {Schema} = mongoose
 
 const offerSchema = new Schema({
-    product_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true
-    },
-    category_id:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Category',
+    
+    offer_name:{
+        type:String,
         required:true
-    },
-    offer_title: {
-        type: String,
-        required: true
     },
     discount_percentage: {
         type: Number,
         required: true
     },
     start_date: {
-        type: Date,
-        required: true
-    },
-    exp_date: {
         type: Date,
         required: true
     },

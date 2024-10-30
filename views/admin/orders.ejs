@@ -1,3 +1,30 @@
+<style>
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination a {
+    color: #88c8bc;
+    text-decoration: none;
+    margin: 0 5px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination a.active {
+    background-color: #88c8bc;
+    color: #fff;
+    border: 1px solid #eef0f2;
+}
+
+.pagination a:hover {
+    background-color: #ddd;
+}
+</style>
 <div class="container my-5">
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
@@ -38,34 +65,13 @@
             <% }); %>
         </tbody>
     </table>
-
-    <nav aria-label="Page navigation example">
-        <ul class="pagination justify-content-center">
-            <% if (currentPage > 1) { %>
-                <li class="page-item">
-                    <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
-                </li>
-            <% } else { %>
-                <li class="page-item disabled">
-                    <a class="page-link">Previous</a>
-                </li>
-            <% } %>
-            <% for (let i = 1; i <= totalPages; i++) { %>
-                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                    <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                </li>
-            <% } %>
-            <% if (currentPage < totalPages) { %>
-                <li class="page-item">
-                    <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
-                </li>
-            <% } else { %>
-                <li class="page-item disabled">
-                    <a class="page-link">Next</a>
-                </li>
-            <% } %>
-        </ul>
-    </nav>
+   <div class="pagination mt-4">
+        <% for (let i = 1; i <= totalPages && i <= 5; i++) { %>
+            <a href="/admin/orders?page=<%= i %>" class="pagination-link <%= i === currentPage ? 'active' : '' %>">
+                <%= i %>
+            </a>
+        <% } %>
+    </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>

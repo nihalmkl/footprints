@@ -12,6 +12,7 @@ const productController = require('../controllers/admin/productController')
 const brandController = require('../controllers/admin/brandController')
 const orderController = require('../controllers/admin/orderController')
 const couponController = require('../controllers/admin/couponController')
+const offerController = require('../controllers/admin/offerController')
 
 //Login Admin
 admin_route.get('/',adminController.loadAdminLogin)
@@ -62,12 +63,10 @@ admin_route.post('/orders/:orderId/respond-return', async (req, res) => {
       const order = await Orders.findById(orderId)
   
       if (order && order.return_request && order.admin_accepted === 'Pending') {
-        order.admin_accepted = decision // Update the admin's decision
+        order.admin_accepted = decision 
         await order.save()
   
-        // You can also send notifications or emails to the user here
-  
-        return res.redirect('/admin/orders') // Redirect back to admin page
+        return res.redirect('/admin/orders') 
       } else {
         return res.status(404).send('Order not found or return request invalid')
       }
@@ -75,11 +74,17 @@ admin_route.post('/orders/:orderId/respond-return', async (req, res) => {
       return res.status(500).send('Server error')
     }
   })
-  admin_route.get('/')
+
 //coupon Management
 admin_route.get('/promocodes',adminAuth.isLogged,couponController.loadCoupon)
-admin_route.post('/coupons',couponController.addCoupon)
-admin_route.put('/coupons/:id',couponController.editCoupon)
-admin_route.delete('/coupons/:id', couponController.deleteCoupon)
+admin_route.post('/addCoupon',adminAuth.isLogged,couponController.addCoupon)
+admin_route.put('/editCoupon/:id',adminAuth.isLogged,couponController.editCoupon)
+admin_route.post('/deleteCoupon',adminAuth.isLogged, couponController.deleteCoupon)
+//offer Management
+admin_route.get ('/offers',adminAuth.isLogged,offerController.loadOffer)
+admin_route.post('/addOffers',adminAuth.isLogged,offerController.addOffers)
+admin_route.post('/editOffers',adminAuth.isLogged,offerController.editOffers)
+admin_route.post('/deleteOffer',adminAuth.isLogged,offerController.deleteOffer)
+admin_route.post('/restoreOffer',adminAuth.isLogged,offerController.restoreOffer)
 
 module.exports = admin_route

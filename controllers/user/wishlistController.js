@@ -2,13 +2,33 @@
 const env  = require('dotenv').config()
 const Product = require('../../models/productSchema')
 const Wishlist = require('../../models/wishlistSchema')
-
+const Cart = require('../../models/cartSchema')
+const mongoose = require('mongoose')
 
 exports.loadWishlist = async (req, res) => {
     const {userId} = req.params
     console.log(userId)
 
     try {
+        let cartCount = []
+        let wishlistCount = []
+
+        if (req.session.user) {
+            console.log("User ID:", req.session.user.id)
+
+            cartCount = await Cart.aggregate([
+                { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+                { $project: { itemCount: { $size: "$items" } } }
+            ])
+
+            wishlistCount = await Wishlist.aggregate([
+                { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+                { $project: { itemCount: { $size: "$products" } } }
+            ])
+        }
+
+        const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
+        const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
         const wishlist = await Wishlist.findOne({ user_id: userId }).populate('products.product_id');
 
         if (!wishlist || wishlist.products.length === 0) {
@@ -16,7 +36,8 @@ exports.loadWishlist = async (req, res) => {
         }
 
         const products = wishlist.products.map(item => item.product_id);
-        res.render('user/wishlist', { products });
+        res.render('user/wishlist', { products,  wishlistCount: finalWishlistCount,
+            cartCount: finalCartCount });
     } catch (error) {
         console.error('Error loading wishlist:', error);
         res.status(500).json({ message: 'Server error' });
@@ -26,6 +47,7 @@ exports.loadWishlist = async (req, res) => {
 
 exports.addWishlist = async (req, res) => {
     const { userId, productId } = req.body
+   console.log("whhhh",productId)
 
     try {
         let wishlist = await Wishlist.findOne({ user_id: userId })

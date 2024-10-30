@@ -1,16 +1,26 @@
 const User = require('../../models/userSchema')
 
-exports.loadUsers = async(req,res)=>{
-    try{
-        let users = await User.find({
-            isAdmin:false
+exports.loadUsers = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1
+        const limit = 4
+        const skip = (page - 1) * limit
+
+        const users = await User.find({ isAdmin: false })
+            .skip(skip)
+            .limit(limit)
+
+        const totalUsers = await User.countDocuments({ isAdmin: false })
+        const totalPages = Math.ceil(totalUsers / limit)
+
+        res.render('admin/users', { 
+            layout: 'layout/admin', 
+            title: 'Users', 
+            users, 
+            currentPage: page, 
+            totalPages 
         })
-        if(users.length === 0){
-            console.log('No user fount')
-        }
-        console.log(users)
-        res.render('admin/users', { layout: 'layout/admin', title: 'Users', users });
-    }catch(error){
+    } catch (error) {
         console.log(error)
     }
 }

@@ -1,0 +1,555 @@
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <div class="col-md-10">
+        <main class="container py-5">
+            <nav>
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                  <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Offers</button>
+                  <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Products</button>
+                  <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Categories</button>
+                </div>
+              </nav>
+              <div class="tab-content" id="nav-tabContent">
+
+                <!-- Add Offer Card Start--1 -->
+                <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                    <div class="bg-white rounded shadow-sm p-4">
+                        <div class="bg-white rounded shadow-sm p-4 mb-4">
+                            <form id="addForm">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="">Offer Name</label>
+                                        <input type="text" class="form-control" id="offerName" placeholder="Offer Name" name="offerName" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="">Discount</label>
+                                        <input type="number" class="form-control" id="offerPercentage" placeholder="Offer Percentage" name="offerPercentage" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="startDate" class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" id="offerStartDate" name="offerStartDate" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="button" class="btn btn-primary" style="    background-color: #88c8bc;
+    border: none;" onclick="AddOffer()">Add Item</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Offer Name</th>
+                                        <th>Disc%</th>
+                                        <th>Start Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                  <% offer.forEach(offer => { %>
+                                      <tr>
+                                          <td><%= offer.offer_name %></td>
+                                          <td><%= offer.discount_percentage %>%</td>
+                                          <td><%= new Date(offer.start_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></td>
+                                          <td>
+                                              <% if (offer.is_delete) { %>
+                                                  <button class="btn btn-primary btn-sm" onclick="restoreOffer('<%= offer._id %>')">
+                                                      <i class="fas fa-recycle"></i> Restore
+                                                  </button>
+                                              <% } else { %>
+                                                  <button type="button" class="btn btn-sm btn-primary editOfferBtn"
+                                                      data-bs-toggle="modal"
+                                                      data-bs-target="#editOfferModal"
+                                                      data-offer-id="<%= offer._id %>"
+                                                      data-offer-name="<%= offer.offer_name %>"
+                                                      data-offer-percentage="<%= offer.discount_percentage %>"
+                                                      data-offer-sdate="<%= offer.start_date.toISOString().split('T')[0] %>">
+                                                      <i class="fas fa-edit"></i> Edit
+                                                  </button>
+                                                  <button class="btn btn-sm btn-danger" onclick="deleteOffer('<%= offer._id %>')">
+                                                      <i class="fas fa-trash"></i> Delete
+                                                  </button>
+                                              <% } %>
+                                          </td>
+                                      </tr>
+                                  <% }) %>
+                              </tbody>
+                              
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- Add Offer Card End--1 -->
+
+                <!-- Products Card Start--2 -->
+                <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                  <div class="row row-cols-1 row-cols-md-3 g-4">
+                      <% product.forEach(product => { %>
+                      <div class="col">
+                          <div class="card h-100">
+                              <div class="d-flex justify-content-center mt-3">
+                                  <img src="<%= product.images[0] %>" alt="" style="width: 100px; height: auto;">
+                              </div>
+                              <div class="card-body">
+                                  <div class="mb-3">
+                                      <p class="card-title text-center"><%= product.product_name %></p>
+                                      <select class="form-select" id="editType" required>
+                                          <option value="offer">Select Offers</option>
+                                          <% selectoffer.forEach(offer => { %>
+                                              <option value="product"><%= offer.offer_name %> - <%= offer.discount_percentage %>%</option>
+                                          <% }) %>
+                                      </select>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                      <% }) %>
+                  </div>
+              </div>
+              <!-- Products Card End--2 -->
+              
+              <!-- Categories Card Start--3 -->
+              <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+                  <table class="table">
+                      <thead>
+                          <tr>
+                              <th scope="col">SL</th>
+                              <th scope="col">Category</th>
+                              <th scope="col">Offer</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <% category.forEach((category, index) => { %>
+                          <tr>
+                              <th scope="row"><%= index + 1 %></th>
+                              <td><%= category.category_name %></td>
+                              <td>
+                                  <select class="form-select" id="editType" required>
+                                      <option value="offer">Select Offers</option>
+                                      <% selectoffer.forEach(offer => { %>
+                                          <option value="product"><%= offer.offer_name %> - <%= offer.discount_percentage %>%</option>
+                                      <% }) %>
+                                  </select>
+                              </td>
+                          </tr>
+                          <% }) %>
+                      </tbody>
+                  </table>
+              </div>
+                <!-- Categories Card End--3 -->
+              </div>
+        </main>
+    
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editOfferModal" tabindex="-1" aria-labelledby="editOfferModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editOfferModalLabel">Edit Item</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editForm">
+                          <input type="hidden" id="editOfferId" name="offerId">
+                          <div class="mb-3">
+                              <label for="editOfferName" class="form-label">Offer Name</label>
+                              <input type="text" class="form-control" id="editOfferName" required>
+                          </div>
+                          <div class="mb-3">
+                              <label for="editOfferPercentage" class="form-label">Discount</label>
+                              <input type="number" class="form-control" id="editOfferPercentage" required>
+                          </div>
+                          <div class="mb-3">
+                              <label for="editOfferStartDate" class="col-form-label">Start Date:</label>
+                              <input type="date" class="form-control" id="editOfferStartDate">
+                          </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="EditOffer()" id="saveEdit">Save changes</button>
+                            </div>
+                        </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+async function AddOffer() {
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = Swal.stopTimer;
+        toast.onmouseleave = Swal.resumeTimer;
+      }
+    });
+    const offerName = document.getElementById('offerName').value.trim()
+    const offerPercentage = parseFloat(document.getElementById('offerPercentage').value.trim())
+    const offerStartDate = document.getElementById('offerStartDate').value.trim()
+    
+    const currentDate = new Date();
+    if (!offerName) {
+      Toast.fire({
+        icon: "error",
+        title: "offer name is empty"
+      });
+      return
+    }
+    if (offerName.length < 2) {
+      Toast.fire({
+        icon: "error",
+        title: "Invalid Name Length",
+        text: 'Name must need minimum 2 characters.',
+      });
+      return
+    }
+    const nameRegex = /^[a-zA-Z\s\-]+$/;
+    if (!nameRegex.test(offerName)) {
+      Toast.fire({
+        icon: "error",
+        title: "Invalid Characters in Name",
+        text: 'Name should not contain numbers or special characters.',
+      });
+      return
+    }
+
+
+    if (!offerPercentage) {
+      Toast.fire({
+        icon: "error",
+        title: "percentage is empty"
+      });
+      return
+    }
+
+    if (isNaN(offerPercentage)) {
+      Toast.fire({
+        icon: "error",
+        title: "Invalid Percentage",
+        text: "Percentage must be a number.",
+      });
+      return;
+    }
+
+    if (offerPercentage < 1 || offerPercentage > 100) {
+      Toast.fire({
+        icon: "error",
+        title: "Invalid percentage",
+        text: 'Percentage not more than 100 and less than 0'
+      });
+      return
+    }
+    if (offerPercentage !== Math.floor(offerPercentage)) {
+      Toast.fire({
+        icon: "error",
+        title: "Invalid Percentage Format",
+        text: "Percentage must be a whole number.",
+      });
+      return;
+    }
+
+
+    if (!offerStartDate) {
+      Toast.fire({
+        icon: "error",
+        title: "start date is empty"
+      });
+      return
+    }
+    if (offerStartDate < currentDate) {
+      Toast.fire({
+        icon: "error",
+        title: "Invalid Start Date",
+        text: 'Start date cannot be in the past.',
+      });
+      return;
+    }
+
+   
+
+   
+
+    try {
+      const responce = await fetch('/admin/addOffers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ offerName, offerPercentage, offerStartDate })
+      })
+
+
+      const result = await responce.json()
+      if (result.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Offer added',
+          text: result.message,
+          confirmButtonText: 'OK'
+        }).then(() => {
+          window.location.reload();
+        })
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'error occured',
+          text: result.error,
+          confirmButtonText: 'OK'
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Network Error',
+        text: 'An error occurred. Please check your network connection.',
+        confirmButtonText: 'OK'
+      });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+  const editBtn = document.querySelectorAll('.editOfferBtn')
+
+  editBtn.forEach((button) => {
+    button.addEventListener('click', () => {
+
+      const offerName = button.getAttribute('data-offer-name')
+      const offerPercentage = button.getAttribute('data-offer-percentage')
+      const offerStartDate = button.getAttribute('data-offer-sdate')
+      const offerId = button.getAttribute('data-offer-id')
+
+      document.getElementById('editOfferStartDate').value = offerStartDate
+      document.getElementById('editOfferId').value = offerId
+      document.getElementById('editOfferName').value = offerName
+      document.getElementById('editOfferPercentage').value = offerPercentage
+
+      $('#editOfferModal').modal('show');
+    });
+  });
+});
+
+
+
+
+
+      async function EditOffer() {
+
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+          }
+        });
+
+
+        const editOfferName = document.getElementById('editOfferName').value.trim()
+
+        const editOfferPercentage = parseFloat(document.getElementById('editOfferPercentage').value.trim())
+        const editOfferStartDate = document.getElementById('editOfferStartDate').value.trim()
+     
+        const editOfferId = document.getElementById('editOfferId').value
+        const currentDate = new Date();
+        if (!editOfferName) {
+          Toast.fire({
+            icon: "error",
+            title: "offer name is empty"
+          });
+          return
+        }
+        if (editOfferName.length < 2) {
+          Toast.fire({
+            icon: "error",
+            title: "Invalid Name Length",
+            text: 'Name must need minimum 2 characters.',
+          });
+          return
+        }
+        const nameRegex = /^[a-zA-Z\s\-]+$/;
+        if (!nameRegex.test(editOfferName)) {
+          Toast.fire({
+            icon: "error",
+            title: "Invalid Characters in Name",
+            text: 'Name should not contain numbers or special characters.',
+          });
+          return
+        }
+
+
+        if (!editOfferPercentage) {
+          Toast.fire({
+            icon: "error",
+            title: "percentage is empty"
+          });
+          return
+        }
+
+        if (isNaN(editOfferPercentage)) {
+          Toast.fire({
+            icon: "error",
+            title: "Invalid Percentage",
+            text: "Percentage must be a number.",
+          });
+          return;
+        }
+
+        if (editOfferPercentage < 1 || editOfferPercentage > 100) {
+          Toast.fire({
+            icon: "error",
+            title: "Invalid percentage",
+            text: 'Percentage not more than 100 and less than 0'
+          });
+          return
+        }
+        if (editOfferPercentage !== Math.floor(editOfferPercentage)) {
+          Toast.fire({
+            icon: "error",
+            title: "Invalid Percentage Format",
+            text: "Percentage must be a whole number.",
+          });
+          return;
+        }
+
+
+        if (!editOfferStartDate) {
+          Toast.fire({
+            icon: "error",
+            title: "start date is empty"
+          });
+          return
+        }
+        if (editOfferStartDate < currentDate) {
+          Toast.fire({
+            icon: "error",
+            title: "Invalid Start Date",
+            text: 'Start date cannot be in the past.',
+          });
+          return;
+        }
+
+      
+
+      
+
+        try {
+          const responce = await fetch('/admin/editOffers', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ editOfferId, editOfferName, editOfferPercentage, editOfferStartDate })
+          })
+
+
+          const result = await responce.json()
+          if (result.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Offer Edited',
+              text: result.message,
+              confirmButtonText: 'OK'
+            }).then(() => {
+              window.location.reload();
+            })
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'error occured',
+              text: result.error,
+              confirmButtonText: 'OK'
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Network Error',
+            text: 'An error occurred. Please check your network connection.',
+            confirmButtonText: 'OK'
+          });
+        }
+
+      }
+
+
+
+      async function deleteOffer(offerId) {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: "Do you want to delete this offer?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
+  });
+  
+  if (result.isConfirmed) {
+    const response = await fetch('/admin/deleteOffer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ offerId })
+    });
+    
+    if (response.ok) {
+      Swal.fire('Deleted!', 'The offer has been deleted.', 'success').then(() => {
+        location.reload();
+      });
+    } else {
+      Swal.fire('Error!', 'Failed to delete the offer.', 'error');
+    }
+  }
+}
+
+async function restoreOffer(offerId) {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: "Do you want to restore this offer?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, restore it!',
+    cancelButtonText: 'Cancel'
+  });
+  
+  if (result.isConfirmed) {
+    const response = await fetch('/admin/restoreOffer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ offerId })
+    });
+    
+    if (response.ok) {
+      Swal.fire('Restored!', 'The offer has been restored.', 'success').then(() => {
+        location.reload();
+      });
+    } else {
+      Swal.fire('Error!', 'Failed to restore the offer.', 'error');
+    }
+  }
+}
+
+  </script>
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

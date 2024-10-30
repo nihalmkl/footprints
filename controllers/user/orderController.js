@@ -4,21 +4,43 @@ const Product = require('../../models/productSchema')
 const Address = require('../../models/addressSchema')
 const Cart = require('../../models/cartSchema')
 const Orders = require('../../models/orderSchema')
-const config = require('../../config/razorpay')
-const Razorpay = require('razorpay')
-
+const Wishlist = require('../../models/wishlistSchema')
+const mongoose = require('mongoose')
+const razorpay = require('../../config/razorpay')
+const crypto = require('crypto')
 exports.loadCheckout = async (req, res) => {
     const userId = req.user._id
+    console.log(userId,"djfsjdfkf")
 try { 
+    let cartCount = []
+    let wishlistCount = []
+
+    if (req.session.user) {
+        console.log("User ID:", req.session.user.id)
+
+        cartCount = await Cart.aggregate([
+            { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+            { $project: { itemCount: { $size: "$items" } } }
+        ])
+
+        wishlistCount = await Wishlist.aggregate([
+            { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+            { $project: { itemCount: { $size: "$products" } } }
+        ])
+    }
+
+    const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
+    const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
    const cart = await Cart.findOne({ user_id: userId }).populate('items.product_id');
-   const addresses = await Address.find({ user_id: userId }) 
-           console.log(cart);
-           
+   const addresses = await Address.find({ user_id: userId }) || []; 
+    
+   console.log("helllllooo",addresses)
    if (!cart) {
        return res.status(404).json({ message: "Cart not found" });
    }
-   const userAddresses = addresses ? addresses.address : []
-   return res.render('user/checkout',{cart,addresses:userAddresses,userId})
+   
+   return res.render('user/checkout',{cart,addresses:addresses,userId,  wishlistCount: finalWishlistCount,
+    cartCount: finalCartCount})
 } catch (error) {
    console.error('Error fetching cart:', error.message);
    return res.status(500).json({ message: 'Server Error' });
@@ -32,97 +54,93 @@ return `ORD${randomDigits}`
 }
 
 
-const razorpay = new Razorpay({
-  key_id: config.razorpay.key_id,
-  key_secret: config.razorpay.key_secret,
-});
 
-exports.placeOrder = async (req, res) => {
-    console.log("hello placc")
-  const { address_id, payment_method } = req.body;
-  console.log(address_id);
-  
-  if (!address_id || !payment_method) {
-      return res.status(400).json({ message: "Address and payment method are required." });
-  }
 
-  try {
-      const userCart = await Cart.findOne({ user_id: req.user._id }).populate('items.product_id');
-      if (!userCart) {
-          return res.status(400).json({ message: "No cart found" });
-      }
 
-      const newOrder = new Orders({
-          order_id: generateOrderId(),
-          user_id: req.user._id,
-          address_id,
-          payment_method,
-          items: userCart.items,
-          total_amount: userCart.total_price
-      });
+    exports.placeOrder = async (req, res) => {
+        const { address_id, payment_method, payment_id, order_id, signature } = req.body;
+    
+        if (!address_id || !payment_method) {
+        return res.status(400).json({ message: "Address and payment method are required." });
+        }
+    
+        try {
+        const userCart = await Cart.findOne({ user_id: req.user._id }).populate('items.product_id');
+        if (!userCart) {
+            return res.status(400).json({ message: "No cart found" });
+        }
+    
+        const newOrder = new Orders({
+            order_id: generateOrderId(),
+            user_id: req.user._id,
+            address_id,
+            payment_method,
+            items: userCart.items,
+            total_amount: userCart.total_price
+        });
+    console.log("paisaaa",newOrder.total_amount)
+        if (payment_method === "COD") {
+            await newOrder.save();
+    
+            for (const item of userCart.items) {
+            const product = await Product.findById(item.product_id);
+            if (product && product.variants[0].stock >= item.quantity) {
+                product.variants[0].stock -= item.quantity;
+                await product.save();
+            } else {
+                return res.status(400).json({ message: `Insufficient stock for product: ${product.product_name}` });
+            }
+            }
+    
+            userCart.items = [];
+            userCart.total_price = 0;
+            await userCart.save();
+    
+            return res.status(200).json({ message: "Order placed successfully!" });
+        } 
+        else if (payment_method === "card") {
+            const razorpayOrder = await razorpay.orders.create({
+            amount: newOrder.total_amount * 100,
+            currency: "INR",
+            receipt: `receipt_${newOrder._id}`,
+            });
+    
+            newOrder.razorpay_id = razorpayOrder.id;
+            await newOrder.save();
+    
+            if (payment_id && order_id && signature) {
+                console.log("payme",payment_id,"678888",order_id,signature)
 
-      if (payment_method === "COD") {
-          await newOrder.save();
+            const isVerified = verifyPayment(payment_id, order_id, signature); 
+            console.log("23",isVerified)
+            if (isVerified) {
+                console.log("23456")
+                return res.status(200).json({success:true, message: "Order placed successfully!", razorpayOrderId: razorpayOrder.id, amount: newOrder.total_amount });
+            } else {
+                console.log(333)
+                return res.status(400).json({ message: "Payment verification failed." });
+            }
+            }
+    
+            return res.status(200).json({ message: "Proceed to Razorpay payment.", razorpayOrderId: razorpayOrder.id, amount: newOrder.total_amount });
+        }
+        } catch (error) {
+        console.error("Error placing the order:", error);
+        res.status(500).json({ message: "Failed to place the order." });
+        }
+    }
+    function verifyPayment(payment_id, order_id, signature) {
+        const secret = process.env.RAZOR_PAY_KEY_SECRET
+        const body = `${order_id}|${payment_id}`
+        const expectedSignature = crypto
+            .createHmac('sha256', secret)
+            .update(body.toString())
+            .digest('hex')
+        return expectedSignature === signature
+    }
 
-          for (const item of userCart.items) {
-              const product = await Product.findById(item.product_id);
-              if (product && product.variants[0].stock >= item.quantity) {
-                  product.variants[0].stock -= item.quantity;
-                  await product.save();
-              } else {
-                  return res.status(400).json({ message: `Insufficient stock for product: ${product.product_name}` });
-              }
-          }
 
-          userCart.items = [];
-          userCart.total_price = 0;
-          await userCart.save();
 
-          const payout = await createRazorpayXPayout(newOrder, req.user);
-
-          return res.status(200).json({ message: "Order placed successfully! Payout initiated.", payout });
-      } else {
-        console.log('hello my friend')
-          const razorpayOrder = await razorpay.orders.create({
-              amount: newOrder.total_amount * 100,
-              currency: "INR",
-              receipt: `receipt_${newOrder._id}`,
-          });
-
-          newOrder.razorpay_id = razorpayOrder.id;
-          await newOrder.save();
-
-          return res.status(200).json({
-              message: "Proceed to Razorpay payment.",
-              razorpayOrderId: razorpayOrder.id,
-              amount: newOrder.total_amount
-          });
-      }
-  } catch (error) {
-      console.error("Error placing the order:", error);
-      res.status(500).json({ message: "Failed to place the order." });
-  }
-}
-async function createRazorpayXPayout(order, user) {
-  try {
-      const payoutOptions = { 
-          fund_account_id: user.fundAccountId, 
-          amount: order.total_amount * 100,  
-          currency: "INR",
-          mode: "IMPS",
-          purpose: "payout",
-          reference_id: `order_${order._id}`,
-          narration: `Payout for order ${order._id}`,
-      };
-
-      const payout = await razorpay.payouts.create(payoutOptions);
-      console.log("Payout successful:", payout);
-      return payout;
-  } catch (error) {
-      console.error("Error creating payout:", error);
-      throw new Error("Payout failed");
-  }
-}
 
 exports.getOrder = async (req, res) => {
 try {
@@ -226,3 +244,4 @@ try {
    res.status(500).send('Internal Server Error');
 }
 }
+

@@ -2,23 +2,33 @@ const Orders = require('../../models/orderSchema')
 
 exports.loadOrderPage = async (req, res) => {
     try {
+        const limit = 3; 
+        const page = parseInt(req.query.page) || 1; 
+        const skip = (page - 1) * limit;
+
         const orders = await Orders.find({})
+            .skip(skip)
+            .limit(limit)
             .populate('user_id')
             .populate('address_id')
-            .populate('items.product_id')
-            console.log(orders)
+            .populate('items.product_id');
+
+        const totalOrders = await Orders.countDocuments();
+        const totalPages = Math.ceil(totalOrders / limit);
+
         res.render('admin/orders', {
             layout: "layout/admin",
             title: "Orders",
-            orders: orders, 
-            currentPage: 1,
-            totalPages: 2,  
+            orders: orders,
+            currentPage: page,
+            totalPages: totalPages > 5 ? 5 : totalPages,
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send('Orders error')
+        res.status(500).send('Orders error');
     }
-}
+};
+
 
 exports.updateStatus = async (req, res) => {
     try {

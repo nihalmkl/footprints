@@ -1,8 +1,12 @@
- require('dotenv').config();
+const Razorpay = require('razorpay');
+require('dotenv').config();
 
-module.exports = {
-  razorpay: {
-    key_id: process.env.RAZORPAY_X_KEY_ID,
-    key_secret: process.env.RAZORPAY_X_KEY_SECRET,
-  }
-};
+const razorpay = new Razorpay({
+  key_id: process.env.RAZOR_PAY_KEY_ID,
+  key_secret: process.env.RAZOR_PAY_KEY_SECRET
+});
+
+
+
+
+module.exports = razorpay;  

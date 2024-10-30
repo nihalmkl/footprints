@@ -9,7 +9,11 @@ const categoryShema = new Schema({
     is_delete:{
         type:Boolean,
         default:'false'
-    }
+    },
+    offer:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Offer'
+    },
 },{timestamps:true})
 
 const Category = mongoose.model('Category',categoryShema)

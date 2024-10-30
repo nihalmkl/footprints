@@ -23,6 +23,7 @@
                         <div class="form-field">
                             <i class="icon icon-arrow-down3"></i>
                             <select name="address" id="address" class="form-control">
+                                <console class="log">{addresses}</console>
                                 <option value="#">Select Address</option>
                                 <% if (addresses && addresses.length > 0) { %>
                                     <% addresses.forEach(address => { %>
@@ -204,7 +205,7 @@
                         <div class="form-group">
                             <div class="col-md-12">
                                 <div class="radio">
-                                    <label><input type="radio" name="payment_method" value="card" required>Card</label>
+                                    <label><input type="radio" name="payment_method" value="card" required>Razorpay</label>
                                 </div>
                             </div>
                         </div>
@@ -227,6 +228,7 @@
     </div>
     
 </div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function createAddress(event) {
@@ -361,69 +363,111 @@
             });
         });
     }
-</script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script>
-    async function placeOrder() {
-  const addressId = document.getElementById("address").value;
-  const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+
+ async function placeOrder() {
+  const addressId = document.getElementById("address").value
+  const paymentMethod = document.querySelector('input[name="payment_method"]:checked')
 
   if (addressId === "#" || !paymentMethod) {
-    Swal.fire({ 
-        title: "Error",
-        text: "Please select address and payment method.",
-        icon: "error", 
-        timer: 1500, 
-        showConfirmButton: false 
-    });
-    return;
+    Swal.fire({
+      title: "Error",
+      text: "Please select address and payment method.",
+      icon: "error",
+      timer: 1500,
+      showConfirmButton: false
+    })
+    return
   }
 
-  const orderData = { address_id: addressId, payment_method: paymentMethod.value };
+  const orderData = { address_id: addressId, payment_method: paymentMethod.value }
 
-  try {
-    const response = await fetch('/place-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderData)
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-
-      if (paymentMethod.value === "COD") {
-        Swal.fire({ title: "Success", text: "Order placed successfully!", icon: "success", timer: 1500, showConfirmButton: false })
-          .then(() => { window.location.href = '/profile'; });
-      } else {
-        const { razorpayOrderId, amount } = result;
-        handleRazorpayPayment(razorpayOrderId, amount);
-      }
-    } else {
-      Swal.fire({ title: "Error", text: "Failed to place the order.", icon: "error", timer: 1500, showConfirmButton: false });
-    }
-  } catch (error) {
-    Swal.fire({ title: "Error", text: "Internal server error", icon: "error", timer: 1500, showConfirmButton: false });
-  }
-}
-
-function handleRazorpayPayment(orderId, amount) {
-  const options = {
-    key: 'rzp_test_MoQOrZAlepfiB7',
-    amount: amount * 100,
-    name:"FootPrints",
-    currency: "INR",
-    order_id: orderId,
-    handler: function (response) {
-      alert(`Payment successful. Razorpay Payment ID: ${response.razorpay_payment_id}`);
-      window.location.href = '/order-success';
+  // Consolidated fetch request for both payment methods
+  const response = await fetch('/order/place_order', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
-    theme: {
-      color: "#3399cc"
-    }
-  };
+    body: JSON.stringify(orderData)
+  });
 
-  const rzp = new Razorpay(options);
-  rzp.open();
+  if (response.ok) {
+    const result = await response.json();
+    
+    // Handling for COD
+    if (paymentMethod.value === 'COD') {
+      Swal.fire({
+        icon: 'success',
+        title: 'Order Placed',
+        text: 'Your order has been placed successfully.',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        window.location.href = '/profile';
+      });
+    } 
+    // Handling for card payments
+    else if (paymentMethod.value === 'card') {
+      const options = {
+        key: 'rzp_test_MoQOrZAlepfiB7',
+        amount: result.amount * 100,
+        currency: 'INR',
+        name: 'FootPrints',
+        description: "Payment for order",
+        order_id: result.razorpayOrderId,
+        handler: async function (response) {
+          const verifyResponse = await fetch('/order/place_order', {
+            method: "POST",
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              address_id: addressId,
+              payment_method: paymentMethod.value,
+              payment_id: response.razorpay_payment_id,
+              order_id: response.razorpay_order_id,
+              signature: response.razorpay_signature
+            })
+          });
+
+          const verifyData = await verifyResponse.json();
+          if (verifyResponse.ok && verifyData.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Order Placed',
+              text: 'Your order has been placed successfully.',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              window.location.href = '/profile';
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: "Payment Failed",
+              text: verifyData.error || 'Payment verification failed. Please try again.',
+              confirmButtonText: 'OK'
+            });
+          }
+        },
+        prefill: {
+          name: 'User Name',
+          email: 'useremail@email.com',
+          contact: '112233665544'
+        },
+        theme: {
+          color: "#000000"
+        }
+      }
+
+      const razorpay = new Razorpay(options)
+      razorpay.open()
+    }
+  } else {
+    Swal.fire({
+      icon: 'error',
+      title: 'Failed to Order',
+      text: 'Unable to place order. Please try again later.',
+      confirmButtonText: 'OK'
+    });
+  }
 }
 
 

@@ -27,7 +27,7 @@ const walletSchema = new mongoose.Schema({
         type: String,
         required: true
       },
-      transactionType: {
+      transaction_type: {
         type: String,
         required: true,
         enum: ['credited', 'debited']

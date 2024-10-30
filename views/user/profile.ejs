@@ -153,7 +153,35 @@
             margin-right: 10px;
             font-size: 18px;
         }
-        
+        .transaction-history {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .transaction-list {
+      background-color: #f9f9f9;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .transaction-item:last-child {
+      border-bottom: none;
+    }
+
+    .transaction-item .icon {
+      margin-right: 10px;
+    }
+
+    .wallet {
+      margin-top: 20vh;
+    }
     </style>
 </head>
 
@@ -506,25 +534,19 @@
 
             $('#walletLink').click(function (e) {
                 e.preventDefault();
-                $('#dynamicContent').html(`
-                    <div>
-                    <h4>Wallet</h4>
-                    <div class="wallet-card">
-                        <div>
-                            <h4>Balance: $100</h4>
-                        </div>
-                        <div class="wallet-icon">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                    </div>
-                    <button class="credit-card-button">
-                        <i class="fas fa-credit-card credit-card-icon"></i> Add Credit Card
-                    </button>
-                </div>
-                `);
+                $.ajax({
+               url: '/wallet',
+               method: 'GET',
+               success: function (data){
+                $('#dynamicContent').html(data)
+    },
+        error: function (err) {
+          console.error('Error fetching wallet data:', err)
+        }
             });
         });
-    </script>
+})
+</script>
 
 <script>
     function deleteAddress(addressId) {

@@ -2,7 +2,9 @@
 const User = require('../../models/userSchema')
 const env  = require('dotenv').config()
 const Address = require('../../models/addressSchema')
-
+const Cart = require('../../models/cartSchema')
+const Wishlist = require('../../models/wishlistSchema')
+const mongoose = require('mongoose')
 
 exports.editAddress = async (req, res) =>{
     const { full_name, street_address, pincode, city, state, country, phone } = req.body;
@@ -62,8 +64,7 @@ exports.editAddress = async (req, res) =>{
       console.log(0);
       
       res.redirect('/profile/' + req.user._id);
-      // Alternatively, you could send a JSON response
-      // res.status(200).json({ success: true, message: 'Address added successfully' });
+      
   
     } catch (error) {
       console.error(error);
@@ -75,6 +76,26 @@ exports.editAddress = async (req, res) =>{
 
   exports.loadProfile = async (req, res) => {
     try {
+      let cartCount = []
+        let wishlistCount = []
+
+        if (req.session.user) {
+            console.log("User ID:", req.session.user.id)
+
+            cartCount = await Cart.aggregate([
+                { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+                { $project: { itemCount: { $size: "$items" } } }
+            ])
+
+            wishlistCount = await Wishlist.aggregate([
+                { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+                { $project: { itemCount: { $size: "$products" } } }
+            ])
+        }
+
+        const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
+        const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
+
       const userId = req.params.userId;
       const user = await User.findById(userId);
       if (!user) {
@@ -83,7 +104,8 @@ exports.editAddress = async (req, res) =>{
   
       const addresses = await Address.find({ user_id: userId }) || []; 
       console.log("jdjkkdh",addresses)
-      res.render('user/profile', { user, addresses });
+      res.render('user/profile', { user, addresses,  wishlistCount: finalWishlistCount,
+        cartCount: finalCartCount });
     } catch (error) {
       console.error(error);
       res.status(500).send('Server Error');

@@ -2,16 +2,30 @@ const Category = require("../../models/categorySchema");
 
 exports.loadCategory = async (req, res) => {
   try {
-    let categories = await Category.find({});
+    const limit = 4
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit; 
+
+    const categories = await Category.find({})
+      .skip(skip)
+      .limit(limit);
+
+    const totalCategories = await Category.countDocuments();
+    const totalPages = Math.ceil(totalCategories / limit);
+
     res.render("admin/category", {
       layout: "layout/admin",
       title: "Categories",
       categories,
+      currentPage: page,
+      totalPages: totalPages,
     });
   } catch (error) {
     console.log(error);
+    res.status(500).send("Error loading categories");
   }
 };
+
 exports.editCategory = async (req, res) => {
   const categoryId = req.params.id; 
   const { categoryName } = req.body;

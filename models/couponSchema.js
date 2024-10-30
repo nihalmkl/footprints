@@ -25,7 +25,7 @@ const couponSchema = new Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             },    
-            isBought: {        
+            is_bought: {        
                 type: Boolean,        
                 default: false    
             }
@@ -35,15 +35,14 @@ const couponSchema = new Schema({
         type: Number,
         default: 0
     },
+    max_coupon_amount:{
+        type:Number,
+        default:0
+    },
     description : {
-        type: 'string',
+        type: String,
         required: true
     },
-    status:{
-        type:Boolean,
-        required:true,
-        default:false
-    }
 },{timestamps:true})
 
 const Coupon = mongoose.model('Coupon',couponSchema)

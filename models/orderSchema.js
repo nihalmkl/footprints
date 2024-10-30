@@ -80,10 +80,6 @@ const OrdersSchema = new Schema(
       type: Number,
       default: 0
   },
-  pay_able_amount: {
-    type: Number,
-    required: true
-},
   },
   { timestamps: true }
 )

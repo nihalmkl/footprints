@@ -7,8 +7,9 @@ const env  = require('dotenv').config()
 const Product = require('../../models/productSchema')
 const crypto = require('crypto') 
 const Address = require('../../models/addressSchema')
-
-
+const mongoose = require('mongoose')
+const Wishlist = require('../../models/wishlistSchema')
+const Cart = require('../../models/cartSchema')
 
 exports.loadLogin =async (req,res) => {
     try {
@@ -55,17 +56,42 @@ exports.userLogin = async (req, res) => {
 
 exports.loadHome = async (req, res) => {
     try {
-        const products = await Product.find({is_delete:false});
+      const products = await Product.find({ is_delete: false })
+      let cartCount = []
+      let wishlistCount = []
+  
+      if (req.session.user) {
+        console.log("User ID:", req.session.user.id)
+  
+        cartCount = await Cart.aggregate([
+          { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } }, 
+          { $project: { itemCount: { $size: "$items" } } }
+        ])
         
-        return res.render('user/home.ejs',{products});
+        wishlistCount = await Wishlist.aggregate([
+          { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+          { $project: { itemCount: { $size: "$products" } } }
+        ])
+      }
+  
+      const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
+      const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
+  
+      return res.render('user/home.ejs', {
+        products,
+        wishlistCount: finalWishlistCount,
+        cartCount: finalCartCount
+      })
+      
     } catch (error) {
-        console.error("Error loading home page:", error.message);
-        return res.status(500).render('user/error', {
-            message: 'Please try again later.',
-            errorCode: 500
-        });
+      console.error("Error loading home page:", error.message)
+      return res.status(500).render('user/error', {
+        message: 'Please try again later.',
+        errorCode: 500
+      })
     }
-};
+  }
+  
 
 
 
@@ -244,40 +270,75 @@ exports.resendOtp = async (req, res) => {
 
 
 exports.loadShop = async (req, res) => {
-    console.log(req.query);
+    console.log(req.body)
+    const { sorting, search } = req.query
     
-    const { sorting } = req.query; 
-    console.log(sorting)
     let sortOption = {}
+    let filter = { is_delete: false }
+
+    if (search) {
+        filter.product_name = { $regex: search, $options: 'i' }
+    }
 
     try {
+        let cartCount = []
+        let wishlistCount = []
+
+        if (req.session.user) {
+            console.log("User ID:", req.session.user.id)
+
+            cartCount = await Cart.aggregate([
+                { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+                { $project: { itemCount: { $size: "$items" } } }
+            ])
+
+            wishlistCount = await Wishlist.aggregate([
+                { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+                { $project: { itemCount: { $size: "$products" } } }
+            ])
+        }
+
+        const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
+        const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
+        
+        // Sorting options
         switch (sorting) {
             case 'priceLowToHigh':
                 sortOption = { 'variants.price': 1 }
-                break;
+                break
             case 'priceHighToLow':
                 sortOption = { 'variants.price': -1 }
-                break;
+                break
             case 'newArrivals':
                 sortOption = { createdAt: -1 }
-                break;
+                break
             case 'aToZ':
                 sortOption = { product_name: 1 }
-                break;
+                break
             case 'zToA':
                 sortOption = { product_name: -1 }
-                break;
+                break
             default:
                 sortOption = {}
         }
 
-        const products = await Product.find({ is_delete: false }).sort(sortOption)
-        console.log(products)
-        res.render('user/shop', { products: products })
+        const products = await Product.find(filter).sort(sortOption)
+        res.render('user/shop', {
+            products: products,
+            wishlistCount: finalWishlistCount,
+            cartCount: finalCartCount
+        })
+
     } catch (error) {
-        console.log(error.message);
+        console.log(error.message)
+        if (req.xhr) {
+            return res.status(500).json({ message: 'Internal Server Error' })
+        }
+        res.status(500).send("Internal Server Error")
     }
 }
+
+
 
 
 exports.serachCategory = async (req, res) => {

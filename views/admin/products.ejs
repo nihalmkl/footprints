@@ -1,3 +1,31 @@
+<style>
+    .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination a {
+    color: #007bff;
+    text-decoration: none;
+    margin: 0 5px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination a.active {
+    background-color: #007bff;
+    color: #fff;
+    border: 1px solid #007bff;
+}
+
+.pagination a:hover {
+    background-color: #ddd;
+}
+</style>
+
 <div class="container mt-5">
     <div class="d-flex justify-content-end align-items-center mb-4">
         <a href="/admin/add_product">
@@ -98,7 +126,13 @@
         </tbody>
     </table>  
 </div>
-
+<div class="pagination mt-4">
+    <% for (let i = 1; i <= totalPages && i <= 5; i++) { %>
+        <a href="/admin/products?page=<%= i %>" class="pagination-link <%= i === currentPage ? 'active' : '' %>">
+            <%= i %>
+        </a>
+    <% } %>
+</div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Get all delete forms
@@ -143,3 +177,9 @@
         });
     });
 </script>
+<li class="sidebar-item">
+    <a href="/admin/payments" class="sidebar-link">
+        <i class="lni lni-credit-cards"></i>
+        <span>Payments</span>
+    </a>
+</li>
