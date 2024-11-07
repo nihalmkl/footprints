@@ -80,7 +80,33 @@
         border-color: #88c8bc; 
         box-shadow: 0 0 0 0.2rem rgba(88, 172, 124, 0.25);
     }
+    .product-entry {
+    position: relative;
+}
 
+.offer-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: red;
+    color: white;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 1;
+}
+
+.discounted-price {
+    color: red;
+    font-weight: bold;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: gray;
+    margin-left: 10px;
+}
 	</style>
 	</head>
 	<body>
@@ -173,12 +199,12 @@
 									<div class="owl-carousel2">
 										<div class="item">
 											<div class="col">
-												<h3><a href="#">25% off (Almost) Everything! Use Code: Summer Sale</a></h3>
+												<h3><a href="/shop">25% off (Almost) Everything! Use Code: Summer Sale</a></h3>
 											</div>
 										</div>
 										<div class="item">
 											<div class="col">
-												<h3><a href="#">Our biggest sale yet 50% off all summer shoes</a></h3>
+												<h3><a href="/shop">Our biggest sale yet 50% off all summer shoes</a></h3>
 											</div>
 										</div>
 									</div>
@@ -241,9 +267,9 @@
                         <div class="side border mb-1">
                             <h3>Category</h3>
                             <ul>
-                                <li><a href="#">casual</a></li>
-                                <li><a href="#">sports</a></li>
-                                <li><a href="#">formal</a></li>
+                                <li><a href="#" class="sortCategoty" data-value="Casual Shoes">Casual</a></li>
+                                <li><a href="#" class="sortCategoty" data-value="Sports shoes">Sports</a></li>
+                                <li><a href="#" class="sortCategoty" data-value="Formal Shoes">Formal</a></li>
                             </ul>
                         </div>
                     </div>
@@ -289,19 +315,39 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-9 col-xl-9">
+            <d<div class="col-lg-9 col-xl-9">
                 <div class="row row-pb-md">
                     <% if (products.length > 0) { %>
                         <% products.forEach((product) => { %>
                             <div class="col-lg-4 mb-4 text-center">
                                 <div class="product-entry border">
+                                    
+                                    <% if (product.offer && product.applied_discount_percentage > 0) { %>
+                                        <div class="offer-badge">
+                                            <%= product.applied_discount_percentage %>% OFF
+                                        </div>
+                                    <% } %>
+                                    
                                     <a href="/product-view/<%= product._id %>" class="prod-img">
                                         <img src="<%= product.images[0] %>" class="img-fluid" alt="Product Image">
                                     </a>
-            
+                                    
                                     <div class="desc">
                                         <h2><a href="/product_view/<%= product._id%>"><%= product.product_name %></a></h2>
-                                        <span class="price"><%= product.variants[0].price %></span>
+                                        
+                                        <span class="price">
+                                            <% if (product.applied_discount_percentage > 0) { %>
+                                                <span class="discounted-price" style="color: red; font-weight: bold;">
+                                                    ₹<%= (product.variants[0].price * (1 - product.applied_discount_percentage / 100)).toFixed(2) %>
+                                                </span>
+                                                <span class="original-price" style="text-decoration: line-through; color: gray;">
+                                                    ₹<%= product.variants[0].price %>
+                                                </span>
+                                            <% } else { %>
+                                                ₹<%= product.variants[0].price %>
+                                            <% } %>
+                                        </span>
+            
                                         <p class="star">
                                             <span style="color: rgb(227, 211, 29);">
                                                 <i class="icon-star-full"></i>
@@ -312,6 +358,7 @@
                                             </span>
                                             (85%)
                                         </p>
+            
                                         <div class="icons d-flex justify-content-center mt-2">
                                             <p class="addtowishlist">
                                                 <% if (user) { %>
@@ -321,7 +368,7 @@
                                                     </button>
                                                 <% } else { %>
                                                     <button type="button" class="btn btn-outline-danger" 
-                                                            onclick="goToLogin()">
+                                                            onclick="goTologin()">
                                                         <i class="fa fa-heart" aria-hidden="true"></i>
                                                     </button>
                                                 <% } %>
@@ -334,11 +381,11 @@
                                                     </button>
                                                 <% } else { %>
                                                     <button type="button" class="btn btn-success" 
-                                                            onclick="goToLogin()">
+                                                            onclick="goTologin()">
                                                         <i class="fa fa-shopping-cart" aria-hidden="true"></i>
                                                     </button>
                                                 <% } %>
-                                            </p>                                            
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -484,13 +531,21 @@
         const sorting = this.value
         window.location.href = `/shop?sorting=${sorting}`
     })
+    document.querySelectorAll('.sortCategoty').forEach(link => {
+    link.addEventListener('click', function(event) {
+        event.preventDefault()
+        const category = this.getAttribute('data-value') 
+        const urlParams = new URLSearchParams(window.location.search)
+        urlParams.set('category', category)
+        window.location.search = urlParams.toString()
+    })
+})
 </script>
 <script>
-function goTologin(){
-    window.location.href = '/login'
+	function goTologin(){
+	 window.location.href = '/login'
 }
 </script>
-<script>
    
 
 

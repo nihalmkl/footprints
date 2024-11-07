@@ -32,6 +32,15 @@
             flex-grow: 1;
             padding-left: 20px;
         }
+        .status-span{
+            display: inline-block;
+    padding: 2px 5px;
+    border-radius: 9px;
+    color: #fff;
+    font-weight: 500;
+    text-align: center;
+    min-width: 79px;
+}
 
         .edit-button {
             display: flex;
@@ -434,42 +443,42 @@
                         </thead>
                         <tbody>`;
 
-            orders.forEach(function(order) {
-                orderTable += `
-                    <tr>
-                        <td>${order.order_id}</td>
-                        <td>`;
-                
-                order.items.forEach(function(item) {
-                    orderTable += `*${item.product_id.product_name}<br>`; 
-                });
+                            orders.forEach(function(order) {
+    orderTable += `
+        <tr>
+            <td>${order.order_id}</td>
+            <td>`;
+    
+    order.items.forEach(function(item) {
+        orderTable += `*${item.product_id.product_name}<br>`; 
+    });
 
-                orderTable += `</td>
-                        <td>${order.payment_method === 'Cash on Delivery' ? 'COD' : order.payment_method}</td>
-                        <td>$${order.total_amount.toFixed(2)}</td>
-                        <td>`;
-                
-                if (order.order_status === 'Pending') {
-                    orderTable += `<span class="badge bg-warning">Pending</span>`;
-                } else if (order.order_status === 'Delivered') {
-                    orderTable += `<span class="badge bg-success">Delivered</span>`;
-                } else if (order.order_status === 'Cancelled') {
-                    orderTable += `<span class="badge bg-danger">Cancelled</span>`;
-                } else {
-                    orderTable += `<span class="badge bg-info">${order.order_status}</span>`;
-                }
+    orderTable += `</td>
+            <td>${order.payment_method === 'Cash on Delivery' ? 'COD' : order.payment_method}</td>
+            <td>$${order.total_amount.toFixed(2)}</td>
+            <td class="text-center">`;
 
-                orderTable += `</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary view-order" data-order-id="${order._id}">View</button>`;
-                
-                if (order.order_status === 'Pending') {
-                    orderTable += `<button class="btn btn-sm btn-danger cancel-order" data-order-id="${order._id}">Cancel</button>`;
-                }
+    if (order.order_status === 'Pending') {
+        orderTable += `<span class=" status-span bg-warning">Pending</span>`;
+    } else if (order.order_status === 'Delivered') {
+        orderTable += `<span class="status-span bg-success">Delivered</span>`;
+    } else if (order.order_status === 'Cancelled') {
+        orderTable += `<span class="status-span  bg-danger">Cancelled</span>`;
+    } else {
+        orderTable += `<span class="status-span bg-info">${order.order_status}</span>`;
+    }
 
-                orderTable += `
-                        </td>
-                    </tr>`;
+    orderTable += `</td>
+            <td>
+                <button class="btn btn-sm btn-primary view-order" data-order-id="${order._id}">View</button>`;
+    
+    if (order.order_status === 'Pending') {
+        orderTable += `<button class="btn btn-sm btn-danger cancel-order" data-order-id="${order._id}">Cancel</button>`;
+    }
+
+    orderTable += `
+            </td>
+        </tr>`;
             });
 
             orderTable += `

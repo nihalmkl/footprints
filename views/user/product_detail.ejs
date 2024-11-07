@@ -11,6 +11,9 @@
 .btn-addtocart:hover {
     background-color: #29302a; 
 }
+.large-img{
+    width: 100%;
+}
 </style>
 <div class="breadcrumbs">
     <div class="container">
@@ -27,7 +30,7 @@
         <div class="row row-pb-lg product-detail-wrap">
             <div class="col-sm-6">
                 <div class="main-product-image">
-                    <img src="<%= product.images[0] %>" id="mainProductImage" class="img-fluid" alt="Main Product Image" style="max-width: 100%; height: auto;">
+                    <img src="<%= product.images[0] %>" id="mainProductImage" class="img-fluid large-img" alt="Main Product Image" style="max-width: 100%; height: auto;">
                 </div>
             </div>
             <div class="col-sm-2">
@@ -47,9 +50,14 @@
                 <div class="product-desc">
                     <h3><%= product.product_name %></h3>
                     <p class="price">
-                        <span class="original-price">$<%= product.variants[0].price.toFixed(2) %></span>
-                        <span class="discount-price">$<%= product.variants[0].price.toFixed(2) * 0.9 %></span> 
+                        <% if (product.applied_discount_percentage > 0) { %>
+                            <span class="original-price" style="text-decoration: line-through;">₹<%= product.variants[0].price.toFixed(2) %></span>
+                            <span class="discount-price" style="color: red;">₹<%= (product.variants[0].price * (1 - product.applied_discount_percentage / 100)).toFixed(2) %></span>
+                        <% } else { %>
+                            <span class="current-price">₹<%= product.variants[0].price.toFixed(2) %></span>
+                        <% } %>
                     </p>
+                    
                     <span class="<%= product.variants[0].stock < 0 ? 'text-danger' : 'text-success' %>">
                         Available Stock: <%= product.variants[0].stock %>
                     </span>                    
@@ -79,11 +87,11 @@
                     </div>
                     <div class="input-group mb-4">
                         <span class="input-group-btn">
-                            <button type="button" class="quantity-left-minus btn" data-type="minus" data-field="">
+                            <button type="button" class="quantity-left-minus btn" data-type="minus" data-field="" disabled>
                                 <i class="icon-minus2"></i>
                             </button>
                         </span>
-                        <input type="text" id="quantity" name="quantity" class="form-control input-number" value="1" min="1" max="5" readonly>
+                        <input type="text" id="quantity" name="quantity" class="form-control input-number" value="1" min="1" max="5" data-stock="<%= product.variants[0].stock %>" readonly>
                         <span class="input-group-btn ml-1">
                             <button type="button" class="quantity-right-plus btn" data-type="plus" data-field="">
                                 <i class="icon-plus2"></i>
@@ -197,7 +205,7 @@
             <% relatedProducts.forEach(relatedProduct => { %>
                 <div class="col-sm-3">
                     <div class="product">
-                        <a href="/product/<%= relatedProduct._id %>" class="product-link">
+                        <a href="/product-view/<%= relatedProduct._id %>" class="product-link">
                             <img src="<%= relatedProduct.images[0] %>" class="img-fluid" alt="<%= relatedProduct.product_name %>">
                             <h4><%= relatedProduct.product_name %></h4>
                             <p>$<%= relatedProduct.variants[0].price %></p>
@@ -210,20 +218,45 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    const stock = parseInt(document.getElementById('quantity').getAttribute('data-stock'))
+    if (stock <= 0) {
+    Swal.fire({
+        title: "Out of Stock",
+        text: "This item is currently out of stock.",
+        icon: "error",
+        timer: 1500,
+    })
+    document.querySelector('.quantity-right-plus').disabled = true
+    
+}
     document.querySelector('.quantity-right-plus').addEventListener('click', function() {
         let quantity = parseInt(document.getElementById('quantity').value)
        
    
-        if (quantity < 5) {
+        if (quantity < stock && quantity< 5) {
             document.getElementById('quantity').value = quantity++
             console.log(quantity)
-        } else {
+            document.querySelector('.quantity-left-minus').disabled = quantity <= 1
+            return
+        }else if (quantity >= stock) {
+          Swal.fire({
+            title: "Stock Limit Reached",
+            text: `Only ${stock} items are available in stock.`,
+            icon: "error",
+            timer: 1500,
+        })
+        document.querySelector('.quantity-right-plus').disabled = true
+                document.querySelector('.quantity-left-minus').disabled = false
+
+    }
+        if(quantity>=5){
+            document.querySelector('.quantity-right-plus').disabled = true
+
             Swal.fire({
                 title: "Error",
                 text: "Maximum 5 quantity allowed",
                 icon: "error",
                 timer: 1500,
-                showConfirmButton: false
             })
         }
     })
@@ -234,13 +267,16 @@
         if (quantity > 1) {
             document.getElementById('quantity').value = quantity--
             console.log(quantity)
-        } else {
+            document.querySelector('.quantity-right-plus').disabled = quantity >= stock || quantity >= 5
+
+        }
+        if(quantity<=1){
+            document.querySelector('.quantity-left-minus').disabled = true
             Swal.fire({
                 title: "Error",
                 text: "At least 1 quantity required",
                 icon: "error",
                 timer: 1500,
-                showConfirmButton: false
             })
         }
     })

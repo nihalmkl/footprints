@@ -10,6 +10,7 @@ const Address = require('../../models/addressSchema')
 const mongoose = require('mongoose')
 const Wishlist = require('../../models/wishlistSchema')
 const Cart = require('../../models/cartSchema')
+const Category = require('../../models/categorySchema')
 
 exports.loadLogin =async (req,res) => {
     try {
@@ -56,7 +57,7 @@ exports.userLogin = async (req, res) => {
 
 exports.loadHome = async (req, res) => {
     try {
-      const products = await Product.find({ is_delete: false })
+      const products = await Product.find({ is_delete: false }).populate(['offer', 'category_id'])
       let cartCount = []
       let wishlistCount = []
   
@@ -76,7 +77,19 @@ exports.loadHome = async (req, res) => {
   
       const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
       const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
-  
+
+      products.forEach(product => {
+        const productDiscount = product.offer?.discount_percentage || 0;
+        const categoryDiscount = product.category_id?.offer?.discount_percentage || 0;
+
+        const finalDiscount = Math.max(productDiscount, categoryDiscount);
+
+        product.variants.forEach(variant => {
+            variant.discounted_price = variant.price - (variant.price * finalDiscount / 100);
+        });
+
+        product.applied_discount_percentage = finalDiscount;
+    });
       return res.render('user/home.ejs', {
         products,
         wishlistCount: finalWishlistCount,
@@ -270,16 +283,18 @@ exports.resendOtp = async (req, res) => {
 
 
 exports.loadShop = async (req, res) => {
-    console.log(req.body)
-    const { sorting, search } = req.query
-    
+    console.log("Hi")
+    const { sorting, search ,category} = req.query
     let sortOption = {}
     let filter = { is_delete: false }
-
+    console.log("dee",category)
+    if (category) {
+        filter.category_id = await Category.findOne({ category_name:category, is_delete: false }).select('_id')
+    }
     if (search) {
         filter.product_name = { $regex: search, $options: 'i' }
     }
-
+   
     try {
         let cartCount = []
         let wishlistCount = []
@@ -301,7 +316,6 @@ exports.loadShop = async (req, res) => {
         const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
         const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
         
-        // Sorting options
         switch (sorting) {
             case 'priceLowToHigh':
                 sortOption = { 'variants.price': 1 }
@@ -322,9 +336,24 @@ exports.loadShop = async (req, res) => {
                 sortOption = {}
         }
 
-        const products = await Product.find(filter).sort(sortOption)
+        const products = await Product.find(filter).sort(sortOption).populate(['offer', 'category_id']).lean();
+
+        products.forEach(product => {
+            const productDiscount = product.offer?.discount_percentage || 0;
+            const categoryDiscount = product.category_id?.offer?.discount_percentage || 0;
+    
+            const finalDiscount = Math.max(productDiscount, categoryDiscount);
+    
+            product.variants.forEach(variant => {
+                variant.discounted_price = variant.price - (variant.price * finalDiscount / 100);
+            });
+    
+            product.applied_discount_percentage = finalDiscount;
+        });
+        console.log("dh",products)
+
         res.render('user/shop', {
-            products: products,
+            products,
             wishlistCount: finalWishlistCount,
             cartCount: finalCartCount
         })
@@ -451,7 +480,37 @@ exports.resetPassword = async (req, res) => {
 
 exports.productView = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id).populate('category_id').populate('brand_id');
+        let cartCount = []
+        let wishlistCount = []
+
+        if (req.session.user) {
+            console.log("User ID:", req.session.user.id)
+
+            cartCount = await Cart.aggregate([
+                { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+                { $project: { itemCount: { $size: "$items" } } }
+            ])
+
+            wishlistCount = await Wishlist.aggregate([
+                { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+                { $project: { itemCount: { $size: "$products" } } }
+            ])
+        }
+
+        const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
+        const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
+        
+        const product = await Product.findById(req.params.id).populate(['brand_id','category_id','offer']).lean()
+        const productDiscount = product.offer?.discount_percentage || 0
+        const categoryDiscount = product.category_id?.offer?.discount_percentage || 0
+
+        const finalDiscount = Math.max(productDiscount, categoryDiscount)
+
+        product.variants.forEach(variant => {
+         variant.discounted_price = variant.price - (variant.price * finalDiscount / 100)
+       })
+        product.applied_discount_percentage = finalDiscount
+        
         const relatedProducts = await Product.find({
             category_id: product.category_id,
             _id: { $ne: product._id } 
@@ -461,7 +520,8 @@ exports.productView = async (req, res) => {
             return res.status(404).send('Product not found');
         }
 
-        res.render('user/product_detail.ejs', { product ,relatedProducts});
+        res.render('user/product_detail.ejs', { product ,relatedProducts,wishlistCount: finalWishlistCount,
+            cartCount: finalCartCount});
     } catch (error) {
         console.error(error);
         res.status(500).send('Server Error');

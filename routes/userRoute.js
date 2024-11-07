@@ -60,6 +60,8 @@ user_route.get('/orders', orderController.getOrder)
 user_route.get('/order/:id',orderController.getOrderDetails)
 user_route.put('/orders/:id',orderController.cancelOrder)
 user_route.post('/quantityUpdate',orderController.qantityUpdate)
+user_route.post('/orders/:orderId/:itemId/request-return', orderController.returnProduct);
+user_route.post('/apply-coupon',orderController.applyCoupon)
 user_route.get('/wallet', async (req, res) => {
   try {
     console.log("djkak")
@@ -88,11 +90,8 @@ user_route.post('/orders/:orderId/request-return', async (req, res) => {
           if (!order.return_request) {
             order.return_request = true
             order.return_reason = return_reason
-            order.admin_accepted = 'Pending' // Set status to pending
+            order.admin_accepted = 'Pending' 
             await order.save()
-    
-            // Notify admin (this can be an email or message in admin panel)
-            // Example: Notify the admin by setting up an admin notification system
     
             return res.redirect(`/orders/${orderId}`)
           } else {

@@ -52,8 +52,8 @@ exports.addCoupon = async (req, res) => {
 
     if (new Date(endDate) <= new Date(startDate)) return res.json({ success: false, error: 'End date must be after the start date.' })
 
-    const currentDate = new Date();
-    if (new Date(startDate) < currentDate) return res.json({ success: false, error: 'Start date cannot be in the past' })
+    // const currentDate = new Date();
+    // if (new Date(startDate) < currentDate) return res.json({ success: false, error: 'Start date cannot be in the past' })
 
   
     if (!minAmount) return res.json({ success: false, error: 'Coupon minAmount is empty' })
@@ -109,8 +109,8 @@ exports.editCoupon = async (req, res) => {
 
     if (new Date(endDate) <= new Date(startDate)) return res.json({ success: false, error: 'End date must be after the start date.' })
 
-    const currentDate = new Date();
-    if (new Date(startDate) < currentDate) return res.json({ success: false, error: 'Start date cannot be in the past' })
+    // const currentDate = new Date();
+    // if (new Date(startDate) < currentDate) return res.json({ success: false, error: 'Start date cannot be in the past' })
 
 
     if (!minAmount) return res.json({ success: false, error: 'Coupon minimum amount is empty' })

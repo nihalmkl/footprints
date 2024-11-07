@@ -1,5 +1,30 @@
 
 	<%- include('../partials/header.ejs') %>
+	<style>
+		.offer-badge {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    background-color: red;
+    color: white;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 1;
+}
+
+.discounted-price {
+    color: red;
+    font-weight: bold;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: gray;
+    margin-left: 10px;
+}
+	</style>
 		<aside id="colorlib-hero">
 			<div class="flexslider">
 				<ul class="slides">
@@ -100,59 +125,81 @@
 					</div>
 				</div>
 				<div class="row row-pb-md">
-					<% if (products && products.length > 0) { %>
-						<% products.forEach(product => { %>
-							<div class="col-lg-3 mb-4 text-center">
-								<div class="product-entry border">
-									<a href="/product-view/<%= product._id %>" class="prod-img">
-										<img src="<%= product.images[0] %>" class="img-fluid" alt="<%= product.product_name %>">
-									</a>
-									<div class="desc">
-										<h2><a href="#"><%= product.product_name %></a></h2>
-										<span class="price">$<%= product.variants[0].price %></span>
-									</div>
-									<p class="star">
-										<span style="color: rgb(227, 211, 29);">
-											<i class="icon-star-full"></i>
-											<i class="icon-star-full"></i>
-											<i class="icon-star-full"></i>
-											<i class="icon-star-full"></i>
-											<i class="icon-star-empty"></i>
-										</span>
-										(85%)
-									</p>
-									<div class="icons d-flex justify-content-center mt-2">
-										<p class="addtowishlist">
-											<% if (user) { %>
-												<button type="button" class="btn btn-outline-danger" 
-														onclick="addToWishlist('<%= user._id %>', '<%= product._id %>')">
-													<i class="fa fa-heart" aria-hidden="true"></i>
-												</button>
-											<% } else { %>
-												<button type="button" class="btn btn-outline-danger" 
-														onclick="goTologin()">
-													<i class="fa fa-heart" aria-hidden="true"></i>
-												</button>
-											<% } %>
-										</p>
-										<p class="addtocart">
-											<% if (user) { %>
-												<button type="button" class="btn btn-success" 
-														onclick="addToCart('<%= user._id %>', '<%= product._id %>', 1)">
-													<i class="fa fa-shopping-cart" aria-hidden="true"></i>
-												</button>
-											<% } else { %>
-												<button type="button" class="btn btn-success" 
-														onclick="goTologin()">
-													<i class="fa fa-shopping-cart" aria-hidden="true"></i>
-												</button>
-											<% } %>
-										</p>
-									</div>
-								</div>
-							</div>
-						<% }); %>
-					<% } else { %>
+					<% if (products.length > 0) { %>
+                        <% products.forEach((product) => { %>
+                            <div class="col-lg-4 mb-4 text-center">
+                                <div class="product-entry border">
+                                    
+                                    <% if (product.offer && product.offer.discount_percentage > 0) { %>
+                                        <div class="offer-badge">
+                                            <%= product.offer.discount_percentage %>% OFF
+                                        </div>
+                                    <% } %>
+                                    
+                                    <a href="/product-view/<%= product._id %>" class="prod-img">
+                                        <img src="<%= product.images[0] %>" class="img-fluid" alt="Product Image">
+                                    </a>
+                                    
+                                    <div class="desc">
+                                        <h2><a href="/product_view/<%= product._id%>"><%= product.product_name %></a></h2>
+                                        
+                                        <span class="price">
+                                            <% if (product.applied_discount_percentage > 0) { %>
+                                                <span class="discounted-price" style="color: red; font-weight: bold;">
+                                                    ₹<%= (product.variants[0].price * (1 - product.applied_discount_percentage / 100)).toFixed(2) %>
+                                                </span>
+                                                <span class="original-price" style="text-decoration: line-through; color: gray;">
+                                                    ₹<%= product.variants[0].price %>
+                                                </span>
+                                            <% } else { %>
+                                                ₹<%= product.variants[0].price %>
+                                            <% } %>
+                                        </span>
+            
+                                        <p class="star">
+                                            <span style="color: rgb(227, 211, 29);">
+                                                <i class="icon-star-full"></i>
+                                                <i class="icon-star-full"></i>
+                                                <i class="icon-star-full"></i>
+                                                <i class="icon-star-full"></i>
+                                                <i class="icon-star-empty"></i>
+                                            </span>
+                                            (85%)
+                                        </p>
+            
+                                        <div class="icons d-flex justify-content-center mt-2">
+                                            <p class="addtowishlist">
+                                                <% if (user) { %>
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            onclick="addToWishlist('<%= user._id %>', '<%= product._id %>')">
+                                                        <i class="fa fa-heart" aria-hidden="true"></i>
+                                                    </button>
+                                                <% } else { %>
+                                                    <button type="button" class="btn btn-outline-danger" 
+                                                            onclick="goTologin()">
+                                                        <i class="fa fa-heart" aria-hidden="true"></i>
+                                                    </button>
+                                                <% } %>
+                                            </p>
+                                            <p class="addtocart">
+                                                <% if (user) { %>
+                                                    <button type="button" class="btn btn-success" 
+                                                            onclick="addToCart('<%= user._id %>', '<%= product._id %>', 1)">
+                                                        <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                                                    </button>
+                                                <% } else { %>
+                                                    <button type="button" class="btn btn-success" 
+                                                            onclick="goTologin()">
+                                                        <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                                                    </button>
+                                                <% } %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
 						<div>
 							<h1>No Products Available</h1>
 						</div>

@@ -12,79 +12,112 @@ body {
 .card-title {
     font-weight: bold;
 }
+
+.text-align-right {
+    text-align: right;
+}
 </style>
 </head>
 <body>
 
-<div class="container my-5">
-    <h1 class="mb-4">Order Details</h1>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Order ID: <%= order.order_id %></h5>
-            
-            <p class="card-text"><strong>Address:</strong></p>
-    <ul>
-        <li><strong>Full Name:</strong> <%= address.full_name %></li>
-        <li><strong>Street Address:</strong> <%= address.street_address %></li>
-        <li><strong>City:</strong> <%= address.city %></li>
-        <li><strong>State:</strong> <%= address.state %></li>
-        <li><strong>Postal Code:</strong> <%= address.pincode %></li>
-        <li><strong>Country:</strong> <%= address.country %></li>
-        <li><strong>Phone:</strong> <%= address.phone %></li>
-    </ul>
-    <h6 class="card-title">Status: <%= order.payment_status %></h6>
-    <% if (order.order_status === 'Pending') { %>
-        <p><strong>Expected Delivery Date:</strong> <%= order.placed_at ? order.placed_at.toDateString() : 'TBD' %></p>
-    <% } %>
-            <h4 class="mt-4">Items</h4>
-            <ul class="list-group">
-                <% order.items.forEach(function(item) { %>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <img src="<%= item.product_id.images[0] %>" class="img-fluid" alt="Product Image" style="width: 50px; height: 50px; margin-right: 10px;">
-                            <div>
-                                <strong>Product Name:</strong> <%= item.product_id.product_name %><br>
-                                <strong>Quantity:</strong> <%= item.quantity %><br>
-                                <strong>Price:</strong> $<%= item.price.toFixed(2) %>
+    <div class="container my-5">
+        <h1 class="mb-4">Order Details</h1>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Order ID: <%= order.order_id %></h5>
+                
+                <p class="card-text"><strong>Address:</strong></p>
+                <ul>
+                    <li><strong>Full Name:</strong> <%= address.full_name %></li>
+                    <li><strong>Street Address:</strong> <%= address.street_address %></li>
+                    <li><strong>City:</strong> <%= address.city %></li>
+                    <li><strong>State:</strong> <%= address.state %></li>
+                    <li><strong>Postal Code:</strong> <%= address.pincode %></li>
+                    <li><strong>Country:</strong> <%= address.country %></li>
+                    <li><strong>Phone:</strong> <%= address.phone %></li>
+                </ul>
+    
+                <h6 class="card-title text-align-right">Status: <%= order.order_status %></h6>
+                <% if (order.order_status === 'Pending') { %>
+                    <p><strong>Expected Delivery Date:</strong> <%= order.placed_at ? order.placed_at.toDateString() : 'TBD' %></p>
+                <% } %>
+    
+                <h4 class="mt-4">Items</h4>
+                <ul class="list-group">
+                    <% order.items.forEach(function(item) { %>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="<%= item.product_id.images[0] %>" class="img-fluid" alt="Product Image" style="width: 50px; height: 50px; margin-right: 10px;">
+                                <div>
+                                    <strong>Product Name:</strong> <%= item.product_id.product_name %><br>
+                                    <strong>Quantity:</strong> <%= item.quantity %><br>
+                                    <strong>Price:</strong> $<%= item.price.toFixed(2) %>
+                                </div>
                             </div>
-                        </div>
-                    </li>
-                <% }); %>
-            </ul>
-          <a href="/profile/<%= user._id %>" class="btn  mt-3" style="width: 6rem; background-color: #88c8bc;">Back</a>
-            <% if (!order.return_request) { %>
-                <button type="button" class="btn btn-warning mt-3" style="width: 6rem;" data-bs-toggle="modal" data-bs-target="#returnModal">
-                  Request Return
-                </button>
-              
-                <!-- Modal -->
-                <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
-                  <div class="modal-dialog">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title" id="returnModalLabel">Return Request</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                        <form action="/orders/<%= order._id %>/request-return" method="POST">
-                          <div class="mb-3">
-                            <label for="returnReason" class="form-label">Reason for Return</label>
-                            <textarea class="form-control" id="returnReason" name="return_reason" required></textarea>
-                          </div>
-                          <button type="submit" class="btn btn-primary">Submit Request</button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              <% } else if (order.admin_accepted === 'Pending') { %>
-                <p class="text-muted mt-3">Return Requested (Pending Admin Approval)</p>
-              <% } else if (order.admin_accepted === 'Accepted') { %>
-                <p class="text-success mt-3">Return Accepted</p>
-              <% } else if (order.admin_accepted === 'Rejected') { %>
-                <p class="text-danger mt-3">Return Rejected</p>
-              <% } %>     
+                            <% if (order.order_status === 'Delivered') { %>
+                                <button type="button" class="btn btn-warning btn-sm return-button" data-item-id="<%= item._id %>">
+                                    Request Return
+                                </button>
+                            <% } %>
+                        </li>
+                    <% }); %>
+                </ul>
+                
+                <script>
+                    document.querySelectorAll('.return-button').forEach(button => {
+                        button.addEventListener('click', async (e) => {
+                            const itemId = e.target.getAttribute('data-item-id')
+                            const orderId = "<%= order._id %>"
+                
+                            try {
+                                const response = await fetch(`/orders/${orderId}/${itemId}/request-return`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    }
+                                })
+                
+                                const result = await response.json()
+                
+                                if (response.ok) {
+                                    Swal.fire({
+                                        title: "Success",
+                                        text: result.message,
+                                        icon: "success",
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(() => {
+                                        window.location.reload()
+                                    })
+                                } else {
+                                    Swal.fire({
+                                        title: "Failed",
+                                        text: result.message || "Failed to submit return request",
+                                        icon: "error",
+                                        timer: 1500
+                                    })
+                                }
+                            } catch (error) {
+                                console.error("Error:", error)
+                                Swal.fire({
+                                    title: "Error!",
+                                    text: "Please try again later",
+                                    icon: "error",
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                })
+                            }
+                        })
+                    })
+                </script>
+                
+                
+
+    
+                <a href="/" class="btn mt-3" style="width: 6rem; background-color: #88c8bc;">Back</a>
+            </div>
         </div>
     </div>
-</div>
-    <%- include('../partials/footer') %>
+    
+
+<%- include('../partials/footer') %>

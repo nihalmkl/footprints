@@ -5,8 +5,6 @@
             <nav>
                 <div class="nav nav-tabs" id="nav-tab" role="tablist">
                   <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Offers</button>
-                  <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Products</button>
-                  <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Categories</button>
                 </div>
               </nav>
               <div class="tab-content" id="nav-tabContent">
@@ -80,65 +78,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Add Offer Card End--1 -->
-
-                <!-- Products Card Start--2 -->
-                <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                  <div class="row row-cols-1 row-cols-md-3 g-4">
-                      <% product.forEach(product => { %>
-                      <div class="col">
-                          <div class="card h-100">
-                              <div class="d-flex justify-content-center mt-3">
-                                  <img src="<%= product.images[0] %>" alt="" style="width: 100px; height: auto;">
-                              </div>
-                              <div class="card-body">
-                                  <div class="mb-3">
-                                      <p class="card-title text-center"><%= product.product_name %></p>
-                                      <select class="form-select" id="editType" required>
-                                          <option value="offer">Select Offers</option>
-                                          <% selectoffer.forEach(offer => { %>
-                                              <option value="product"><%= offer.offer_name %> - <%= offer.discount_percentage %>%</option>
-                                          <% }) %>
-                                      </select>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                      <% }) %>
-                  </div>
-              </div>
-              <!-- Products Card End--2 -->
               
-              <!-- Categories Card Start--3 -->
-              <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
-                  <table class="table">
-                      <thead>
-                          <tr>
-                              <th scope="col">SL</th>
-                              <th scope="col">Category</th>
-                              <th scope="col">Offer</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                          <% category.forEach((category, index) => { %>
-                          <tr>
-                              <th scope="row"><%= index + 1 %></th>
-                              <td><%= category.category_name %></td>
-                              <td>
-                                  <select class="form-select" id="editType" required>
-                                      <option value="offer">Select Offers</option>
-                                      <% selectoffer.forEach(offer => { %>
-                                          <option value="product"><%= offer.offer_name %> - <%= offer.discount_percentage %>%</option>
-                                      <% }) %>
-                                  </select>
-                              </td>
-                          </tr>
-                          <% }) %>
-                      </tbody>
-                  </table>
-              </div>
-                <!-- Categories Card End--3 -->
-              </div>
         </main>
     
         <!-- Edit Modal -->

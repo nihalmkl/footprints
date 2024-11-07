@@ -4,11 +4,11 @@ const {Schema} = mongoose
 const categoryShema = new Schema({
     category_name:{
         type:String,
-        required:'true'
+        required:true
     },
     is_delete:{
         type:Boolean,
-        default:'false'
+        default:false
     },
     offer:{
         type:mongoose.Schema.Types.ObjectId,

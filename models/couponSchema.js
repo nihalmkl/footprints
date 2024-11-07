@@ -10,7 +10,6 @@ const couponSchema = new Schema({
     discount: {
         type: Number,
         required: true,
-
     },
     start_date: {
         type: Date,

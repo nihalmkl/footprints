@@ -1,5 +1,5 @@
 const Category = require("../../models/categorySchema");
-
+const Offer = require('../../models/offerSchema')
 exports.loadCategory = async (req, res) => {
   try {
     const limit = 4
@@ -8,17 +8,19 @@ exports.loadCategory = async (req, res) => {
 
     const categories = await Category.find({})
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate('offer')
 
     const totalCategories = await Category.countDocuments();
     const totalPages = Math.ceil(totalCategories / limit);
-
+    const offers = await Offer.find({ is_delete: false })
     res.render("admin/category", {
       layout: "layout/admin",
       title: "Categories",
       categories,
       currentPage: page,
       totalPages: totalPages,
+      Offers:offers
     });
   } catch (error) {
     console.log(error);
@@ -109,3 +111,15 @@ exports.deleteCategory = async (req, res) => {
 };
 
 
+exports.applyCategory= async (req, res) => {
+  const { offer_id } = req.body
+  const { categoryId } = req.params
+  try {
+    const offerValue = offer_id ? offer_id : null
+      await Category.findByIdAndUpdate(categoryId, { offer: offerValue })
+      res.json({ success: true, message: 'Offer applied to category successfully' })
+  } catch (error) {
+      console.error(error)
+      res.json({ success: false, message: 'Failed to apply offer to category' })
+  }
+}

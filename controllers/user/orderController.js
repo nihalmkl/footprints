@@ -5,6 +5,7 @@ const Address = require('../../models/addressSchema')
 const Cart = require('../../models/cartSchema')
 const Orders = require('../../models/orderSchema')
 const Wishlist = require('../../models/wishlistSchema')
+const Coupon = require('../../models/couponSchema')
 const mongoose = require('mongoose')
 const razorpay = require('../../config/razorpay')
 const crypto = require('crypto')
@@ -28,7 +29,7 @@ try {
             { $project: { itemCount: { $size: "$products" } } }
         ])
     }
-
+     const coupons = await Coupon.find({ expiry_date: { $gte: new Date() } })
     const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
     const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
    const cart = await Cart.findOne({ user_id: userId }).populate('items.product_id');
@@ -40,7 +41,7 @@ try {
    }
    
    return res.render('user/checkout',{cart,addresses:addresses,userId,  wishlistCount: finalWishlistCount,
-    cartCount: finalCartCount})
+    cartCount: finalCartCount,coupons})
 } catch (error) {
    console.error('Error fetching cart:', error.message);
    return res.status(500).json({ message: 'Server Error' });
@@ -57,7 +58,7 @@ return `ORD${randomDigits}`
 
 
 
-    exports.placeOrder = async (req, res) => {
+exports.placeOrder = async (req, res) => {
         const { address_id, payment_method, payment_id, order_id, signature } = req.body;
     
         if (!address_id || !payment_method) {
@@ -114,7 +115,10 @@ return `ORD${randomDigits}`
             const isVerified = verifyPayment(payment_id, order_id, signature); 
             console.log("23",isVerified)
             if (isVerified) {
-                console.log("23456")
+                userCart.items = [];
+                userCart.total_price = 0;
+                await userCart.save();
+
                 return res.status(200).json({success:true, message: "Order placed successfully!", razorpayOrderId: razorpayOrder.id, amount: newOrder.total_amount });
             } else {
                 console.log(333)
@@ -129,7 +133,7 @@ return `ORD${randomDigits}`
         res.status(500).json({ message: "Failed to place the order." });
         }
     }
-    function verifyPayment(payment_id, order_id, signature) {
+function verifyPayment(payment_id, order_id, signature) {
         const secret = process.env.RAZOR_PAY_KEY_SECRET
         const body = `${order_id}|${payment_id}`
         const expectedSignature = crypto
@@ -154,21 +158,41 @@ try {
 
 exports.getOrderDetails = async (req, res) => {
 try {
+    
    const orderId = req.params.id;
 
    const order = await Orders.findById(orderId).populate('items.product_id')
-   console.log(order)
-   const addressDocument = await Address.findOne({ 'address._id': order.address_id })
-
+   if (!order) {
+    return res.status(404).send({ message: 'Order not found' })
+}
+   console.log("nihalee",order)
+   const addressDocument = await Address.findOne({ '_id': order.address_id })
+   console.log("ni",addressDocument)
  if (!addressDocument) {
      return res.status(404).send({ message: 'Address not found' })
  }
+ let cartCount = []
+    let wishlistCount = []
 
- const address = addressDocument.address[0]
-   if (!order) {
-       return res.status(404).send({ message: 'Order not found' })
-   }
-     res.render('user/order-view', { order,address})
+    if (req.session.user) {
+        console.log("User ID:", req.session.user.id)
+
+        cartCount = await Cart.aggregate([
+            { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+            { $project: { itemCount: { $size: "$items" } } }
+        ])
+
+        wishlistCount = await Wishlist.aggregate([
+            { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
+            { $project: { itemCount: { $size: "$products" } } }
+        ])
+    }
+
+    const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
+    const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
+
+ res.render('user/order-view', { order, address: addressDocument , wishlistCount: finalWishlistCount,
+    cartCount: finalCartCount})
 } catch (error) {
    console.error(error);
    res.status(500).send({ message: 'Error fetching order details' })
@@ -179,9 +203,7 @@ try {
 exports.cancelOrder = async (req, res) => {
 try {
    const orderId = req.params.id;
-    console.log("nihal",orderId)
    const order = await Orders.findById(orderId).populate('items.product_id');
-   console.log("sha",order)
    if (!order) {
        return res.status(404).json({ error: 'Order not found' });
    }
@@ -245,3 +267,65 @@ try {
 }
 }
 
+exports.returnProduct = async (req, res) => {
+    try {
+        const orderId = req.params.orderId
+        const itemId = req.params.itemId
+
+        const order = await Orders.findOneAndUpdate(
+            { _id: orderId, 'items._id': itemId },
+            { $set: { order_status: 'Returned' } },
+            { new: true } 
+        );
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order or item not found' })
+        }
+        
+        res.status(200).json({ message: 'Return request submitted successfully', order })
+    } catch (error) {
+        console.error("Error in return request:", error)
+        res.status(500).json({ message: 'Internal server error' })
+    }
+}
+
+
+exports.applyCoupon = async (req, res) => {
+    try {
+        console.log(req.body)
+      const { couponCode,totalPrice  } = req.body
+
+      const coupon = await Coupon.findOne({ coupon_code: couponCode })
+      console.log('hii',coupon)
+      if (!coupon) {
+        return res.json({ success: false, message: 'Invalid coupon code' })
+      }
+  
+      const now = new Date()
+      if (now < coupon.start_date || now > coupon.expiry_date) {
+        return res.json({ success: false, message: 'Coupon is expired or not active' })
+      }
+      console.log("345",now)
+  
+      console.log("tot",totalPrice)
+      if (totalPrice < coupon.min_pur_amount) {
+        return res.json({ success: false, message: `Minimum purchase of ₹${coupon.min_pur_amount} required` })
+      }
+  
+      // Calculate discount and apply max limit if necessary
+      let discount = (totalPrice * coupon.discount) / 100
+      console.log("dis",discount)
+      if (coupon.max_coupon_amount && discount > coupon.max_coupon_amount) {
+        discount = coupon.max_coupon_amount
+      }
+  
+      const newTotal = totalPrice - discount
+      console.log(newTotal)
+  
+      res.json({ success: true, newTotal,discount })
+    } catch (error) {
+      console.error('Error applying coupon:', error)
+      res.status(500).json({ success: false, message: 'Internal server error' })
+    }
+  }
+  

@@ -1,6 +1,7 @@
 const Product = require('../../models/productSchema')
 const Category = require('../../models/categorySchema')
 const Brand = require('../../models/brandSchema')
+const Offer = require('../../models/offerSchema')
 const User = require('../../models/userSchema')
 const fs = require('fs')
 const path = require('path')
@@ -16,8 +17,9 @@ exports.loadProducts = async (req, res) => {
             .skip(skip)
             .limit(limit)
             .populate('category_id')
-            .populate('brand_id');
-
+            .populate('brand_id')
+            .populate('offer')
+        const offers = await Offer.find({ is_delete: false })
         const totalProducts = await Product.countDocuments();
         const totalPages = Math.ceil(totalProducts / limit);
 
@@ -27,6 +29,7 @@ exports.loadProducts = async (req, res) => {
             Products: products,
             currentPage: page,
             totalPages: totalPages > 5 ? 5 : totalPages, 
+            Offers: offers
         });
     } catch (error) {
         console.error('Error fetching products:', error);
@@ -144,31 +147,25 @@ exports.editProductPage = async (req, res) => {
 };
 
 exports.editProduct = async (req, res) => {
-    console.log("Request Body:", req.body); 
     const { productName, category, brand, description, existingImages } = req.body;
+    
     try {
         const product = await Product.findById(req.params.id);
-
         if (!product) {
             return res.status(404).send('Product not found');
         }
 
-        
         product.product_name = productName;
         product.category_id = category;
         product.brand_id = brand;
         product.description = description;
- 
-        
-        req.body[`stock${index}`], 
-        req.body[`price${index}`] 
-        
+
         const variants = [];
         const sizeKeys = Object.keys(req.body).filter(key => key.startsWith('size'));
         sizeKeys.forEach((sizeKey, index) => {
             const size = req.body[sizeKey];
-            const stock = req.body[`stock${index}`]; 
-            const price = req.body[`price${index}`]; 
+            const stock = req.body[`stock${index}`];
+            const price = req.body[`price${index}`];
 
             if (product.variants[index]) {
                 product.variants[index].size = size;
@@ -182,11 +179,13 @@ exports.editProduct = async (req, res) => {
                 });
             }
         });
+
         product.variants.push(...variants);
+
         if (req.files) {
             req.files.forEach(file => {
                 const newImagePath = `/public/uploads/${file.filename}`;
-                product.images.push(newImagePath); 
+                product.images.push(newImagePath);
             });
         }
 
@@ -194,13 +193,15 @@ exports.editProduct = async (req, res) => {
             product.images = product.images.filter(image => !existingImages.includes(image));
         }
 
-        await product.save(); 
+        await product.save();
+        
         res.status(200).send('Product updated successfully');
     } catch (error) {
         console.error(error);
         res.status(500).send('Server error');
     }
 };
+
 
 
     
@@ -221,5 +222,19 @@ exports.deleteImage = async (req, res) => {
     } catch (error) {
         console.error('Error deleting image:', error); 
         res.status(500).json({ message: 'Error deleting image', error });
+    }
+}
+exports.applyOffer = async (req, res) => {
+    const { offer_id } = req.body
+    const { productId } = req.params
+     console.log("shav",offer_id,"nihal",productId)
+    try {
+        const offerValue = offer_id ? offer_id : null
+        await Product.findByIdAndUpdate(productId, { offer: offerValue })
+        console.log(124)
+        res.json({ success: true, message: 'Offer applied successfully' })
+    } catch (error) {
+        console.error(error)
+        res.json({ success: false, message: 'Failed to apply offer' })
     }
 }

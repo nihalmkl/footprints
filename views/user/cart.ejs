@@ -48,7 +48,7 @@
                                     </td>
                     
                                     <td>
-                                        <span class="price">$<%= item.price %></span>
+                                        <span class="price">₹<%= item.price %></span>
                                     </td>
                     
                                     <td>
@@ -94,12 +94,11 @@
                         <div class="col-sm-4 text-center">
                             <div class="total">
                                 <div class="sub">
-                                    <p><span>Subtotal:</span> <span id="subtotal"><%= cart.total_price %></span></p>
-                                    <p><span>Delivery:</span> <span id="delivery"><%= cart.delivery_charge%> </span></p>
-                                    <p><span>Discount:</span> <span id="discount">000</span></p>
+                                    <p><span>Subtotal:</span> <span id="subtotal">₹<%= cart.total_price %></span></p>
+                                    <p><span>Delivery:</span> <span id="delivery">₹<%= cart.delivery_charge%> </span></p>
                                 </div>
                                 <div class="grand-total">
-                                    <p><span><strong>Total:</strong></span> <span id="total">$<%= cart.total_price %></span></p>
+                                    <p><span><strong>Total:</strong></span> <span id="total">₹<%= cart.total_price %></span></p>
                                 </div>
                                 <div>
                                     <% if (cart.items.length > 0) { %>

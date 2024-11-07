@@ -254,13 +254,13 @@
       text: "Discount must be a number between 1 and 100."
     })
   }
-  if (!startDate || startDate < currentDate) {
-    return Toast.fire({
-      icon: "error",
-      title: "Invalid Start Date",
-      text: "Start date cannot be in the past."
-    })
-  }
+  // if (!startDate || startDate < currentDate) {
+  //   return Toast.fire({
+  //     icon: "error",
+  //     title: "Invalid Start Date",
+  //     text: "Start date cannot be in the past."
+  //   })
+  // }
   if (!endDate || endDate <= startDate) {
     return Toast.fire({
       icon: "error",

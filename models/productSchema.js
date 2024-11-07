@@ -43,10 +43,6 @@
             },
            
         }],
-        discount_amount: {  
-            type: Number,
-            default: 0
-        },
         offer:{
             type:mongoose.Schema.Types.ObjectId,
             ref:'Offer'

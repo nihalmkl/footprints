@@ -1,1 +1,201 @@
-<h1>dashboard</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report Filter</title>
+    <style>
+       
+
+        /* Form Container */
+        .container {
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            color: #555;
+        }
+
+        select, input[type="date"], button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        select, input[type="date"] {
+            color: #555;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Report Card */
+        .card {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #333;
+            text-align: left;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .card p {
+            font-size: 1rem;
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+
+        /* Export Buttons */
+        .export-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .export-buttons button {
+            width: 48%;
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .export-buttons button:nth-child(2) {
+            background-color: #f1c40f;
+        }
+
+        .export-buttons button:hover {
+            opacity: 0.9;
+        }
+
+        /* Custom Date Range Visibility */
+        #customDateRange {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .container {
+                padding: 15px;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .card h3 {
+                font-size: 1.3rem;
+            }
+
+            .export-buttons button {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Sales Report Filter</h2>
+        <form id="salesReportForm">
+            <label for="dateFilter">Select Date Range:</label>
+            <select id="dateFilter" name="dateFilter" onchange="toggleCustomDate()">
+                <option value="1day">1 Day</option>
+                <option value="1week">1 Week</option>
+                <option value="1month">1 Month</option>
+                <option value="custom">Custom Range</option>
+            </select>
+            
+            <div id="customDateRange">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" name="startDate">
+                
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" name="endDate">
+            </div>
+            
+            <button type="button" onclick="fetchSalesReport()">Generate Report</button>
+        </form>
+
+        <div id="reportOutput"></div>
+
+        <div class="export-buttons">
+            <button onclick="window.location.href='/admin/export-sales-report/pdf'">Download PDF</button>
+            <button onclick="window.location.href='/admin/export-sales-report/excel'">Download Excel</button>
+        </div>
+    </div>
+
+    <script>
+        // Toggle custom date range fields
+        function toggleCustomDate() {
+            const dateFilter = document.getElementById('dateFilter').value
+            const customDateRange = document.getElementById('customDateRange')
+            customDateRange.style.display = dateFilter === 'custom' ? 'block' : 'none'
+        }
+
+        async function fetchSalesReport() {
+            const dateFilter = document.getElementById('dateFilter').value
+            const startDate = document.getElementById('startDate').value
+            const endDate = document.getElementById('endDate').value
+
+            let url = `/admin/sales-report?frequency=${dateFilter}`
+            if (dateFilter === 'custom' && startDate && endDate) {
+                url = `/admin/sales-report?startDate=${startDate}&endDate=${endDate}`
+            }
+
+            try {
+                const response = await fetch(url)
+                const reportData = await response.json()
+
+                displayReport(reportData)
+            } catch (error) {
+                console.error("Error fetching sales report:", error)
+                document.getElementById("reportOutput").textContent = "Failed to fetch sales report."
+            }
+        }
+
+        function displayReport(data) {
+            console.log(data.productDetails)
+            const outputDiv = document.getElementById("reportOutput")
+            outputDiv.innerHTML = `
+                <div class="card">
+                    <h3>Sales Report</h3>
+                    <p><strong>Total Orders:</strong> ${data[0].totalOrders}</p>
+                    <p><strong>Total Sales Amount:</strong> $${data[0].totalAmount}</p>
+                    <p><strong>Total Discount:</strong> $${data[0].totalDiscount}</p>
+                    <p><strong>Total Products:</strong> ${data[0].totalProducts}</p>
+                    <p><strong>Total Users:</strong> ${data[0].totalUsers}</p>
+                </div>
+            `
+        }
+    </script>
+</body>
+</html>
