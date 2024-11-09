@@ -150,7 +150,7 @@
                                                         <%= item.quantity %> x <%= item.product_id.product_name%>
                                                     </span> 
                                                     <span>
-                                                        <%= item.price %>
+                                                        <%= item.price.toFixed(2) %>
                                                     </span></li>
                                                 <% }) %>
                                                     <% } %>
@@ -165,7 +165,7 @@
                                     <%= cart.delivery_charge%>
                                 </span></li>
                                 <li><span>Order Total</span> <span id="ordertotal">
-                                        <%= cart.total_price%>
+                                        <%= cart.total_price.toFixed(2)%>
                                     </span></li>
                             </ul>
                         </div>
@@ -385,9 +385,11 @@
     }
 
  async function placeOrder() {
+    document.querySelector('.place-order').disabled = true;
   const addressId = document.getElementById("address").value
   const paymentMethod = document.querySelector('input[name="payment_method"]:checked')
-
+  const discountedTotalPrice = parseFloat(document.getElementById('ordertotal').textContent)
+  const couponCode = document.getElementById('coupon-code').value
   if (addressId === "#" || !paymentMethod) {
     Swal.fire({
       title: "Error",
@@ -399,7 +401,7 @@
     return
   }
 
-  const orderData = { address_id: addressId, payment_method: paymentMethod.value }
+  const orderData = { address_id: addressId, payment_method: paymentMethod.value,total_amount: discountedTotalPrice,couponCode:couponCode}
 
   const response = await fetch('/order/place_order', {
     method: 'POST',
@@ -425,7 +427,7 @@
     else if (paymentMethod.value === 'card') {
       const options = {
         key: 'rzp_test_MoQOrZAlepfiB7',
-        amount: result.amount * 100,
+        amount: discountedTotalPrice * 100,
         currency: 'INR',
         name: 'FootPrints',
         description: "Payment for order",
@@ -441,7 +443,8 @@
               payment_method: paymentMethod.value,
               payment_id: response.razorpay_payment_id,
               order_id: response.razorpay_order_id,
-              signature: response.razorpay_signature
+              signature: response.razorpay_signature,
+              total_amount: discountedTotalPrice 
             })
           });
 
@@ -478,6 +481,7 @@
       razorpay.open()
     }
   } else {
+    document.querySelector('.place-order').disabled = false
     Swal.fire({
       icon: 'error',
       title: 'Failed to Order',
@@ -487,7 +491,7 @@
   }
 }
 
-
+let originalTotalPrice = parseFloat(document.getElementById('ordertotal').textContent)
 document.querySelector('.place-order').addEventListener('click', (event) => {
     event.preventDefault();  
     placeOrder(); 
@@ -523,13 +527,15 @@ async function applyCoupon(event) {
       Swal.fire({
         icon: 'success',
         title: 'Coupon Applied!',
-        text: `New total: ₹${data.newTotal}`,
+        text: `New total:₹${data.newTotal.toFixed(2)}`,
         showConfirmButton: false,
         timer: 2000
       })
-      document.getElementById('coupon-success').innerText = `Coupon applied! New total: ₹${data.newTotal}`
-      document.getElementById('discount-price-div').innerHTML = data.discount
-      document.getElementById('ordertotal').innerHTML = data.newTotal
+      document.getElementById('coupon-success').innerText = `Coupon applied!}`
+      document.getElementById('discount-price-div').innerHTML = data.discount.toFixed(2)
+      document.getElementById('ordertotal').innerHTML = data.newTotal.toFixed(2);
+      discountedTotalPrice = data.newTotal;
+
     } else {
       Swal.fire({
         icon: 'error',
@@ -548,23 +554,19 @@ async function applyCoupon(event) {
 }
 
 
-    // Get the modal, the button that opens it, and the close button
     const modal = document.getElementById("couponModal")
     const openModalBtn = document.getElementById("openModal")
     const closeModalBtn = document.querySelector(".close")
   
-    // Open the modal when clicking "Available Coupons"
     openModalBtn.addEventListener("click", function (event) {
       event.preventDefault()
       modal.style.display = "block"
     })
   
-    // Close the modal when clicking the "x" button
     closeModalBtn.addEventListener("click", function () {
       modal.style.display = "none"
     })
   
-    // Close the modal if the user clicks outside the modal content
     window.addEventListener("click", function (event) {
       if (event.target == modal) {
         modal.style.display = "none"
@@ -577,22 +579,33 @@ async function applyCoupon(event) {
         
         const tempInput = document.createElement("input")
         document.body.appendChild(tempInput)
-        tempInput.value = couponCodeElement.textContent // Set the input's value to the coupon code
-        tempInput.select() // Select the text inside the input
+        tempInput.value = couponCodeElement.textContent 
+        tempInput.select() 
 
-        // Copy the selected text to the clipboard
         document.execCommand("copy")
         
-        // Remove the temporary input element
         document.body.removeChild(tempInput)
 
-        // Optional: Show a confirmation message
         document.getElementById("coupon-success").textContent = "Coupon code copied!"
         setTimeout(() => {
             document.getElementById("coupon-success").textContent = ""
         }, 3000)
     }
-  
+
+    function clearCoupon() {
+    document.getElementById('discount-price-div').innerHTML = '0'
+    document.getElementById('ordertotal').innerHTML = originalTotalPrice.toFixed(2)
+
+    document.getElementById('coupon-success').innerText = ''
+   
+    Swal.fire({
+        icon: 'info',
+        title: 'Coupon Removed',
+        text: 'The coupon has been removed successfully.',
+        showConfirmButton: false,
+        timer: 2000
+    })
+}
 </script>
 
 <%- include('../partials/footer.ejs') %>

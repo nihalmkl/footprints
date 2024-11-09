@@ -104,4 +104,18 @@ user_route.post('/orders/:orderId/request-return', async (req, res) => {
         return res.status(500).send('Server error')
       }
     })
+
+user_route.patch('/order/payment_status/:orderId', async (req, res) => {
+      try {
+          const { orderId } = req.params;
+          const { payment_status } = req.body;
+  
+          await Orders.findByIdAndUpdate(orderId, { payment_status });
+  
+          res.status(200).json({ message: "Payment status updated to Failed." });
+      } catch (error) {
+          console.error("Error updating payment status:", error);
+          res.status(500).json({ message: "Failed to update payment status." });
+      }
+  });
 module.exports = user_route;

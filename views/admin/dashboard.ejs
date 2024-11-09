@@ -40,7 +40,7 @@
             color: #555;
         }
 
-        button {
+        .button-rep {
             background-color: #4CAF50;
             color: white;
             cursor: pointer;
@@ -48,7 +48,7 @@
             transition: background-color 0.3s;
         }
 
-        button:hover {
+        .button-rep:hover {
             background-color: #45a049;
         }
 
@@ -142,7 +142,7 @@
                 <input type="date" id="endDate" name="endDate">
             </div>
             
-            <button type="button" onclick="fetchSalesReport()">Generate Report</button>
+            <button class="button-rep" type="button" onclick="fetchSalesReport()">Generate Report</button>
         </form>
 
         <div id="reportOutput"></div>

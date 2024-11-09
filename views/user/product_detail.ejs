@@ -246,7 +246,8 @@
             timer: 1500,
         })
         document.querySelector('.quantity-right-plus').disabled = true
-                document.querySelector('.quantity-left-minus').disabled = false
+         document.querySelector('.quantity-left-minus').disabled = false
+         return
 
     }
         if(quantity>=5){
@@ -306,6 +307,13 @@ function addCart(userId, productId, quantity) {
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
+        }else{
+            Swal.fire({
+                title: "Error",
+                text: data.message,
+                icon: "error",
+                timer: 1500,
+            })
         }
     })
     .catch(error => {

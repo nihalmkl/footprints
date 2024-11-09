@@ -59,8 +59,8 @@ return `ORD${randomDigits}`
 
 
 exports.placeOrder = async (req, res) => {
-        const { address_id, payment_method, payment_id, order_id, signature } = req.body;
-    
+        const { address_id, payment_method, payment_id, order_id, signature,total_amount,couponCode  } = req.body;
+        console.log('jj',couponCode)
         if (!address_id || !payment_method) {
         return res.status(400).json({ message: "Address and payment method are required." });
         }
@@ -70,17 +70,37 @@ exports.placeOrder = async (req, res) => {
         if (!userCart) {
             return res.status(400).json({ message: "No cart found" });
         }
-    
+        const existingOrder = await Orders.findOne({ total_amount });
+        if (existingOrder) {
+          return res.status(400).json({success:false, message: "Duplicate order. Order already exists." });
+        }
         const newOrder = new Orders({
             order_id: generateOrderId(),
             user_id: req.user._id,
             address_id,
             payment_method,
             items: userCart.items,
-            total_amount: userCart.total_price
+            total_amount
         });
-    console.log("paisaaa",newOrder.total_amount)
+        if (couponCode) {
+            const coupon = await Coupon.findOne({ coupon_code: couponCode })
+             console.log(coupon.users);
+             
+            if (coupon) {
+              const userUsage = coupon.users.find(user => user.userId.toString() === req.user._id.toString())
+              console.log(userUsage)
+              if (!userUsage) {
+                coupon.users.push({ userId: req.user._id, is_bought: true })
+              } else {
+                userUsage.is_bought = true
+              }
+              await coupon.save()
+              newOrder.coupon_applied = coupon._id
+            }
+          }
+    console.log("paisaaa",total_amount)
         if (payment_method === "COD") {
+            console.log('hi ra')
             await newOrder.save();
     
             for (const item of userCart.items) {
@@ -311,8 +331,12 @@ exports.applyCoupon = async (req, res) => {
       if (totalPrice < coupon.min_pur_amount) {
         return res.json({ success: false, message: `Minimum purchase of ₹${coupon.min_pur_amount} required` })
       }
-  
-      // Calculate discount and apply max limit if necessary
+      console.log(coupon.users.userId,'nihu',req.user._id)
+      const userUsage = coupon.users.find(user => user.userId.toString() === req.user._id.toString())
+      if (userUsage && userUsage.is_bought) {
+        return res.json({ success: false, message: 'Coupon already used by this user' })
+      }
+      
       let discount = (totalPrice * coupon.discount) / 100
       console.log("dis",discount)
       if (coupon.max_coupon_amount && discount > coupon.max_coupon_amount) {

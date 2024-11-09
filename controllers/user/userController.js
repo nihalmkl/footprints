@@ -348,7 +348,7 @@ exports.loadShop = async (req, res) => {
                 variant.discounted_price = variant.price - (variant.price * finalDiscount / 100);
             });
     
-            product.applied_discount_percentage = finalDiscount;
+        product.applied_discount_percentage = finalDiscount;
         });
         console.log("dh",products)
 

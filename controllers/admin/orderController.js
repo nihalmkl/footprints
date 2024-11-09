@@ -2,7 +2,7 @@ const Orders = require('../../models/orderSchema')
 
 exports.loadOrderPage = async (req, res) => {
     try {
-        const limit = 3; 
+        const limit = 8; 
         const page = parseInt(req.query.page) || 1; 
         const skip = (page - 1) * limit;
 

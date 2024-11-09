@@ -23,10 +23,6 @@ const walletSchema = new mongoose.Schema({
         type: Number,
         required: true
       },
-      description: {
-        type: String,
-        required: true
-      },
       transaction_type: {
         type: String,
         required: true,
