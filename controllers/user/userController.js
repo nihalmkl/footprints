@@ -11,6 +11,8 @@ const mongoose = require('mongoose')
 const Wishlist = require('../../models/wishlistSchema')
 const Cart = require('../../models/cartSchema')
 const Category = require('../../models/categorySchema')
+const Razorpay = require('razorpay')
+const Wallet = require('../../models/walletSchema')
 
 exports.loadLogin =async (req,res) => {
     try {
@@ -557,4 +559,89 @@ exports.userLogout = (req, res) => {
         return res.redirect('/login'); 
     });
 }
+const razorpay = new Razorpay({
+    key_id: process.env.RAZOR_PAY_KEY_ID,
+    key_secret: process.env.RAZOR_PAY_KEY_SECRET,
+  })
+ exports.loadWallet = async (req, res) => {
+    try {
+      console.log("djkak")
+  
+      const wallet = await Wallet.findOne({ user: req.user._id })
+      if (wallet && wallet.wallet_history) {
+        // Sort wallet_history by date in descending order
+        wallet.wallet_history.sort((a, b) => b.date - a.date)
+      }
+     console.log(wallet)
+      if (!wallet) {
+        return res.render('user/wallet', { wallet: null })
+      }
+      res.render('user/wallet', { wallet })
+    } catch (error) {
+      console.error('Error fetching wallet data:', error)
+      res.status(500).send('Internal Server Error')
+    }
+  }
 
+
+exports.addFund = async (req, res) => {
+    const { amount } = req.body
+    const paymentAmount = amount * 100 
+  console.log(paymentAmount)
+    try {
+        
+      const order = await razorpay.orders.create({
+        amount: paymentAmount,
+        currency: "INR",
+        receipt: `receipt_${Date.now()}`,
+      })
+      console.log("THis is order",order)
+  
+      res.json({ success: true, order })
+    } catch (error) {
+      console.error("Error creating Razorpay order:", error)
+      res.status(500).json({ success: false, message: "Failed to create order" })
+    }
+  }
+
+  exports.addFundSuccess = async (req, res) => {
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, amount } = req.body
+  console.log(amount)
+    try {
+      // Check if a wallet exists for the user
+      let wallet = await Wallet.findOne({ user: req.session.user.id })
+      console.log(req.body)
+      console.log("Thisis user",req.session.user)
+  console.log("THis is wallet",wallet)
+      // If no wallet exists, create a new one
+      if (!wallet) {
+        wallet = new Wallet({
+          user: req.session.user.id,
+          balance: amount,
+          wallet_history: [
+            {
+              amount: amount,
+              transaction_type: 'credited',
+              date: Date.now(),
+            },
+          ],
+        })
+      } else {
+        // If wallet exists, update the balance and add to history
+        wallet.balance += amount
+        wallet.wallet_history.push({
+          amount: amount,
+          transaction_type: 'credited',
+          date: Date.now(),
+        })
+      }
+  
+      // Save the wallet document (whether newly created or updated)
+      await wallet.save()
+  
+      res.json({ success: true })
+    } catch (error) {
+      console.error("Failed to add funds:", error)
+      res.status(500).json({ success: false, message: "Failed to add funds" })
+    }
+  }

@@ -19,23 +19,36 @@
       <h4 class="text-center mb-4">Transaction History</h4>
       <div class="transaction-list">
         <% if (wallet && wallet.wallet_history.length > 0) { %>
-          <% wallet.wallet_history.forEach(transaction => { %>
-            <div class="transaction-item">
-              <% if (transaction.transaction_type === 'credited') { %>
-                <span>
-                  <i class="bi bi-arrow-down-circle-fill text-success icon"></i>
-                  <%= transaction.description %>
-                </span>
-                <span class="text-success">+₹<%= transaction.amount %></span>
-              <% } else { %>
-                <span>
-                  <i class="bi bi-arrow-up-circle-fill text-danger icon"></i>
-                  <%= transaction.description %>
-                </span>
-                <span class="text-danger">-₹<%= transaction.amount %></span>
-              <% } %>
-            </div>
-          <% }) %>
+          <table class="table table-bordered">
+            <thead class="thead-light">
+              <tr>
+                <th>Date</th>
+                <th>Transaction Type</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% wallet.wallet_history.forEach(transaction => { %>
+                <tr>
+                  <td><%= new Date(transaction.date).toLocaleDateString() %></td>
+                  <td>
+                    <% if (transaction.transaction_type === 'credited') { %>
+                      <span class="text-success">
+                        <i class="bi bi-arrow-down-circle-fill icon"></i> <%= transaction.transaction_type %>
+                      </span>
+                    <% } else { %>
+                      <span class="text-danger">
+                        <i class="bi bi-arrow-up-circle-fill icon"></i> <%= transaction.transaction_type %>
+                      </span>
+                    <% } %>
+                  </td>
+                  <td class="<%= transaction.transaction_type === 'credited' ? 'text-success' : 'text-danger' %>">
+                    <%= transaction.transaction_type === 'credited' ? '+' : '-' %>₹<%= transaction.amount %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
         <% } else { %>
           <div class="text-center text-muted">
             <p>No transactions found.</p>
@@ -44,6 +57,7 @@
       </div>
     </div>
   </div>
+  
   <div class="modal fade" id="addFundsModal" tabindex="-1" aria-labelledby="addFundsModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -68,133 +82,71 @@
   </div>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-    async function AddFund() {
+ async function AddFund() {
+  const amount = document.getElementById("amount").value
 
-      const Toast = Swal.mixin({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.onmouseenter = Swal.stopTimer;
-          toast.onmouseleave = Swal.resumeTimer;
-        }
-      });
+  if (!amount || amount <= 0) {
+    alert("Please enter a valid amount")
+    return
+  }
 
-      const amount = document.getElementById('amount').value;
-
-      if (!amount) {
-        Toast.fire({
-          icon: "error",
-          title: "amount is empty"
-        });
-        return
-      }
-      if (isNaN(amount)) {
-        Toast.fire({
-          icon: "error",
-          title: "Invalid amount. Please enter a number."
-        });
-        return;
-      }
-      if (parseFloat(amount) <= 0) {
-        Toast.fire({
-          icon: "error",
-          title: "Amount must be greater than zero."
-        });
-        return;
-      }
-      const maxAmount = 100000;
-      if (parseFloat(amount) > maxAmount) {
-        Toast.fire({
-          icon: "error",
-          title: `Amount cannot exceed ${maxAmount}.`
-        });
-        return;
-      }
-
-
-      try {
-        const response = await fetch('/wallet/addFund', {
-          headers: {
-            "Content-Type": "application/json"
-          },
-          method: 'POST',
-          body: JSON.stringify({ amount })
-        });
-        if (response.ok) {
-          const result = await response.json()
-          console.log(result)
-          
-
-          const options = {
-            key: 'rzp_test_MoQOrZAlepfiB7',
-            amount: result.amount,
-            currency: result.currency,
-            name: 'Your wallet',
-            order_id: result.id,
-            description: "Adding fund to wallet",
-            handler: async function (response) {
-              try {
-              
-
-                
-                const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = response;
-                
-                const responce = await fetch('/wallet/verifyPayment', {
-                  method: "POST",
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({ razorpay_order_id, razorpay_payment_id, razorpay_signature, amount: result.amount })
-                })
-
-
-                const data = await responce.json();
-
-                if (data.success) {
-                  Swal.fire("Success", "Funds added successfully!", "success").then(() => {
-                    location.reload();  
-                  });
-                } else {
-                  Swal.fire("Error", "Payment verification failed. Please try again.", "error");
-                }
-
-
-              } catch (error) {
-                console.error('Error verifying payment:', error);
-                swal("Error", "An error occurred while verifying the payment. Please try again.", "error");
-              }
-
-            },
-
-
-            prefill: {
-              name: 'mohdnihal',
-              email: 'mohdnihalmkl@gmail.com',
-              contact: '8921590046'
-            },
-            theme: {
-              color: '#000000'
+  try {
+    // Fetch order details from the backend
+    const response = await fetch("/addFund", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ amount }),
+    })
+    
+    const data = await response.json()
+    console.log("This s data",data.order.amount)
+    let totalamout = (data.order.amount)/100
+    if (data.success) {
+      
+      const options = {
+        key: "rzp_test_MoQOrZAlepfiB7", 
+        amount: data.order.amount,
+        currency: "INR",
+        name: "Your App Name",
+        description: "Add funds to wallet",
+        order_id: data.order.id,
+        handler: async function (response) {
+          response.amount = totalamout
+          console.log(response)
+          try {
+            const res = await fetch("/addFund/success", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(response,totalamout),
+            })
+            if (res.ok) {
+              alert("Funds added successfully!")
+              location.reload()
+            } else {
+              alert("Failed to add funds.")
             }
+          } catch (err) {
+            console.error("Error processing payment success:", err)
+            alert("An error occurred during payment processing.")
           }
-
-          const razorpay = new Razorpay(options);
-          razorpay.open();
-
-
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'failed to create order',
-          })
-
-        }
-
-      } catch (error) {
-        console.error('Error adding funds:', error);
-        swal("Error", "An error occurred while adding funds. Please try again.", "error");
+        },
+        prefill: {
+          email: "user@example.com",
+        },
       }
+
+      const rzp1 = new Razorpay(options)
+      rzp1.open()
+    } else {
+      alert(data.message)
     }
+  } catch (error) {
+    console.error("Error in AddFund:", error)
+    alert("Something went wrong.")
+  }
+}
+
+
   </script>

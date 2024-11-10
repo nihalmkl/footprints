@@ -41,6 +41,10 @@ const OrdersSchema = new Schema(
       discount:{
         type:Number,
         default:0,
+      },
+      is_cancelled:{
+        type:Boolean,
+        default:false
       }
     }],
     coupon_applied: {  

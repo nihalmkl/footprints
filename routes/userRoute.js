@@ -62,48 +62,13 @@ user_route.put('/orders/:id',orderController.cancelOrder)
 user_route.post('/quantityUpdate',orderController.qantityUpdate)
 user_route.post('/orders/:orderId/:itemId/request-return', orderController.returnProduct);
 user_route.post('/apply-coupon',orderController.applyCoupon)
-user_route.get('/wallet', async (req, res) => {
-  try {
-    console.log("djkak")
-    const wallet = await Wallet.findOne({ user: req.user._id })
-   console.log(wallet)
-    if (!wallet) {
-      return res.render('user/wallet', { wallet: null })
-    }
-    res.render('user/wallet', { wallet })
-  } catch (error) {
-    console.error('Error fetching wallet data:', error)
-    res.status(500).send('Internal Server Error')
-  }
-})
+user_route.post('/addFund',userController.addFund)
+user_route.post('/addFund/success',userController.addFundSuccess)
+user_route.get('/wallet',userController.loadWallet)
 user_route.get('/about', userController.loadAbout)
 user_route.get('/contact', userController.loadContact)
+user_route.post('/orders/:orderId/:itemId/cancel-order', orderController.cancelItem);
 
-user_route.post('/orders/:orderId/request-return', async (req, res) => {
-      try {
-        const orderId = req.params.orderId
-        const { return_reason } = req.body
-    
-        const order = await Orders.findById(orderId)
-    
-        if (order) {
-          if (!order.return_request) {
-            order.return_request = true
-            order.return_reason = return_reason
-            order.admin_accepted = 'Pending' 
-            await order.save()
-    
-            return res.redirect(`/orders/${orderId}`)
-          } else {
-            return res.status(400).send('Return already requested')
-          }
-        } else {
-          return res.status(404).send('Order not found')
-        }
-      } catch (error) {
-        return res.status(500).send('Server error')
-      }
-    })
 
 user_route.patch('/order/payment_status/:orderId', async (req, res) => {
       try {

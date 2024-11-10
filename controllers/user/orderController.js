@@ -1,5 +1,6 @@
 
 const env  = require('dotenv').config()
+const Wallet = require('../../models/walletSchema')
 const Product = require('../../models/productSchema')
 const Address = require('../../models/addressSchema')
 const Cart = require('../../models/cartSchema')
@@ -9,6 +10,7 @@ const Coupon = require('../../models/couponSchema')
 const mongoose = require('mongoose')
 const razorpay = require('../../config/razorpay')
 const crypto = require('crypto')
+const { log } = require('console')
 exports.loadCheckout = async (req, res) => {
     const userId = req.user._id
     console.log(userId,"djfsjdfkf")
@@ -70,17 +72,15 @@ exports.placeOrder = async (req, res) => {
         if (!userCart) {
             return res.status(400).json({ message: "No cart found" });
         }
-        const existingOrder = await Orders.findOne({ total_amount });
-        if (existingOrder) {
-          return res.status(400).json({success:false, message: "Duplicate order. Order already exists." });
-        }
+        
         const newOrder = new Orders({
             order_id: generateOrderId(),
             user_id: req.user._id,
             address_id,
             payment_method,
             items: userCart.items,
-            total_amount
+            total_amount,
+            payment_status:"Completed"
         });
         if (couponCode) {
             const coupon = await Coupon.findOne({ coupon_code: couponCode })
@@ -111,7 +111,7 @@ exports.placeOrder = async (req, res) => {
             } else {
                 return res.status(400).json({ message: `Insufficient stock for product: ${product.product_name}` });
             }
-            }
+        }
     
             userCart.items = [];
             userCart.total_price = 0;
@@ -128,13 +128,23 @@ exports.placeOrder = async (req, res) => {
     
             newOrder.razorpay_id = razorpayOrder.id;
             await newOrder.save();
-    
+            
+
             if (payment_id && order_id && signature) {
                 console.log("payme",payment_id,"678888",order_id,signature)
 
             const isVerified = verifyPayment(payment_id, order_id, signature); 
             console.log("23",isVerified)
             if (isVerified) {
+                for (const item of userCart.items) {
+                    const product = await Product.findById(item.product_id)
+                    if (product && product.variants[0].stock >= item.quantity) {
+                        product.variants[0].stock -= item.quantity
+                        await product.save()
+                    } else {
+                        return res.status(400).json({ message: `Insufficient stock for product: ${product.product_name}` })
+                    }
+                }
                 userCart.items = [];
                 userCart.total_price = 0;
                 await userCart.save();
@@ -168,7 +178,7 @@ function verifyPayment(payment_id, order_id, signature) {
 
 exports.getOrder = async (req, res) => {
 try {
- const orders = await Orders.find({}).populate('items.product_id'); 
+ const orders = await Orders.find({}).populate('items.product_id').sort({ createdAt: -1 }); 
  res.json(orders);
 } catch (error) {
  res.status(500).send({ message: 'Error fetching orders' });
@@ -235,7 +245,7 @@ try {
        const product = await Product.findById(item.product_id);
 
        if (!product) {
-           console.error(`Product not found for ID: ${item.product_id}`);
+           console.error(`Product not: ${item.product_id}`);
            continue;
        }
 
@@ -352,4 +362,89 @@ exports.applyCoupon = async (req, res) => {
       res.status(500).json({ success: false, message: 'Internal server error' })
     }
   }
+
+
+  exports.cancelItem = async (req, res) => {
+
+    const { orderId, itemId } = req.params
+    try {
+      const order = await Orders.findOne({ _id: orderId })
+      if (!order) {
+        return res.status(404).json({ message: 'Order not found' })
+      }
+      
+     console.log("nihu;oudie;oifrrgtrgtg",itemId)
+      const item = order.items.find(item => item._id.toString() === itemId)
   
+      if (!item) {
+        return res.status(404).json({ message: 'Item not found in order' })
+      }
+      if (order.payment_status === 'Completed') {
+        const wallet = await Wallet.findOne({ user: req.session.user.id })
+        console.log("wlll",wallet)
+        console.log("itemshsahq",item.price)
+        if (wallet) {
+            wallet.balance += item.price
+    
+            wallet.wallet_history.push({
+                date: new Date(), 
+                amount: item.price, 
+                transaction_type: 'credited' 
+            })
+    
+            await wallet.save()
+            console.log('Wallet updated:', wallet)
+        } else {
+            console.log('Wallet not found for the user')
+        }
+    }
+  console.log("id",item);
+  
+      item.is_cancelled = true
+  
+      await Product.findOneAndUpdate(
+        { _id: item.product_id, "variants.0": { $exists: true } },
+        { $inc: { "variants.0.stock": item.quantity } },
+        { new: true }
+    )
+  
+      const allItemsCancelled = order.items.every(item => item.is_cancelled)
+      if (allItemsCancelled) {
+        order.isCancelled = true
+        order.order_status = 'Cancelled'
+      }
+        await order.save()
+  
+      res.json({ message: 'Item canceled and stock updated successfully' })
+    } catch (error) {
+      console.error(error)
+      res.status(500).json({ message: 'Error canceling item and updating stock' })
+    }
+  }
+  
+  
+//   user_route.post('/orders/:orderId/request-return', async (req, res) => {
+//     try {
+//       const orderId = req.params.orderId
+//       const { return_reason } = req.body
+  
+//       const order = await Orders.findById(orderId)
+  
+//       if (order) {
+//         if (!order.return_request) {
+//           order.return_request = true
+//           order.return_reason = return_reason
+//           order.admin_accepted = 'Pending' 
+//           await order.save()
+  
+//           return res.redirect(`/orders/${orderId}`)
+//         } else {
+//           return res.status(400).send('Return already requested')
+//         }
+//       } else {
+//         return res.status(404).send('Order not found')
+//       }
+//     } catch (error) {
+//       return res.status(500).send('Server error')
+//     }
+//   })

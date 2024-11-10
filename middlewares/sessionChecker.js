@@ -19,7 +19,8 @@ const sessionChecker = async (req, res, next) => {
     if (req.session && req.session.user ) {
         try {
             let user =  await User.findById(req.session.user.id)
-
+            console.log(user)
+            console.log("nih",req.session.user)
             if (user) {
                 req.user = user 
                 res.locals.user = user 

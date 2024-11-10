@@ -192,9 +192,9 @@ exports.editProduct = async (req, res) => {
         if (existingImages) {
             product.images = product.images.filter(image => !existingImages.includes(image));
         }
-
+        console.log("exising",existingImages)
         await product.save();
-        
+        console.log('mmmmmmmm')
         res.status(200).send('Product updated successfully');
     } catch (error) {
         console.error(error);

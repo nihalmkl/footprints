@@ -15,7 +15,7 @@ const walletSchema = new mongoose.Schema({
   wallet_history: [
     {
       date: {
-        type: Date,
+        type: Date, 
         required: true,
         default: Date.now
       },

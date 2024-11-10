@@ -101,7 +101,6 @@
             <div class="form-text">You can upload up to 4 new images. Old images can be deleted above.</div>
         </div>
 
-        <!-- Submit Button -->
         <div class="row">
             <div class="col-md-12 text-center">
                 <button type="submit" class="btn cust-btn">Update Product</button>
@@ -110,14 +109,12 @@
     </form>
 </div>
 
-<!-- Script for image preview and delete functionality -->
 <script>
      document.getElementById('edit-product').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const productId = "<%= product._id %>"; // Product ID from EJS
+        const productId = "<%= product._id %>";
 
-        // Get form values
         const productName = document.getElementById('productName').value.trim();
         const category = document.getElementById('category').value;
         const brand = document.getElementById('brand').value;
@@ -133,7 +130,6 @@
 
         let isValid = true;
 
-        // Validate form fields
         if (productName === '') {
             document.getElementById('name-error').innerText = 'Product name is required.';
             isValid = false;
@@ -150,7 +146,6 @@
             document.getElementById('disc-error').innerText = '';
         }
 
-        // Submit the form if valid
         if (isValid) {
             const formData = new FormData();
             formData.append('productName', productName);
@@ -169,7 +164,7 @@
 
                 if (response.ok) {
                     alert('Product updated successfully!');
-                    window.location.href = `/admin/products`; // Redirect to products list or any page
+                    window.location.href = `/admin/products`; 
                 } else {
                     alert('Failed to update product. Please try again.');
                 }
@@ -181,22 +176,20 @@
 
     
     function previewImage(input, index) {
-        const file = input.files[0]; // Get the first file from input
+        const file = input.files[0]; 
         if (file) {
             const reader = new FileReader();
 
-            // When the file is read successfully, display the image
             reader.onload = function (e) {
                 const preview = document.getElementById(`preview${index}`);
-                preview.src = e.target.result;  // Set the src to the file URL
-                preview.style.display = 'block';  // Show the image
+                preview.src = e.target.result;  
+                preview.style.display = 'block';  
             }
 
-            reader.readAsDataURL(file);  // Convert the file to a data URL
+            reader.readAsDataURL(file); 
         }
     }
 
-    // Handle delete image button click
     document.querySelectorAll('.delete-image-btn').forEach(button => {
         button.addEventListener('click', async () => {
             const productId = button.getAttribute('data-product-id');
@@ -215,7 +208,6 @@
                     });
 
                     if (response.ok) {
-                        // Remove the image element from the DOM
                         const imageElement = document.getElementById(`image-${imageIndex}`);
                         imageElement.remove();
                         alert('Image deleted successfully!');
@@ -229,6 +221,5 @@
         });
     });
 
-    // Handle form submission with validation
    
 </script>
