@@ -52,6 +52,10 @@ const OrdersSchema = new Schema(
       ref: 'Coupon',
       required: false
   },
+  discount: { 
+    type: Number,
+    default: 0
+  },
     total_amount: {
       type: Number,
       required: true,
@@ -70,10 +74,6 @@ const OrdersSchema = new Schema(
       required: true,
       enum: ["Pending", "Completed", "Failed"], 
       default: 'Pending'
-    },
-    isCancelled:{
-      type:Boolean,
-      default:false
     },
     razorpay_id:{
       type:String,

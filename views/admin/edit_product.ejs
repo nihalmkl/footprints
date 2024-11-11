@@ -34,7 +34,6 @@
             </div>
         </div>
 
-        <!-- Size, Stock, and Price for Each Variant -->
         <div class="mb-3">
             <label class="form-label">Product Variants</label>
             <% product.variants.forEach((variant, index) => { %>
@@ -128,6 +127,17 @@
             }
         }
 
+        const variants = [];
+    document.querySelectorAll('.variant-row').forEach((variantRow, index) => {
+        const stock = variantRow.querySelector(`#stock${index}`).value;
+        const size = variantRow.querySelector(`#size${index}`).value;
+        const price = variantRow.querySelector(`#price${index}`).value;
+        variants.push({ stock, size, price });
+        console.log(stock,size,price)
+    });
+
+    
+
         let isValid = true;
 
         if (productName === '') {
@@ -155,6 +165,11 @@
             for (let i = 0; i < productImages.length; i++) {
                 formData.append('productImages[]', productImages[i]);
             }
+            variants.forEach((variant, index) => {
+            formData.append(`variants[${index}][stock]`, variant.stock);
+            formData.append(`variants[${index}][size]`, variant.size);
+            formData.append(`variants[${index}][price]`, variant.price);
+        });
 
             try {
                 const response = await fetch(`/admin/edit-product/${productId}`, {

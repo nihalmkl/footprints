@@ -147,8 +147,7 @@ exports.editProductPage = async (req, res) => {
 };
 
 exports.editProduct = async (req, res) => {
-    const { productName, category, brand, description, existingImages } = req.body;
-    
+    const { productName, category, brand, description, existingImages,variants } = req.body;
     try {
         const product = await Product.findById(req.params.id);
         if (!product) {
@@ -160,27 +159,14 @@ exports.editProduct = async (req, res) => {
         product.brand_id = brand;
         product.description = description;
 
-        const variants = [];
-        const sizeKeys = Object.keys(req.body).filter(key => key.startsWith('size'));
-        sizeKeys.forEach((sizeKey, index) => {
-            const size = req.body[sizeKey];
-            const stock = req.body[`stock${index}`];
-            const price = req.body[`price${index}`];
-
-            if (product.variants[index]) {
-                product.variants[index].size = size;
-                product.variants[index].stock = stock;
-                product.variants[index].price = price;
-            } else {
-                variants.push({
-                    size,
-                    stock,
-                    price,
-                });
-            }
-        });
-
-        product.variants.push(...variants);
+         if (variants && Array.isArray(variants)) {
+            console.log("dhkajjaja",variants)
+            product.variants = variants.map(variant => ({
+                size: variant.size,
+                stock: parseInt(variant.stock, 10),
+                price: parseInt(variant.price, 10)
+            }));
+        }
 
         if (req.files) {
             req.files.forEach(file => {
@@ -192,16 +178,14 @@ exports.editProduct = async (req, res) => {
         if (existingImages) {
             product.images = product.images.filter(image => !existingImages.includes(image));
         }
-        console.log("exising",existingImages)
+
         await product.save();
-        console.log('mmmmmmmm')
         res.status(200).send('Product updated successfully');
     } catch (error) {
         console.error(error);
         res.status(500).send('Server error');
     }
 };
-
 
 
     

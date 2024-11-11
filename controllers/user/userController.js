@@ -530,10 +530,6 @@ exports.productView = async (req, res) => {
     }
 };
 
-
-
-
-
 exports.loadAbout = async(req,res)=>{
     try{
         res.render('user/about')
@@ -563,6 +559,7 @@ const razorpay = new Razorpay({
     key_id: process.env.RAZOR_PAY_KEY_ID,
     key_secret: process.env.RAZOR_PAY_KEY_SECRET,
   })
+
  exports.loadWallet = async (req, res) => {
     try {
       console.log("djkak")
@@ -582,7 +579,6 @@ const razorpay = new Razorpay({
       res.status(500).send('Internal Server Error')
     }
   }
-
 
 exports.addFund = async (req, res) => {
     const { amount } = req.body

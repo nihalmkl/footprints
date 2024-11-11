@@ -75,12 +75,12 @@ exports.addOffers = async (req, res) => {
       if (isNaN(startDate)) {
         return res.json({ success: false, error: "Invalid date format" })
       }
-      if (startDate < currentDate) {
-        return res.json({
-          success: false,
-          error: "Start date cannot be in the past.",
-        })
-      }
+      // if (startDate < currentDate) {
+      //   return res.json({
+      //     success: false,
+      //     error: "Start date cannot be in the past.",
+      //   })
+      // }
       const newOffer = new Offer({
         offer_name: offerName,
         discount_percentage: offerPercentage,
@@ -106,6 +106,7 @@ exports.addOffers = async (req, res) => {
           editOfferStartDate,
          
         } = req.body;
+        console.log(editOfferStartDate,"djkdsauua")
         const currentDate = new Date();
   
         if (!editOfferName) {
@@ -155,12 +156,12 @@ exports.addOffers = async (req, res) => {
         if (!editOfferStartDate) {
           return res.json({ success: false, error: "offerStartDate is empty" });
         }
-        if (editOfferStartDate < currentDate) {
-          return res.json({
-            success: false,
-            error: "Start date cannot be in the past.",
-          });
-        }
+        // if (editOfferStartDate < currentDate) {
+        //   return res.json({
+        //     success: false,
+        //     error: "Start date cannot be in the past.",
+        //   });
+        // }
         await Offer.findByIdAndUpdate(editOfferId, {
             offer_name: editOfferName,
             discount_percentage: editOfferPercentage,

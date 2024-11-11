@@ -208,7 +208,7 @@
                         <a href="/product-view/<%= relatedProduct._id %>" class="product-link">
                             <img src="<%= relatedProduct.images[0] %>" class="img-fluid" alt="<%= relatedProduct.product_name %>">
                             <h4><%= relatedProduct.product_name %></h4>
-                            <p>$<%= relatedProduct.variants[0].price %></p>
+                            <p>$<%= relatedProduct.variants[0].price.toFixed(2) %></p>
                         </a>
                     </div>
                 </div>

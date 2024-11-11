@@ -65,7 +65,11 @@ body {
                             <% } %>
                             <% if (order.order_status === 'Delivered') { %>
                                 <button type="button" class="btn btn-warning btn-sm return-button" data-item-id="<%= item._id %>">
-                                    Request Return
+                                 Return
+                                </button>
+                            <% }else if (order.order_status === "Returned") { %>
+                                <button type="button" class="btn btn-secondary btn-sm" disabled>
+                                    Returned
                                 </button>
                             <% } %>
                         </li>

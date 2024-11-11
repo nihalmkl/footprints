@@ -123,36 +123,44 @@
                         </button>
                       </div>
                       <div class="modal-body">
-                        <form  onsubmit="EditCoupon(event)">
-                            <input type="hidden" id="editCouponId" value="<%= coupon._id %>" />
+                        <form onsubmit="EditCoupon(event, '<%= coupon._id %>')">
+                          <input type="hidden" id="editCouponId_<%= coupon._id %>" value="<%= coupon._id %>" />
+                
                           <div class="form-group">
-                            <label for="editCouponCode">Coupon Code</label>
-                            <input type="text" class="form-control" id="editCouponCode" name="coupon_code" value="<%= coupon.coupon_code %>" required>
+                            <label for="editCouponCode_<%= coupon._id %>">Coupon Code</label>
+                            <input type="text" class="form-control" id="editCouponCode_<%= coupon._id %>" name="coupon_code" value="<%= coupon.coupon_code %>" required>
                           </div>
+                
                           <div class="form-group">
-                            <label for="editDiscountPercentage">Discount(%)</label>
-                            <input type="text" class="form-control" id="editDiscountPercentage" name="discount" value="<%= coupon.discount %>" required>
+                            <label for="editDiscountPercentage_<%= coupon._id %>">Discount(%)</label>
+                            <input type="text" class="form-control" id="editDiscountPercentage_<%= coupon._id %>" name="discount" value="<%= coupon.discount %>" required>
                           </div>
+                
                           <div class="form-group">
-                            <label for="editStartDate">Start Date</label>
-                            <input type="date" class="form-control" id="editStartDate" name="start_date" value="<%= coupon.start_date.toISOString().split('T')[0] %>" required>
+                            <label for="editStartDate_<%= coupon._id %>">Start Date</label>
+                            <input type="date" class="form-control" id="editStartDate_<%= coupon._id %>" name="start_date" value="<%= coupon.start_date.toISOString().split('T')[0] %>" required>
                           </div>
+                
                           <div class="form-group">
-                            <label for="editExpiryDate">Expiry Date</label>
-                            <input type="date" class="form-control" id="editExpiryDate" name="expiry_date" value="<%= coupon.expiry_date.toISOString().split('T')[0] %>" required>
+                            <label for="editExpiryDate_<%= coupon._id %>">Expiry Date</label>
+                            <input type="date" class="form-control" id="editExpiryDate_<%= coupon._id %>" name="expiry_date" value="<%= coupon.expiry_date.toISOString().split('T')[0] %>" required>
                           </div>
+                
                           <div class="form-group">
-                            <label for="editMinPurchasePrice">MinimumPurchase</label>
-                            <input type="number" class="form-control" id="editMinPurchasePrice" name="min_pur_amount" value="<%= coupon.min_pur_amount %>" required>
+                            <label for="editMinPurchasePrice_<%= coupon._id %>">Minimum Purchase</label>
+                            <input type="number" class="form-control" id="editMinPurchasePrice_<%= coupon._id %>" name="min_pur_amount" value="<%= coupon.min_pur_amount %>" required>
                           </div>
+                
                           <div class="form-group">
-                            <label for="offerEndDate">Maximum coupon Amount:</label>
-                            <input type="number" class="form-control" id="maxAmount" name="max_coupon_amount" value="<%= coupon.max_coupon_amount %>" required>
+                            <label for="maxAmount_<%= coupon._id %>">Maximum Coupon Amount:</label>
+                            <input type="number" class="form-control" id="maxAmount_<%= coupon._id %>" name="max_coupon_amount" value="<%= coupon.max_coupon_amount %>" required>
                           </div>
+                
                           <div class="form-group">
-                            <label for="editCouponDescription">Description</label>
-                            <textarea class="form-control" id="editCouponDescription" name="description" rows="3" required><%= coupon.description %></textarea>
+                            <label for="editCouponDescription_<%= coupon._id %>">Description</label>
+                            <textarea class="form-control" id="editCouponDescription_<%= coupon._id %>" name="description" rows="3" required><%= coupon.description %></textarea>
                           </div>
+                
                           <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                             <button type="submit" class="btn btn-primary">Save changes</button>
@@ -161,7 +169,7 @@
                       </div>
                     </div>
                   </div>
-                </div>
+                </div>                
                 <% }) %>
             </tbody>
         </table>
@@ -320,7 +328,7 @@
 }
 
 
-async function EditCoupon(event) {
+async function EditCoupon(event,couponId) {
     event.preventDefault() 
 
     const Toast = Swal.mixin({
@@ -335,21 +343,27 @@ async function EditCoupon(event) {
         }
     })
 
-    const couponId = document.getElementById('editCouponId').value.trim()
-    const couponCode = document.getElementById('editCouponCode').value.trim()
-    const discount = parseInt(document.getElementById('editDiscountPercentage').value.trim())  
-    const startDate = document.getElementById('editStartDate').value.trim()
-    const endDate = document.getElementById('editExpiryDate').value.trim()
-    const minAmount = document.getElementById('editMinPurchasePrice').value.trim()
-    const maxAmount = document.getElementById('maxAmount').value.trim()
-    const couponDescription = document.getElementById('editCouponDescription').value.trim()
+    const editCouponCode = document.getElementById(`editCouponCode_${couponId}`).value.trim();
+    const editDiscount = parseInt(document.getElementById(`editDiscountPercentage_${couponId}`).value.trim());
+    const editStartDate = document.getElementById(`editStartDate_${couponId}`).value;
+    const editEndDate = document.getElementById(`editExpiryDate_${couponId}`).value;
+    const editMinAmount = parseInt(document.getElementById(`editMinPurchasePrice_${couponId}`).value.trim());
+    const editMaxAmount = parseInt(document.getElementById(`maxAmount_${couponId}`).value.trim());
+    const editCouponDescription = document.getElementById(`editCouponDescription_${couponId}`).value.trim();
 
-    if (!couponCode) {
+    console.log('editCouponCode:', editCouponCode)
+    console.log('editDiscount:', editDiscount)
+    console.log('editStartDate:', editStartDate)
+    console.log('editEndDate:', editEndDate)
+    console.log('editMinAmount:', editMinAmount)
+    console.log('editMaxAmount:', editMaxAmount)
+
+    if (!editCouponCode) {
         Toast.fire({ icon: "error", title: "Coupon code is empty" })
         return
     }
 
-    if (isNaN(discount) || discount < 1 || discount > 100 || discount !== Math.floor(discount)) {
+    if (isNaN(editDiscount) || editDiscount < 1 || editDiscount > 100 || editDiscount !== Math.floor(editDiscount)) {
         Toast.fire({
             icon: "error",
             title: "Invalid Discount",
@@ -358,17 +372,12 @@ async function EditCoupon(event) {
         return
     }
 
-    if (new Date(startDate) < new Date()) {
-        Toast.fire({ icon: "error", title: "Start date cannot be in the past" })
-        return
-    }
-
-    if (new Date(endDate) <= new Date(startDate)) {
+    if (new Date(editEndDate) <= new Date(editStartDate)) {
         Toast.fire({ icon: "error", title: "End date must be after the start date" })
         return
     }
 
-    if (isNaN(minAmount) || parseInt(minAmount) <= 0 || isNaN(maxAmount) || parseInt(maxAmount) <= 0) {
+    if (isNaN(editMinAmount) || parseInt(editMinAmount) <= 0 || isNaN(editMaxAmount) || parseInt(editMaxAmount) <= 0) {
         Toast.fire({ icon: "error", title: "Invalid Amounts" })
         return
     }
@@ -378,13 +387,13 @@ async function EditCoupon(event) {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                couponCode,
-                discount,
-                startDate,
-                endDate,
-                minAmount,
-                maxAmount,
-                couponDescription
+                couponCode: editCouponCode,
+                discount: editDiscount,
+                startDate: editStartDate,
+                endDate: editEndDate,
+                minAmount: editMinAmount,
+                maxAmount: editMaxAmount,
+                couponDescription: editCouponDescription
             })
         })
 
@@ -413,6 +422,7 @@ async function EditCoupon(event) {
         })
     }
 }
+
 
 
 const deleteCoupon = async (couponId) => {

@@ -201,14 +201,7 @@ async function AddOffer() {
       });
       return
     }
-    if (offerStartDate < currentDate) {
-      Toast.fire({
-        icon: "error",
-        title: "Invalid Start Date",
-        text: 'Start date cannot be in the past.',
-      });
-      return;
-    }
+   
 
    
 
@@ -367,14 +360,7 @@ async function AddOffer() {
           });
           return
         }
-        if (editOfferStartDate < currentDate) {
-          Toast.fire({
-            icon: "error",
-            title: "Invalid Start Date",
-            text: 'Start date cannot be in the past.',
-          });
-          return;
-        }
+       
 
       
 

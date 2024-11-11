@@ -56,13 +56,57 @@ const randomDigits = Math.floor(1000 + Math.random() * 9000)
 return `ORD${randomDigits}`
 }
 
+// verifyController.js
 
+exports.verifyPayment = async (req, res) => {
+    const { payment_id,order_id, signature,Order_Schema } = req.body;
+    console.log("ordeeeeeeeeeeeeeeeer",req.body);
+  
+    const hmac = crypto.createHmac('sha256', process.env.RAZOR_PAY_KEY_SECRET);
+    hmac.update(`${order_id}|${payment_id}`);
+    const generatedSignature = hmac.digest('hex');
+  
+    try {
+      const existingOrder = await Orders.findOne({_id:Order_Schema });
+      const userCart = await Cart.findOne({ user_id: req.user._id }).populate('items.product_id');
+
+      if (!existingOrder) {
+        return res.status(404).json({ success: false, error: 'Order not found.' });
+      }
+  
+      if (generatedSignature === signature) {
+        existingOrder.payment_status = "Completed";
+        existingOrder.payment_id = payment_id; 
+        await existingOrder.save();
+
+            userCart.items = [];
+            userCart.total_price = 0;
+            await userCart.save();
+  
+        return res.status(200).json({ success: true, message: ' Payment verified successfully.', order: existingOrder });
+      } else {
+
+        existingOrder.payment_status = "Pending";
+        await existingOrder.save();
+        userCart.items = [];
+            userCart.total_price = 0;
+            await userCart.save();
+  
+        return res.status(400).json({ success: false, error: 'Payment verification failed. Status set to pending.', order: existingOrder });
+      }
+    } catch (error) {
+      return res.status(500).json({ success: false, error: "Error updating order status" });
+    }
+  };
+  
+  
 
 
 
 exports.placeOrder = async (req, res) => {
-        const { address_id, payment_method, payment_id, order_id, signature,total_amount,couponCode  } = req.body;
-        console.log('jj',couponCode)
+        const { address_id, payment_method, payment_id, order_id, signature,total_amount,couponCode,discountPrice } = req.body;
+        console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii',discountPrice)
+
         if (!address_id || !payment_method) {
         return res.status(400).json({ message: "Address and payment method are required." });
         }
@@ -80,7 +124,8 @@ exports.placeOrder = async (req, res) => {
             payment_method,
             items: userCart.items,
             total_amount,
-            payment_status:"Completed"
+            payment_status:"Completed",
+            discount: discountPrice,
         });
         if (couponCode) {
             const coupon = await Coupon.findOne({ coupon_code: couponCode })
@@ -149,14 +194,14 @@ exports.placeOrder = async (req, res) => {
                 userCart.total_price = 0;
                 await userCart.save();
 
-                return res.status(200).json({success:true, message: "Order placed successfully!", razorpayOrderId: razorpayOrder.id, amount: newOrder.total_amount });
+                return res.status(200).json({success:true, message: "Order placed successfully!", razorpayOrderId: razorpayOrder.id, amount: newOrder.total_amount,order_id:newOrder._id });
             } else {
                 console.log(333)
                 return res.status(400).json({ message: "Payment verification failed." });
             }
             }
     
-            return res.status(200).json({ message: "Proceed to Razorpay payment.", razorpayOrderId: razorpayOrder.id, amount: newOrder.total_amount });
+            return res.status(200).json({ message: "Proceed to Razorpay payment.", razorpayOrderId: razorpayOrder.id, amount: newOrder.total_amount,order_id:newOrder._id  });
         }
         } catch (error) {
         console.error("Error placing the order:", error);
@@ -230,41 +275,6 @@ try {
 }
 
 
-exports.cancelOrder = async (req, res) => {
-try {
-   const orderId = req.params.id;
-   const order = await Orders.findById(orderId).populate('items.product_id');
-   if (!order) {
-       return res.status(404).json({ error: 'Order not found' });
-   }
-
-   order.order_status = 'Cancelled';
-   await order.save();
-
-   for (const item of order.items) {
-       const product = await Product.findById(item.product_id);
-
-       if (!product) {
-           console.error(`Product not: ${item.product_id}`);
-           continue;
-       }
-
-       const variantUpdate = product.variants.find(variant => variant.size === item.size);
-       console.log(variantUpdate)
-       if (variantUpdate) {
-           variantUpdate.stock += item.quantity;
-       }
-
-       await product.save();
-   }
-
-   res.status(200).json({ message: 'Order cancelled successfully' });
-
-} catch (error) {
-   console.error('Error cancelling order:', error);
-   res.status(500).json({ error: 'cancel the order Failed' });
-}
-}
 
 exports.qantityUpdate = async (req, res) => {
 
@@ -297,74 +307,8 @@ try {
 }
 }
 
-exports.returnProduct = async (req, res) => {
-    try {
-        const orderId = req.params.orderId
-        const itemId = req.params.itemId
 
-        const order = await Orders.findOneAndUpdate(
-            { _id: orderId, 'items._id': itemId },
-            { $set: { order_status: 'Returned' } },
-            { new: true } 
-        );
-
-        if (!order) {
-            return res.status(404).json({ message: 'Order or item not found' })
-        }
-        
-        res.status(200).json({ message: 'Return request submitted successfully', order })
-    } catch (error) {
-        console.error("Error in return request:", error)
-        res.status(500).json({ message: 'Internal server error' })
-    }
-}
-
-
-exports.applyCoupon = async (req, res) => {
-    try {
-        console.log(req.body)
-      const { couponCode,totalPrice  } = req.body
-
-      const coupon = await Coupon.findOne({ coupon_code: couponCode })
-      console.log('hii',coupon)
-      if (!coupon) {
-        return res.json({ success: false, message: 'Invalid coupon code' })
-      }
-  
-      const now = new Date()
-      if (now < coupon.start_date || now > coupon.expiry_date) {
-        return res.json({ success: false, message: 'Coupon is expired or not active' })
-      }
-      console.log("345",now)
-  
-      console.log("tot",totalPrice)
-      if (totalPrice < coupon.min_pur_amount) {
-        return res.json({ success: false, message: `Minimum purchase of ₹${coupon.min_pur_amount} required` })
-      }
-      console.log(coupon.users.userId,'nihu',req.user._id)
-      const userUsage = coupon.users.find(user => user.userId.toString() === req.user._id.toString())
-      if (userUsage && userUsage.is_bought) {
-        return res.json({ success: false, message: 'Coupon already used by this user' })
-      }
-      
-      let discount = (totalPrice * coupon.discount) / 100
-      console.log("dis",discount)
-      if (coupon.max_coupon_amount && discount > coupon.max_coupon_amount) {
-        discount = coupon.max_coupon_amount
-      }
-  
-      const newTotal = totalPrice - discount
-      console.log(newTotal)
-  
-      res.json({ success: true, newTotal,discount })
-    } catch (error) {
-      console.error('Error applying coupon:', error)
-      res.status(500).json({ success: false, message: 'Internal server error' })
-    }
-  }
-
-
-  exports.cancelItem = async (req, res) => {
+exports.cancelItem = async (req, res) => {
 
     const { orderId, itemId } = req.params
     try {
@@ -421,6 +365,107 @@ exports.applyCoupon = async (req, res) => {
       res.status(500).json({ message: 'Error canceling item and updating stock' })
     }
   }
+
+exports.returnProduct = async (req, res) => {
+    try {
+        const {orderId,itemId} = req.params
+
+        const order = await Orders.findOne({ _id: orderId })
+        console.log("djkdh",order)
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' })
+        }
+        
+        const item = order.items.find(item => item._id.toString() === itemId)
+        console.log('item',item)
+        if (!item) {
+            return res.status(404).json({ message: 'Item not found in order' })
+        }
+        
+        item.is_returned = true
+        order.order_status = 'Returned'
+        console.log('heiiiiiiiiiiiiiiiiii',order.order_status)
+        await Product.findOneAndUpdate(
+            { _id: item.product_id, "variants.0": { $exists: true } },
+            { $inc: { "variants.0.stock": item.quantity } },
+            { new: true }
+        )
+        console.log("numbekka")
+
+        if (order.payment_status === 'Completed') {
+            const wallet = await Wallet.findOne({ user: req.session.user.id })
+            console.log('Wallet')
+            if (wallet) {
+                wallet.balance += item.price
+                
+                wallet.wallet_history.push({
+                    date: new Date(),
+                    amount: item.price,
+                    transaction_type: 'credited'
+                })
+                
+                await wallet.save()
+                console.log('Wallet updated:', wallet)
+            } else {
+                console.log('Wallet not found for the user')
+            }
+        }
+
+        await order.save()
+        
+        res.status(200).json({ message: 'Return processed successfully completed', order })
+    } catch (error) {
+        console.error("Error in processing return request:", error)
+        res.status(500).json({ message: 'Internal server error' })
+    }
+}
+
+
+exports.applyCoupon = async (req, res) => {
+    try {
+        console.log(req.body)
+      const { couponCode,totalPrice  } = req.body
+
+      const coupon = await Coupon.findOne({ coupon_code: couponCode })
+      console.log('hii',coupon)
+      if (!coupon) {
+        return res.json({ success: false, message: 'Invalid coupon code' })
+      }
+  
+      const now = new Date()
+      if (now < coupon.start_date || now > coupon.expiry_date) {
+        return res.json({ success: false, message: 'Coupon is expired or not active' })
+      }
+      console.log("345",now)
+  
+      console.log("tot",totalPrice)
+      if (totalPrice < coupon.min_pur_amount) {
+        return res.json({ success: false, message: `Minimum purchase of ₹${coupon.min_pur_amount} required` })
+      }
+      console.log(coupon.users.userId,'nihu',req.user._id)
+      const userUsage = coupon.users.find(user => user.userId.toString() === req.user._id.toString())
+      if (userUsage && userUsage.is_bought) {
+        return res.json({ success: false, message: 'Coupon already used by this user' })
+      }
+      
+      let discount = (totalPrice * coupon.discount) / 100
+      console.log("dis",discount)
+      if (coupon.max_coupon_amount && discount > coupon.max_coupon_amount) {
+        discount = coupon.max_coupon_amount
+      }
+  
+      const newTotal = totalPrice - discount
+      console.log(newTotal)
+  
+      res.json({ success: true, newTotal,discount })
+    } catch (error) {
+      console.error('Error applying coupon:', error)
+      res.status(500).json({ success: false, message: 'Internal server error' })
+    }
+  }
+
+
+  
   
   
 //   user_route.post('/orders/:orderId/request-return', async (req, res) => {
@@ -448,3 +493,40 @@ exports.applyCoupon = async (req, res) => {
 //       return res.status(500).send('Server error')
 //     }
 //   })
+
+
+// exports.cancelOrder = async (req, res) => {
+//     try {
+//        const orderId = req.params.id;
+//        const order = await Orders.findById(orderId).populate('items.product_id');
+//        if (!order) {
+//            return res.status(404).json({ error: 'Order not found' });
+//        }
+    
+//        order.order_status = 'Cancelled';
+//        await order.save();
+    
+//        for (const item of order.items) {
+//            const product = await Product.findById(item.product_id);
+    
+//            if (!product) {
+//                console.error(`Product not: ${item.product_id}`);
+//                continue;
+//            }
+    
+//            const variantUpdate = product.variants.find(variant => variant.size === item.size);
+//            console.log(variantUpdate)
+//            if (variantUpdate) {
+//                variantUpdate.stock += item.quantity;
+//            }
+    
+//            await product.save();
+//        }
+    
+//        res.status(200).json({ message: 'Order cancelled successfully' });
+    
+//     } catch (error) {
+//        console.error('Error cancelling order:', error);
+//        res.status(500).json({ error: 'cancel the order Failed' });
+//     }
+//     }

@@ -90,7 +90,9 @@ exports.addCoupon = async (req, res) => {
 exports.editCoupon = async (req, res) => {
     const couponId = req.params.id
     const { couponCode, discount, startDate, endDate, minAmount, maxAmount, couponDescription } = req.body;
-    console.log("dkjh",couponId)
+
+    console.log("niiii",req.body)
+    
 
     if (!couponCode) return res.json({ success: false, error: 'Coupon code is empty' })
 
@@ -128,9 +130,9 @@ exports.editCoupon = async (req, res) => {
 
 
     if (!couponDescription) return res.json({ success: false, error: 'Coupon description is empty' })
-    console.log('nih')
-
-    await Coupon.findByIdAndUpdate(couponId, {
+    console.log('nih',couponId)
+    
+    const data = await Coupon.findByIdAndUpdate(couponId, {
         coupon_code: couponCode,
         discount: discount,
         start_date: new Date(startDate),
@@ -138,8 +140,8 @@ exports.editCoupon = async (req, res) => {
         min_pur_amount: minAmount,        
         max_coupon_amount: maxAmount,    
         description: couponDescription    
-    });
-     
+    },{ new: true });
+     console.log('success',data)
     res.json({ success: true, message: 'Coupon edited successfully' });
 };
 

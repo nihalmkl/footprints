@@ -240,7 +240,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-12 text-center">
-                        <p><a href="" class="btn btn-primary place-order" onclick="placeOrder()">Place an order</a></p>
+                        <p><a href="" class="btn btn-primary place-order" id="place-order">Place an order</a></p>
                     </div>
                 </div>
             </div>
@@ -390,6 +390,8 @@
   const paymentMethod = document.querySelector('input[name="payment_method"]:checked')
   const discountedTotalPrice = parseFloat(document.getElementById('ordertotal').textContent)
   const couponCode = document.getElementById('coupon-code').value
+  const discountPrice = parseFloat(document.getElementById('discount-price-div').innerText)
+  console.log(discountPrice,"diiiiiiiiiiiiiii")
   if (addressId === "#" || !paymentMethod) {
     Swal.fire({
       title: "Error",
@@ -401,7 +403,7 @@
     return
   }
 
-  const orderData = { address_id: addressId, payment_method: paymentMethod.value,total_amount: discountedTotalPrice,couponCode:couponCode}
+  const orderData = { address_id: addressId, payment_method: paymentMethod.value,total_amount: discountedTotalPrice,couponCode:couponCode,discountPrice:discountPrice}
 
   const response = await fetch('/order/place_order', {
     method: 'POST',
@@ -425,6 +427,7 @@
       });
     } 
     else if (paymentMethod.value === 'card') {
+        console.log("fkjhdfsh",result)
       const options = {
         key: 'rzp_test_MoQOrZAlepfiB7',
         amount: discountedTotalPrice * 100,
@@ -432,8 +435,10 @@
         name: 'FootPrints',
         description: "Payment for order",
         order_id: result.razorpayOrderId,
+        order_Id_Schema:result.order_id,
         handler: async function (response) {
-          const verifyResponse = await fetch('/order/place_order', {
+            console.log(response)
+          const verifyResponse = await fetch('/order/verify_payment', {
             method: "POST",
             headers: {
               'Content-Type': 'application/json'
@@ -442,9 +447,10 @@
               address_id: addressId,
               payment_method: paymentMethod.value,
               payment_id: response.razorpay_payment_id,
-              order_id: response.razorpay_order_id,
+              order_id:result.razorpayOrderId,
               signature: response.razorpay_signature,
-              total_amount: discountedTotalPrice 
+              total_amount: discountedTotalPrice,
+              Order_Schema:result.order_id
             })
           });
 
@@ -492,7 +498,7 @@
 }
 
 let originalTotalPrice = parseFloat(document.getElementById('ordertotal').textContent)
-document.querySelector('.place-order').addEventListener('click', (event) => {
+document.getElementById('place-order').addEventListener('click', (event) => {
     event.preventDefault();  
     placeOrder(); 
 });
@@ -531,7 +537,7 @@ async function applyCoupon(event) {
         showConfirmButton: false,
         timer: 2000
       })
-      document.getElementById('coupon-success').innerText = `Coupon applied!}`
+      document.getElementById('coupon-success').innerText = `Coupon applied!`
       document.getElementById('discount-price-div').innerHTML = data.discount.toFixed(2)
       document.getElementById('ordertotal').innerHTML = data.newTotal.toFixed(2);
       discountedTotalPrice = data.newTotal;
