@@ -43,7 +43,7 @@
                     <% } %>
                   </td>
                   <td class="<%= transaction.transaction_type === 'credited' ? 'text-success' : 'text-danger' %>">
-                    <%= transaction.transaction_type === 'credited' ? '+' : '-' %>₹<%= transaction.amount %>
+                    <%= transaction.transaction_type === 'credited' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
                   </td>
                 </tr>
               <% }) %>
@@ -91,7 +91,6 @@
   }
 
   try {
-    // Fetch order details from the backend
     const response = await fetch("/addFund", {
       method: "POST",
       headers: {

@@ -54,7 +54,7 @@ body {
                                     <strong>Price:</strong> $<%= item.price.toFixed(2) %>
                                 </div>
                             </div>
-                            <% if (!item.is_cancelled && order.order_status !== 'Delivered') { %>
+                            <% if (!item.is_cancelled && order.order_status !== 'Delivered' && order.order_status !== "Returned") { %>
                                 <button type="button" class="btn btn-danger btn-sm cancel-button" data-item-id="<%= item._id %>">
                                     Cancel
                                 </button>
@@ -173,7 +173,7 @@ body {
                 
 
     
-                <a href="/" class="btn mt-3" style="width: 6rem; background-color: #88c8bc;">Back</a>
+                <a href="/profile/<%= user._id %>" class="btn mt-3" style="width: 6rem; background-color: #88c8bc;">Back</a>
             </div>
         </div>
     </div>

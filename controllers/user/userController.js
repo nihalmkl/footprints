@@ -22,7 +22,6 @@ exports.loadLogin =async (req,res) => {
     }
    
 }
-
     
 exports.userLogin = async (req, res) => {
     try {
@@ -54,7 +53,6 @@ exports.userLogin = async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
-
 
 
 exports.loadHome = async (req, res) => {
@@ -108,8 +106,6 @@ exports.loadHome = async (req, res) => {
   }
   
 
-
-
 exports.loadRegister = async(req,res)=>{
     try {
         res.render('user/register')   
@@ -121,9 +117,6 @@ exports.loadRegister = async(req,res)=>{
         });
     }
 }
-
-
-
 
 exports. verifyOtp = (req,res)=>{
     res.render('user/verify_otp'); 
@@ -285,11 +278,11 @@ exports.resendOtp = async (req, res) => {
 
 
 exports.loadShop = async (req, res) => {
-    console.log("Hi")
+
     const { sorting, search ,category} = req.query
     let sortOption = {}
     let filter = { is_delete: false }
-    console.log("dee",category)
+
     if (category) {
         filter.category_id = await Category.findOne({ category_name:category, is_delete: false }).select('_id')
     }
@@ -302,7 +295,6 @@ exports.loadShop = async (req, res) => {
         let wishlistCount = []
 
         if (req.session.user) {
-            console.log("User ID:", req.session.user.id)
 
             cartCount = await Cart.aggregate([
                 { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
@@ -368,7 +360,6 @@ exports.loadShop = async (req, res) => {
         res.status(500).send("Internal Server Error")
     }
 }
-
 
 
 

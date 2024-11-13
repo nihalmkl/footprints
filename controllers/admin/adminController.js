@@ -64,10 +64,6 @@ exports.adminHome = async (req, res) => {
       filterConditions.createdAt = {
         $gte: moment().startOf('month').toDate()
       };
-    } else if (filter === 'year') {
-      filterConditions.createdAt = {
-        $gte: moment().startOf('year').toDate() 
-      };
     } else if (startDate && endDate) {
       filterConditions.createdAt = {
         $gte: moment(startDate).toDate(),
@@ -115,7 +111,6 @@ exports.downloadPdf = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
     
-    // Define filter conditions for different date ranges
     let filterConditions = {};
     
     if (filter === 'day') {

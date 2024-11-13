@@ -11,6 +11,8 @@ const mongoose = require('mongoose')
 const razorpay = require('../../config/razorpay')
 const crypto = require('crypto')
 const { log } = require('console')
+
+
 exports.loadCheckout = async (req, res) => {
     const userId = req.user._id
     console.log(userId,"djfsjdfkf")
@@ -105,7 +107,7 @@ exports.verifyPayment = async (req, res) => {
 
 exports.placeOrder = async (req, res) => {
         const { address_id, payment_method, payment_id, order_id, signature,total_amount,couponCode,discountPrice } = req.body;
-        console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii',discountPrice)
+       
 
         if (!address_id || !payment_method) {
         return res.status(400).json({ message: "Address and payment method are required." });
@@ -124,7 +126,7 @@ exports.placeOrder = async (req, res) => {
             payment_method,
             items: userCart.items,
             total_amount,
-            payment_status:"Completed",
+            payment_status:"Pending",
             discount: discountPrice,
         });
         if (couponCode) {
@@ -193,6 +195,9 @@ exports.placeOrder = async (req, res) => {
                 userCart.items = [];
                 userCart.total_price = 0;
                 await userCart.save();
+
+                newOrder.payment_status = "Completed"; 
+                await newOrder.save();
 
                 return res.status(200).json({success:true, message: "Order placed successfully!", razorpayOrderId: razorpayOrder.id, amount: newOrder.total_amount,order_id:newOrder._id });
             } else {

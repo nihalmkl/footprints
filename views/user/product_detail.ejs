@@ -58,7 +58,7 @@
                         <% } %>
                     </p>
                     
-                    <span class="<%= product.variants[0].stock < 0 ? 'text-danger' : 'text-success' %>">
+                    <span class="<%= product.variants[0].stock == 0 ? 'text-danger' : 'text-success' %>">
                         Available Stock: <%= product.variants[0].stock %>
                     </span>                    
                     <p class="star">
