@@ -60,10 +60,10 @@ exports.loadCart =  async (req, res) => {
 
 
 exports.addCart = async (req, res) => {
-    console.log('hi')
+
     const { userId, productId, quantity } = req.body;
-    const quant = parseInt(quantity, 5);
-    console.log(req.body    )
+    const quant = parseInt(quantity, 10);
+    
     if (quant === 0) {
         return res.status(400).json({ success:false,message: 'Quantity Atleast one' });
     }
@@ -114,14 +114,11 @@ exports.addCart = async (req, res) => {
             })
         }
 
-
         cart.total_price = cart.items.reduce((total, item) => total + item.price, 0);
         await cart.save();
 
-
         res.status(200).json({success:true, message: 'Product added to cart', cart });
     } catch (error) {
-        console.log('hello')
         console.error('Error adding to cart:', error);
         res.status(500).json({ message: 'Server error' });
     }
@@ -145,11 +142,11 @@ exports.deleteCartItems = async (req, res) => {
 
         const removedItem = cart.items[itemIndex]
 
-        const product = await Product.findById(productId)
-        if (product) {
-            product.variants[0].stock += removedItem.quantity
-            await product.save()
-        }
+        // const product = await Product.findById(productId)
+        // if (product) {
+        //     product.variants[0].stock += removedItem.quantity
+        //     await product.save()
+        // }
 
         cart.items.splice(itemIndex, 1);
         cart.total_price = cart.items.reduce((total, item) => total + item.price, 0)

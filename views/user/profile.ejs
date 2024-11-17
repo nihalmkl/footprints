@@ -253,62 +253,61 @@
                                 <%= address.state %> - <%= address.pincode %>,
                                 <%= address.country %>
                             </p>
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editAddressModal">
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editAddressModal<%= address._id %>">
                             Edit 
                             </button>
                             <button type="button" class="btn btn-danger" onclick="deleteAddress('<%= address._id %>')">
     Delete
 </button>
-                            <div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressModalLabel" aria-hidden="true">
+                            <div class="modal fade" id="editAddressModal<%= address._id %>" tabindex="-1" aria-labelledby="editAddressModalLabel<%= address._id %>" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editAddressModalLabel">Edit Address</h5>
+                <h5 class="modal-title" id="editAddressModalLabel<%= address._id %>">Edit Address</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form action="/address/<%= address._id %>" method="POST">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="edit_full_name">Full Name</label>
-                        <input type="text" class="form-control" id="edit_full_name" name="full_name" value="<%= address.full_name %>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_street_address">Street Address</label>
-                        <input type="text" class="form-control" id="edit_street_address" name="street_address" value="<%= address.street_address %>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_city">City</label>
-                        <input type="text" class="form-control" id="edit_city" name="city" value="<%= address.city %>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_state">State</label>
-                        <input type="text" class="form-control" id="edit_state" name="state" value="<%= address.state %>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_pincode">Pincode</label>
-                        <input type="text" class="form-control" id="edit_pincode" name="pincode" value="<%= address.pincode %>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_country">Country</label>
-                        <input type="text" class="form-control" id="edit_country" name="country" value="<%= address.country %>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_phone">Phone</label>
-                        <input type="text" class="form-control" id="edit_phone" name="phone" value="<%= address.phone %>" required>
-                    </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="edit_full_name<%= address._id %>">Full Name</label>
+                  <input type="text" class="form-control" id="edit_full_name<%= address._id %>" name="full_name" value="<%= address.full_name %>" required>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div class="form-group">
+                  <label for="edit_street_address<%= address._id %>">Street Address</label>
+                  <input type="text" class="form-control" id="edit_street_address<%= address._id %>" name="street_address" value="<%= address.street_address %>" required>
                 </div>
+                <div class="form-group">
+                  <label for="edit_city<%= address._id %>">City</label>
+                  <input type="text" class="form-control" id="edit_city<%= address._id %>" name="city" value="<%= address.city %>" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit_state<%= address._id %>">State</label>
+                  <input type="text" class="form-control" id="edit_state<%= address._id %>" name="state" value="<%= address.state %>" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit_pincode<%= address._id %>">Pincode</label>
+                  <input type="text" class="form-control" id="edit_pincode<%= address._id %>" name="pincode" value="<%= address.pincode %>" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit_country<%= address._id %>">Country</label>
+                  <input type="text" class="form-control" id="edit_country<%= address._id %>" name="country" value="<%= address.country %>" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit_phone<%= address._id %>">Phone</label>
+                  <input type="text" class="form-control" id="edit_phone<%= address._id %>" name="phone" value="<%= address.phone %>" required>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
             </form>
+          </div>
         </div>
-    </div>
-</div>
- </div>
-                    
+      </div>
+    </div>  
                             <% }); %>
                             
                         <% } else { %>
@@ -455,7 +454,7 @@
 
     orderTable += `</td>
             <td>${order.payment_method === 'Cash on Delivery' ? 'COD' : order.payment_method}</td>
-            <td>$${order.total_amount.toFixed(2)}</td>
+            <td>₹${order.total_amount.toFixed(2)}</td>
             <td class="text-center">`;
 
     if (order.order_status === 'Pending') {

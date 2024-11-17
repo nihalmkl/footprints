@@ -231,11 +231,20 @@
 }
     document.querySelector('.quantity-right-plus').addEventListener('click', function() {
         let quantity = parseInt(document.getElementById('quantity').value)
-       
+        if (isNaN(quantity)) quantity = 5
    
         if (quantity < stock && quantity< 5) {
             document.getElementById('quantity').value = quantity++
-            console.log(quantity)
+            if(quantity>=5){
+            document.querySelector('.quantity-right-plus').disabled = true
+
+            Swal.fire({
+                title: "Error",
+                text: "Maximum 5 quantity allowed",
+                icon: "error",
+                timer: 1500,
+            })
+        }
             document.querySelector('.quantity-left-minus').disabled = quantity <= 1
             return
         }else if (quantity >= stock) {
@@ -250,16 +259,7 @@
          return
 
     }
-        if(quantity>=5){
-            document.querySelector('.quantity-right-plus').disabled = true
-
-            Swal.fire({
-                title: "Error",
-                text: "Maximum 5 quantity allowed",
-                icon: "error",
-                timer: 1500,
-            })
-        }
+        
     })
     document.querySelector('.quantity-left-minus').addEventListener('click', function() {
         let quantity = parseInt(document.getElementById('quantity').value)

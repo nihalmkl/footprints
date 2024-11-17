@@ -391,7 +391,8 @@
   const discountedTotalPrice = parseFloat(document.getElementById('ordertotal').textContent)
   const couponCode = document.getElementById('coupon-code').value
   const discountPrice = parseFloat(document.getElementById('discount-price-div').innerText)
-  console.log(discountPrice,"diiiiiiiiiiiiiii")
+  
+
   if (addressId === "#" || !paymentMethod) {
     Swal.fire({
       title: "Error",
@@ -427,7 +428,7 @@
       });
     } 
     else if (paymentMethod.value === 'card') {
-        console.log("fkjhdfsh",result)
+       
       const options = {
         key: 'rzp_test_MoQOrZAlepfiB7',
         amount: discountedTotalPrice * 100,
@@ -437,7 +438,7 @@
         order_id: result.razorpayOrderId,
         order_Id_Schema:result.order_id,
         handler: async function (response) {
-            console.log(response)
+        
           const verifyResponse = await fetch('/order/verify_payment', {
             method: "POST",
             headers: {

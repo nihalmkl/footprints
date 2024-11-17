@@ -107,6 +107,39 @@
     color: gray;
     margin-left: 10px;
 }
+.pagedesign .page-link {
+    border-radius: 50px;
+    color: #88c8bc;
+    border: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.pagedesign .page-link:hover {
+    color: white;
+    background-color: #6b6e74;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.pagedesign .active .page-link, 
+.pagedesign .page-link.active-page {
+    color: white !important;
+    background-color: #88c8bc !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.5);
+}
+
+.pagedesign .page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.pagedesign .page-item.disabled .page-link:hover {
+    cursor: not-allowed;
+}
 	</style>
 	</head>
 	<body>
@@ -126,8 +159,11 @@
 							<!-- Search Bar Section -->
 							<div class="col-sm-5 col-md-4">
                                 <div class="search-wrap d-flex align-items-center">
-                                    <form action="/shop" method="GET" class="d-flex w-100">
-                                        <input type="text" id="searchInput" class="form-control" name="search" placeholder="Search" style="border-radius: 0;">
+                                    <form action="/shop" method="GET" class="d-flex w-100" id="filterForm">
+                                        <input type="search"  id="searchInput" class="form-control" name="search" placeholder="Search" style="border-radius: 0;" value="<%= search || '' %>">
+                                        <input type="hidden" id="sortField" name="sorting" value="<%= sorting || '' %>">
+                                        <input type="hidden" id="brand" name="brand" value="<%= brand || '' %>">
+                                        <input type="hidden" id="category" name="category" value="<%= category || '' %>">
                                         <button type="submit" class="btn btn-primary" style="border-radius: 0;">
                                             <i class="icon-search"></i>
                                         </button>
@@ -243,7 +279,7 @@
     <div class="row">
         <div class="col-md-6 text-end"> 
             <div class="dropdown">
-                <select id="sortBy" class="form-select" aria-label="Sort by">
+                <select id="sortBy" class="form-select" name="sorting" aria-label="Sort by" onchange="sortProducts()">
                     <option value="">Sort by</option>
                     <option value="priceLowToHigh">Price: Low to High</option>
                     <option value="priceHighToLow">Price: High to Low</option>
@@ -264,14 +300,48 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <div class="side border mb-1">
-                            <h3>Category</h3>
-                            <ul>
-                                <li><a href="#" class="sortCategoty" data-value="Casual Shoes">Casual</a></li>
-                                <li><a href="#" class="sortCategoty" data-value="Sports shoes">Sports</a></li>
-                                <li><a href="#" class="sortCategoty" data-value="Formal Shoes">Formal</a></li>
-                            </ul>
+                            <form action="/shop" id="filterForm" method="GET">
+                                <input type="hidden" name="search" value="<%= search || '' %>">
+                                <input type="hidden" name="sorting" value="<%= sorting || '' %>">
+                                
+                                <!-- Brand Filter -->
+                                <div class="form-group mb-4 mt-5 d-flex justify-content-between align-items-center">
+                                    <label for="brandFilter" class="form-label mb-0"><i class="fas fa-tags"></i> Brand</label>
+                                    <select class="form-select sort-input w-50" name="brand" id="brandFilter">
+                                        <option value="">All Brands</option>
+                                        <% if (allBrands.length != 0) { %>
+                                            <% allBrands.forEach((element) => { %>
+                                                <option value="<%= element.brand_name %>" <%= element.brand_name === selectedBrand ? 'selected' : '' %>>
+                                                    <%= element.brand_name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                </div>
+                                
+                                <!-- Category Filter -->
+                                <div class="form-group mb-4 mt-4 d-flex justify-content-between align-items-center">
+                                    <label for="categoryFilter" class="form-label mb-0"><i class="fas fa-th-list"></i> Category</label>
+                                    <select class="form-select sort-input w-50" name="category" id="categoryFilter">
+                                        <option value="">All Categories</option>
+                                        <% if (allCategories.length != 0) { %>
+                                            <% allCategories.forEach((element) => { %>
+                                                <option value="<%= element.category_name %>" <%= element.category_name === selectedCategory ? 'selected' : '' %>>
+                                                    <%= element.category_name %>
+                                                </option>
+                                            <% }) %>
+                                        <% } %>
+                                    </select>
+                                </div>
+                                
+                                <!-- Apply Filters Button -->
+                                <button class="btn btn-secondary btn-block mt-3" type="submit">
+                                    <i class="fas fa-check"></i> Apply Filters
+                                </button>
+                            </form> 
                         </div>
                     </div>
+                    
                     <div class="col-sm-12">
                         <div class="side border mb-1">
                             <h3>Size/Width</h3>
@@ -398,21 +468,43 @@
                 </div>
             </div>
             
-                <div class="row">
-                    <div class="col-md-12 text-center">
-                        <div class="block-27">
-                       <ul>
-                           <li><a href="#"><i class="ion-ios-arrow-back"></i></a></li>
-                          <li class="active"><span>1</span></li>
-                          <li><a href="#">2</a></li>
-                          <li><a href="#">3</a></li>
-                          <li><a href="#">4</a></li>
-                          <li><a href="#">5</a></li>
-                          <li><a href="#"><i class="ion-ios-arrow-forward"></i></a></li>
-                       </ul>
-                    </div>
-                    </div>
+            <div class="row">
+                <div class="d-flex justify-content-center mt-5 mb-5">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-lg pagedesign">
+                            <!-- Previous Button -->
+                            <% if (currentPage > 1) { %>
+                                <li class="page-item">
+                                    <a class="page-link rounded-pill shadow-sm" href="/shop?page=<%= currentPage - 1 %>">&laquo; Previous</a>
+                                </li>
+                            <% } else { %>
+                                <li class="page-item disabled">
+                                    <span class="page-link rounded-pill shadow-sm">&laquo; Previous</span>
+                                </li>
+                            <% } %>
+            
+                            <!-- Page Numbers -->
+                            <% for (let i = 1; i <= totalPage; i++) { %>
+                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                    <a class="page-link rounded-pill shadow-sm <%= currentPage === i ? 'active-page' : '' %>" href="/shop?page=<%= i %>"><%= i %></a>
+                                </li>
+                            <% } %>
+            
+                            <!-- Next Button -->
+                            <% if (currentPage < totalPage) { %>
+                                <li class="page-item">
+                                    <a class="page-link rounded-pill shadow-sm" href="/shop?page=<%= currentPage + 1 %>">Next &raquo;</a>
+                                </li>
+                            <% } else { %>
+                                <li class="page-item disabled">
+                                    <span class="page-link rounded-pill shadow-sm">Next &raquo;</span>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </nav>
                 </div>
+            </div>
+            
             </div>
         </div>
     </div>
@@ -479,7 +571,7 @@
 }
 
   function addToCart(userId, productId, quantity) {
-    console.log('hello') 
+
     const selectedQuantity = quantity    
     console.log(selectedQuantity)
     fetch('/cart/add', {
@@ -524,31 +616,30 @@
     });
 }
 
-</script>
-<script>
-    document.getElementById('sortBy').addEventListener('change', function() {
-        const sorting = this.value
-        window.location.href = `/shop?sorting=${sorting}`
-    })
-    document.querySelectorAll('.sortCategoty').forEach(link => {
-    link.addEventListener('click', function(event) {
-        event.preventDefault()
-        const category = this.getAttribute('data-value') 
-        const urlParams = new URLSearchParams(window.location.search)
-        urlParams.set('category', category)
-        window.location.search = urlParams.toString()
-    })
-})
-</script>
-<script>
+//     document.getElementById('sortBy').addEventListener('change', function() {
+//         const sorting = this.value
+//         window.location.href = `/shop?sorting=${sorting}`
+//     })
+//     document.querySelectorAll('.sortCategoty').forEach(link => {
+//     link.addEventListener('click', function(event) {
+//         event.preventDefault()
+//         const category = this.getAttribute('data-value') 
+//         const urlParams = new URLSearchParams(window.location.search)
+//         urlParams.set('category', category)
+//         window.location.search = urlParams.toString()
+//     })
+// })
+
+function sortProducts() {
+        const sortOption = document.getElementById('sortBy').value;
+        document.getElementById('sortField').value = sortOption;
+        document.getElementById('filterForm').submit();
+    }
+
 	function goTologin(){
 	 window.location.href = '/login'
 }
 </script>
    
 
-
-
-
-</script>
 <%- include('../partials/footer.ejs') %>

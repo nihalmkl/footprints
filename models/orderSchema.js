@@ -45,6 +45,10 @@ const OrdersSchema = new Schema(
       is_cancelled:{
         type:Boolean,
         default:false
+      },
+      is_returned:{
+        type:Boolean,
+        default:false
       }
     }],
     coupon_applied: {  
@@ -72,7 +76,7 @@ const OrdersSchema = new Schema(
     payment_status: {
       type: String,
       required: true,
-      enum: ["Pending", "Completed", "Failed"], 
+      enum: ["Pending", "Completed","Failed"], 
       default: 'Pending'
     },
     razorpay_id:{

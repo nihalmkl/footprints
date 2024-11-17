@@ -103,7 +103,7 @@ exports.editAddress = async (req, res) =>{
       }
   
       const addresses = await Address.find({ user_id: userId }) || []; 
-      console.log("jdjkkdh",addresses)
+      
       res.render('user/profile', { user, addresses,  wishlistCount: finalWishlistCount,
         cartCount: finalCartCount });
     } catch (error) {
@@ -114,7 +114,7 @@ exports.editAddress = async (req, res) =>{
 
 
   exports.editProfile = async (req, res) => {
-    console.log("hill")
+  
     const { username, phone } = req.body;
     const userId = req.params.userId; 
     console.log(userId)

@@ -27,11 +27,11 @@ exports.loadCoupon = async (req, res) => {
  
 exports.addCoupon = async (req, res) => {
     const { couponCode, discount, startDate, endDate, minAmount, maxAmount, couponDescription } = req.body;
-    console.log("hi",req.body)
+  
     const existingCoupon = await Coupon.findOne({
       coupon_code: { $regex: new RegExp(`^${couponCode}$`, "i") },
     });
-    console.log("123",existingCoupon)
+ 
     if (existingCoupon) {
       return res.json({ success: false, error: "Coupon with this code already exists." });
     }
@@ -71,8 +71,7 @@ exports.addCoupon = async (req, res) => {
 
   
     if (!couponDescription) return res.json({ success: false, error: 'Coupon description is empty' })
-
-    console.log("jjj")
+      
     const newCoupon = new Coupon({
       coupon_code: couponCode,
       discount: discount,
@@ -82,7 +81,7 @@ exports.addCoupon = async (req, res) => {
       max_coupon_amount: maxAmount,
       description: couponDescription,
     });
-     console.log("6756",newCoupon)
+     
     await newCoupon.save();
     res.json({ success: true, message: 'Coupon successfully added' });
   };

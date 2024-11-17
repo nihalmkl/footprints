@@ -106,6 +106,11 @@
           margin-bottom: 20px;
         }
       }
+      canvas {
+    max-width: 100%;
+    height: auto;
+}
+
     </style>
   </head>
   <body>
@@ -114,32 +119,27 @@
         <!-- Overview Section -->
         <div class="row mb-4">
           <div class="col-md-12">
-            <div class="sort-download-container">
-              <label for="sortSelect" class="me-2">Sort by:</label>
-              <select id="sortSelect" class="form-select w-auto" onchange="applyFilter()">
-                <option value="">Select</option>
-                <option value="day">Last 1 Day</option>
-                <option value="week">Last 1 Week</option>
-                <option value="month">Last 1 Month</option>
-                <option value="custom">Custom Date</option>
-              </select>
-
-              <div class="export-buttons">
-                <button class="btn btn-outline-primary" onclick="exportPDF()">
-                    Download PDF
-                  </button>
-                <!-- <div class="export-buttons">
-                    <button class="btn btn-outline-success" onclick="exportExcel()">
-                      Download Excel
-                    </button>
-                  </div> -->
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <label for="sortSelect" class="me-2">Sort by:</label>
+                <select id="sortSelect" class="form-select w-auto" onchange="applyFilter()">
+                  <option value="">Select</option>
+                  <option value="day">Last 1 Day</option>
+                  <option value="week">Last 1 Week</option>
+                  <option value="month">Last 1 Month</option>
+                  <option value="custom">Custom Date</option>
+                </select>
+              </div>
+              <div class="d-flex">
+                <button class="btn btn-outline-danger me-2" onclick="exportPDF()">Download PDF</button>
+                <button class="btn btn-outline-success" onclick="exportExcel()">Download PDF</button>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Dashboard Cards -->
-        <div class="row">
+      
+        <!-- Stats Cards Section -->
+        <div class="row mb-4">
           <div class="col-md-3">
             <div class="card text-center">
               <div class="card-body">
@@ -173,8 +173,145 @@
             </div>
           </div>
         </div>
+      
+        <!-- Sales Overview Chart Section -->
+        <div class="row">
+          <div class="col-lg-8 d-flex align-items-stretch">
+            <div class="card w-100">
+              <div class="card-body">
+                <div class="d-sm-flex d-block align-items-center justify-content-between mb-9">
+                  <div class="mb-3 mb-sm-0">
+                    <h5 class="card-title fw-semibold">Sales Overview</h5>
+                  </div>
+                  <div>
+                    <select class="form-select" id="chatSortSelect">
+                      <option value="" selected disabled>Sort by:</option>
+                      <option value="week">Week</option>
+                      <option value="month">Month</option>
+                      <option value="year">Year</option>
+                    </select>
+                  </div>
+                </div>
+      
+                <!-- Hidden input to hold the chart data from EJS -->
+                <input type="hidden" id="chartData" value=''>
+      
+                <!-- Canvas for the chart -->
+                <canvas id="myChart" width="400" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
+
+      <div class="container mt-5">
+        <div class="row g-4">
+    
+          <!-- Best Selling Products -->
+          <div class="col-lg-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">Best Selling Products</h5>
+                <div class="table-responsive">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Product Name</th>
+                        <th>Sale Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Product A</td>
+                        <td>120</td>
+                      </tr>
+                      <tr>
+                        <td>Product B</td>
+                        <td>98</td>
+                      </tr>
+                      <tr>
+                        <td>Product C</td>
+                        <td>75</td>
+                      </tr>
+                      <!-- Add more rows as needed -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+          <!-- Best Selling Categories -->
+          <div class="col-lg-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">Best Selling Categories</h5>
+                <div class="table-responsive">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Category Name</th>
+                        <th>Sale Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Category A</td>
+                        <td>200</td>
+                      </tr>
+                      <tr>
+                        <td>Category B</td>
+                        <td>150</td>
+                      </tr>
+                      <tr>
+                        <td>Category C</td>
+                        <td>130</td>
+                      </tr>
+                      <!-- Add more rows as needed -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+          <!-- Best Selling Brands -->
+          <div class="col-lg-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">Best Selling Brands</h5>
+                <div class="table-responsive">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Brand Name</th>
+                        <th>Sale Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Brand X</td>
+                        <td>300</td>
+                      </tr>
+                      <tr>
+                        <td>Brand Y</td>
+                        <td>240</td>
+                      </tr>
+                      <tr>
+                        <td>Brand Z</td>
+                        <td>210</td>
+                      </tr>
+                      <!-- Add more rows as needed -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+        </div>
+      </div>
       <!-- Orders Table -->
       <div class="container mt-4">
         <h5>Order List</h5>
@@ -199,9 +336,9 @@
           </table>
         </div>
       </div>
-    </div>
 
-    <!-- Date Selection Modal -->
+    </div>
+    
     <div class="modal fade" id="dateSelectionModal" tabindex="-1" aria-labelledby="dateSelectionModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -231,15 +368,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      // Initialize Bootstrap modal
       let dateSelectionModal;
       
       document.addEventListener('DOMContentLoaded', function() {
         dateSelectionModal = new bootstrap.Modal(document.getElementById('dateSelectionModal'));
       });
 
-      // Handle filter selection
       function applyFilter() {
         const filterValue = document.getElementById('sortSelect').value;
         
@@ -248,11 +384,9 @@
           return;
         }
         
-        // Handle other filter options
         window.location.href = `/admin/dashboard?filter=${filterValue}`;
       }
 
-      // Handle date filter form submission
       document.getElementById('dateFilterForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -273,20 +407,21 @@
 
 
 
-      function exportExcel() {
- console.log("podda  ")
-  const filterValue = document.getElementById('sortSelect').value;
-  const startDate = document.getElementById('startDate')?.value;
-  const endDate = document.getElementById('endDate')?.value;
-  console.log("THi is date",filterValue,startDate,endDate)
-  let url = '/admin/export-sales-report/excel';
-  
-  if (filterValue === 'custom' && startDate && endDate) {
+function exportExcel() {
+
+  const params = new URLSearchParams(window.location.search);
+
+const filter = params.get('filter'); 
+const startDate = params.get('startDate'); 
+const endDate = params.get('endDate');  
+
+let url = '/admin/export-sales-report/excel';
+
+if (startDate && endDate) {
     url += `?startDate=${startDate}&endDate=${endDate}`;
-  } else if (filterValue) {
-    url += `?filter=${filterValue}`; 
-  }
-  
+} else if (filter) {
+    url += `?filter=${filter}`;
+}
   window.location.href = url;
 }
 
@@ -297,10 +432,6 @@ const filter = params.get('filter');
 const startDate = params.get('startDate'); 
 const endDate = params.get('endDate');  
 
-console.log('Filter:', filter);
-console.log('Start Date:', startDate);
-console.log('End Date:', endDate);
-
 let url = '/admin/export-sales-report/pdf';
 
 if (startDate && endDate) {
@@ -309,11 +440,49 @@ if (startDate && endDate) {
     url += `?filter=${filter}`;
 }
 
-console.log('Final URL:', url);
 
 window.location.href = url; 
 
 }
+
+  const chartData = JSON.parse(document.getElementById('chartData').value) || "{}"
+  console.log('ddddd',chartData)
+
+  var ctx = document.getElementById('myChart').getContext('2d');
+  
+  var myChart = new Chart(ctx, {
+    type: 'bar', 
+    data: {
+      labels: ['January', 'February', 'March', 'April', 'May', 'June'], // X-axis labels
+      datasets: [{
+        label: 'Sales in 2024', // Label for the data series
+        data: [12, 19, 3, 5, 2, 3], // Data points for each label
+        backgroundColor: 'rgba(54, 162, 235, 0.2)', // Bar color
+        borderColor: 'rgba(54, 162, 235, 1)', // Border color
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true // Start Y-axis from 0
+        }
+      }
+    }
+  });
+
+  // Event listener for sorting options
+  document.getElementById('chatSortSelect').addEventListener('change', function (e) {
+    const sortBy = e.target.value;
+    if (sortBy === 'month') {
+      myChart.data.labels = ['July', 'August', 'September'];
+      myChart.data.datasets[0].data = [8, 12, 5];
+      myChart.update();
+    }
+    console.log("Sort by:", sortBy);
+  });
+
     </script>
   </body>
 </html>

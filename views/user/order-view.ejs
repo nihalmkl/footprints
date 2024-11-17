@@ -37,9 +37,14 @@ body {
                     <li><strong>Phone:</strong> <%= address.phone %></li>
                 </ul>
     
-                <h6 class="card-title text-align-right">Status: <%= order.order_status %></h6>
+                <h6 class="card-title ">Order Status: <%= order.order_status %></h6>
                 <% if (order.order_status === 'Pending') { %>
                     <p><strong>Expected Delivery Date:</strong> <%= order.placed_at ? order.placed_at.toDateString() : 'TBD' %></p>
+                <% } %>
+                <h6 class="card-title ">Payment Status: <%= order.payment_status %></h6>
+                <% if (order.payment_status === 'Pending') { %>
+                    <button class="btn p-t-10"
+                    onclick=""><i class="fas fa-credit-card"></i> Pay online</button>
                 <% } %>
     
                 <h4 class="mt-4">Items</h4>
@@ -63,11 +68,11 @@ body {
                                     Cancelled
                                 </button>
                             <% } %>
-                            <% if (order.order_status === 'Delivered') { %>
+                            <% if (!item.is_returned && order.order_status === 'Delivered') { %>
                                 <button type="button" class="btn btn-warning btn-sm return-button" data-item-id="<%= item._id %>">
                                  Return
                                 </button>
-                            <% }else if (order.order_status === "Returned") { %>
+                            <% }else if (item.is_returned) { %>
                                 <button type="button" class="btn btn-secondary btn-sm" disabled>
                                     Returned
                                 </button>

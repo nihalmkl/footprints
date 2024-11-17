@@ -52,11 +52,11 @@
                                           <td><%= new Date(offer.start_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></td>
                                           <td>
                                               <% if (offer.is_delete) { %>
-                                                  <button class="btn btn-primary btn-sm" onclick="restoreOffer('<%= offer._id %>')">
+                                                  <button class="btn btn-outline-success btn-sm" onclick="restoreOffer('<%= offer._id %>')">
                                                       <i class="fas fa-recycle"></i> Restore
                                                   </button>
                                               <% } else { %>
-                                                  <button type="button" class="btn btn-sm btn-primary editOfferBtn"
+                                                  <button type="button" class="btn btn-sm btn-outline-primary editOfferBtn"
                                                       data-bs-toggle="modal"
                                                       data-bs-target="#editOfferModal"
                                                       data-offer-id="<%= offer._id %>"
@@ -65,7 +65,7 @@
                                                       data-offer-sdate="<%= offer.start_date.toISOString().split('T')[0] %>">
                                                       <i class="fas fa-edit"></i> Edit
                                                   </button>
-                                                  <button class="btn btn-sm btn-danger" onclick="deleteOffer('<%= offer._id %>')">
+                                                  <button class="btn btn-sm btn-outline-danger" onclick="deleteOffer('<%= offer._id %>')">
                                                       <i class="fas fa-trash"></i> Delete
                                                   </button>
                                               <% } %>

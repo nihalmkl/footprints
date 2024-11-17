@@ -2,7 +2,7 @@
     <h4>Wallet</h4>
     <div class="wallet-card">
       <div>
-        <h4>Balance: ₹<%= wallet ? wallet.balance : '0' %></h4>
+        <h4>Balance: ₹<%= wallet ? wallet.balance.toFixed(2) : '0' %></h4>
       </div>
       <div class="wallet-icon">
         <i class="fas fa-wallet"></i>
@@ -83,10 +83,25 @@
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
  async function AddFund() {
+  const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = Swal.stopTimer;
+        toast.onmouseleave = Swal.resumeTimer;
+      }
+    });
   const amount = document.getElementById("amount").value
 
   if (!amount || amount <= 0) {
-    alert("Please enter a valid amount")
+    Toast.fire({
+        icon: "error",
+        title: "Enter Valied Amount",
+        text: 'Enter Valied amount '
+      });
     return
   }
 
@@ -100,7 +115,7 @@
     })
     
     const data = await response.json()
-    console.log("This s data",data.order.amount)
+
     let totalamout = (data.order.amount)/100
     if (data.success) {
       
@@ -108,7 +123,7 @@
         key: "rzp_test_MoQOrZAlepfiB7", 
         amount: data.order.amount,
         currency: "INR",
-        name: "Your App Name",
+        name: "FootPrints",
         description: "Add funds to wallet",
         order_id: data.order.id,
         handler: async function (response) {
@@ -121,14 +136,32 @@
               body: JSON.stringify(response,totalamout),
             })
             if (res.ok) {
-              alert("Funds added successfully!")
-              location.reload()
+              Swal.fire({
+                icon: "success",
+                title: "Added Successfully",
+                text: "Your funds have been added.",
+                confirmButtonText: "OK",
+              }).then(() => {
+                location.reload() 
+              })
             } else {
-              alert("Failed to add funds.")
+              Swal.fire({
+                icon: "error",
+                title: "Failed to Add Funds",
+                text: "Please try again.",
+                confirmButtonText: "OK",
+              }).then(()=>{
+                location.reload()
+              })
             }
           } catch (err) {
             console.error("Error processing payment success:", err)
-            alert("An error occurred during payment processing.")
+            Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "An error occurred during payment processing.",
+            confirmButtonText: "OK",
+           })
           }
         },
         prefill: {

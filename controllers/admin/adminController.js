@@ -3,32 +3,29 @@ const bcrypt = require("bcrypt");
 const Orders = require('../../models/orderSchema')
 const moment = require('moment')
 const Product = require('../../models/productSchema')
+const { generateSalesReportPDF } = require('../../utils/pdfGenerate')
+const { generateSalesReportExcel } = require('../../utils/excelGenerate')
 
-const PDFDocument = require("pdfkit");
-const ExcelJS = require('exceljs')
 
 exports.loadAdminLogin = async (req, res) => {
   try {
     
     if (req.session.admin) {
-      res.redirect("/admin/dashboard", {
-        layout: "layout/admin",
-        title: "Dashboard",
-      });
+      res.redirect("/admin/dashboard");
     } else {
       res.render("admin/adm-login", { layout: false });
     }
   } catch (err) {
     console.log(err);
   }
-};
+}
 
 exports.adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log(email, password);
     const admin = await User.findOne({ email: email, isAdmin: true });
-    console.log(admin);
+  
     if (!admin) {
       return res.json({ success: false });
     }
@@ -43,7 +40,7 @@ exports.adminLogin = async (req, res) => {
   } catch (error) {
     console.log("Login", error);
   }
-};
+}
 
 
 exports.adminHome = async (req, res) => {
@@ -91,6 +88,7 @@ exports.adminHome = async (req, res) => {
 
     const totalOrders = await Orders.countDocuments(filterConditions);
 
+
     res.render('admin/dashboard', {
       layout: "layout/admin",
       title: "Dashboard",
@@ -104,15 +102,15 @@ exports.adminHome = async (req, res) => {
     console.error("Error fetching sales report:", error);
     res.status(500).send({ message: "Error generating sales report" });
   }
-};
+}
 
 
 exports.downloadPdf = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
-    
+
     let filterConditions = {};
-    
+
     if (filter === 'day') {
       filterConditions.createdAt = {
         $gte: moment().startOf('day').toDate()
@@ -125,10 +123,6 @@ exports.downloadPdf = async (req, res) => {
       filterConditions.createdAt = {
         $gte: moment().startOf('month').toDate()
       };
-    } else if (filter === 'year') {
-      filterConditions.createdAt = {
-        $gte: moment().startOf('year').toDate()
-      };
     } else if (startDate && endDate) {
       filterConditions.createdAt = {
         $gte: moment(startDate).toDate(),
@@ -136,12 +130,21 @@ exports.downloadPdf = async (req, res) => {
       };
     }
 
-    const totalSales = await Orders.aggregate([
+    const totals = await Orders.aggregate([
       { $match: filterConditions },
-      { $group: { _id: null, total: { $sum: '$total_amount' } } }
+      {
+        $group: {
+          _id: null,
+          totalOrders: { $sum: 1 },
+          totalSales: { $sum: "$total_amount" },
+          totalDiscount: { $sum: "$discount" },
+        },
+      },
     ]);
 
-    const totalSalesAmount = totalSales.length > 0 ? totalSales[0].total : 0;
+    const totalOrders = totals.length > 0 ? totals[0].totalOrders : 0;
+    const totalSales = totals.length > 0 ? totals[0].totalSales : 0;
+    const totalDiscount = totals.length > 0 ? totals[0].totalDiscount : 0;
 
     const orders = await Orders.aggregate([
       { 
@@ -183,83 +186,64 @@ exports.downloadPdf = async (req, res) => {
           quantity: '$items.quantity',
           price: '$items.price',
           discount: '$discount',
+          payment_method:1,
         }
       }
     ]);
 
-    const doc = new PDFDocument();
-    const fileName = 'Footprits_Sales_Report.pdf';
-    
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-    res.setHeader('Content-Type', 'application/pdf');
-    
-    doc.pipe(res);
-
-    doc.fontSize(20).text('Sales Report', { align: 'center' }).moveDown();
-    
-    if (startDate && endDate) {
-      doc.fontSize(12).text(`Date Range: ${moment(startDate).format('YYYY-MM-DD')} to ${moment(endDate).format('YYYY-MM-DD')}`, { align: 'center' }).moveDown();
-    } else {
-      doc.fontSize(12).text(`Filter: ${filter}`, { align: 'center' }).moveDown();
-    }
-
-    const headers = ['OrderID', 'User', 'Date', 'Status', 'Total', 'Product', 'Quantity', 'Price', 'Discount'];
-    doc.fontSize(12).text(headers.join('   |   '), { underline: true }).moveDown();
-
-    orders.forEach(order => {
-      const orderDate = moment(order.createdAt).format('YYYY-MM-DD');
-      const totalPrice = order.total_price || 0;
-      const productName = order.product_name || 'N/A';
-      const quantity = order.quantity || 0;
-      const price = order.price || 0;
-      const discount = order.discount || 0;
-      const row = [
-        order.order_id,
-        order.user_name,
-        orderDate,
-        order.order_status,
-        totalPrice.toFixed(2),
-        productName,
-        quantity,
-        price.toFixed(2),
-        discount.toFixed(2)
-      ];
-      
-      doc.fontSize(10).text(row.join('   |   '));
-      doc.moveDown(); 
-    });
-
-    doc.moveDown();
-    doc.fontSize(14).text(`Total Sales: ${totalSalesAmount.toFixed(2)}`, { align: 'right' });
-
-    doc.end();
+    generateSalesReportPDF(res, orders, { totalOrders, totalSales, totalDiscount }, filter, startDate, endDate)
 
   } catch (error) {
-    console.error('Error generating PDF:', error);
-    res.status(500).send('Error generating PDF');
+    console.error('Error generating PDF:', error)
+    res.status(500).send('Error generating PDF')
   }
-}
+};
 
 
 exports.downloadExcel = async (req, res) => {
   try {
-    const { startDate, endDate, frequency } = req.query;
+    const { filter, startDate, endDate } = req.query;
 
-    let matchCondition = {};
-    if (startDate && endDate) {
-      matchCondition.placed_at = { $gte: new Date(startDate), $lte: new Date(endDate) };
-    } else if (frequency) {
-      const now = new Date();
-      matchCondition.placed_at = {
-        $gte: frequency === 'day' ? new Date(now.setDate(now.getDate() - 1)) :
-              frequency === 'week' ? new Date(now.setDate(now.getDate() - 7)) :
-              new Date(now.setMonth(now.getMonth() - 1))
+    let filterConditions = {};
+
+    if (filter === 'day') {
+      filterConditions.createdAt = {
+        $gte: moment().startOf('day').toDate()
+      };
+    } else if (filter === 'week') {
+      filterConditions.createdAt = {
+        $gte: moment().startOf('week').toDate()
+      };
+    } else if (filter === 'month') {
+      filterConditions.createdAt = {
+        $gte: moment().startOf('month').toDate()
+      };
+    } else if (startDate && endDate) {
+      filterConditions.createdAt = {
+        $gte: moment(startDate).toDate(),
+        $lte: moment(endDate).toDate()
       };
     }
 
+    const totals = await Orders.aggregate([
+      { $match: filterConditions },
+      {
+        $group: {
+          _id: null,
+          totalOrders: { $sum: 1 },
+          totalSales: { $sum: "$total_amount" },
+          totalDiscount: { $sum: "$discount" },
+        },
+      },
+    ]);
+
+    const totalOrders = totals.length > 0 ? totals[0].totalOrders : 0;
+    const totalSales = totals.length > 0 ? totals[0].totalSales : 0;
+    const totalDiscount = totals.length > 0 ? totals[0].totalDiscount : 0;
+
     const orders = await Orders.aggregate([
       { 
-        $match: matchCondition 
+        $match: filterConditions
       },
       {
         $lookup: {
@@ -273,151 +257,35 @@ exports.downloadExcel = async (req, res) => {
         $unwind: '$user'
       },
       {
-        $lookup: {   
+        $lookup: {
           from: 'products',
           localField: 'items.product_id',
           foreignField: '_id',
           as: 'products'
         }
+      },
+      {
+        $unwind: '$items'
+      },
+      {
+        $unwind: '$products'
+      },
+      {
+        $project: {
+          order_id: 1,
+          user_name: '$user.username',
+          created_at: '$createdAt',
+          order_status: 1,
+          total_price: '$total_amount',
+          product_name: '$products.product_name',
+          quantity: '$items.quantity',
+          price: '$items.price',
+          discount: '$discount',
+          payment_method:1,
+        }
       }
     ]);
-
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Sales Report');
-
-    worksheet.mergeCells('A1:F1');
-    worksheet.getCell('A1').value = 'Sales Report';
-    worksheet.getCell('A1').font = { bold: true, size: 16 };
-    worksheet.getCell('A1').alignment = { horizontal: 'center' };
-
-    // Add report generation date
-    worksheet.mergeCells('A2:F2');
-    worksheet.getCell('A2').value = `Report Generated On: ${new Date().toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric' 
-    })}`;
-
-    // Add date range
-    worksheet.mergeCells('A3:F3');
-    const fromDate = startDate ? new Date(startDate) : new Date(new Date().setMonth(new Date().getMonth() - 1));
-    const toDate = endDate ? new Date(endDate) : new Date();
-    worksheet.getCell('A3').value = `Report Date from: ${fromDate.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric' 
-    })} to ${toDate.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric' 
-    })}`;
-
-    const orderHeaders = [
-      'Order ID',
-      'Date',
-      'Delivery Charge',
-      'Total Amount',
-      'Status',
-      'User'
-    ];
-    worksheet.addRow(orderHeaders);
-    worksheet.getRow(4).font = { bold: true };
-
-    worksheet.getRow(4).eachCell((cell) => {
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
-      };
-      cell.border = {
-        top: { style: 'thin' },
-        bottom: { style: 'thin' },
-        left: { style: 'thin' },
-        right: { style: 'thin' }
-      };
-    });
-
-    const productHeaders = [
-      'Product',
-      'Quantity',
-      'Price',
-      'Discount',
-      'Net Price'
-    ];
-
-    let totalPayableAmount = 0;
-
-    let currentRow = 5;
-    for (const order of orders) {
-      totalPayableAmount += order.total_amount || 0;  
-
-      worksheet.addRow([
-        order.order_id,
-        new Date(order.placed_at).toISOString().split('T')[0],
-        (order.delivery_charge || 0).toFixed(2),   
-        (order.total_amount || 0).toFixed(2),        
-        order.order_status,
-        order.user.username
-      ]);
-      currentRow++;
-
-      worksheet.addRow(productHeaders);
-      worksheet.getRow(currentRow).font = { bold: true, italic: true };
-      currentRow++;
-
-      for (const item of order.items) {
-        const product = order.products.find(p => p._id.toString() === item.product_id.toString());
-        if (product) {
-          worksheet.addRow([
-            product.product_name,
-            item.quantity,
-            (item.price || 0).toFixed(2),              
-            (item.discount || 0).toFixed(2),            
-            ((item.price || 0) * item.quantity - (item.discount || 0)).toFixed(2) 
-          ]);
-          currentRow++;
-        }
-      }
-
-      worksheet.addRow([]);
-      currentRow++;
-    }
-
-    worksheet.addRow([]);
-    worksheet.addRow(['', '', '', 'Total Payable Amount:', `₹${totalPayableAmount.toFixed(2)}`]);
-    const totalRow = worksheet.getRow(currentRow + 2);
-    totalRow.font = { bold: true };
-    totalRow.getCell(4).alignment = { horizontal: 'right' };
-
-    worksheet.columns = [
-      { width: 15 }, 
-      { width: 12 }, 
-      { width: 15 },
-      { width: 15 }, 
-      { width: 12 },
-      { width: 15 }, 
-    ];
-
-    worksheet.eachRow((row) => {
-      row.eachCell((cell) => {
-        cell.alignment = { vertical: 'middle', horizontal: 'left' };
-        if (typeof cell.value === 'number') {
-          cell.numFmt = '#,##0.00';
-        }
-      });
-    });
-
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    );
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename=sales_report_${new Date().toISOString().split('T')[0]}.xlsx`
-    );
-
-    await workbook.xlsx.write(res);
-    res.end();
+    await generateSalesReportExcel(res, orders, { totalOrders, totalSales, totalDiscount }, filter, startDate, endDate)
 
   } catch (error) {
     console.error("Error exporting Excel sales report:", error);
@@ -432,5 +300,47 @@ exports.adminLogout = async (req, res) => {
     } catch (err) {
       console.log("Unexpected error during logout:", err);
     }
-  };
+  }
   
+
+  async function getBestSellingProducts() {
+    try {
+      const bestSellingProducts = await Orders.aggregate([
+        { 
+          $unwind: "$items" // Deconstruct items array for individual processing
+        },
+        { 
+          $group: {
+            _id: "$items.product_id", // Group by product_id
+            totalQuantity: { $sum: "$items.quantity" } // Sum quantities for each product
+          }
+        },
+        {
+          $lookup: {
+            from: "products", // Product collection name in MongoDB
+            localField: "_id", // product_id from Orders
+            foreignField: "_id", // product_id in Product collection
+            as: "productDetails"
+          }
+        },
+        {
+          $unwind: "$productDetails" // Deconstruct productDetails array
+        },
+        {
+          $project: {
+            _id: 0, // Exclude the default _id field
+            product_name: "$productDetails.name", // Replace with your product name field
+            totalQuantity: 1 // Include total quantity
+          }
+        },
+        { 
+          $sort: { totalQuantity: -1 } // Sort by quantity (descending)
+        }
+      ])
+      
+      console.log(bestSellingProducts)
+      return bestSellingProducts
+    } catch (error) {
+      console.error("Error fetching best-selling products:", error)
+    }
+  }

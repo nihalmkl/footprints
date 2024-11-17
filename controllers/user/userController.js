@@ -13,7 +13,7 @@ const Cart = require('../../models/cartSchema')
 const Category = require('../../models/categorySchema')
 const Razorpay = require('razorpay')
 const Wallet = require('../../models/walletSchema')
-
+const Brand = require('../../models/brandSchema')
 exports.loadLogin =async (req,res) => {
     try {
         res.render('user/login')
@@ -278,22 +278,30 @@ exports.resendOtp = async (req, res) => {
 
 
 exports.loadShop = async (req, res) => {
-
-    const { sorting, search ,category} = req.query
+    try {
+    const { sorting, search ,category,brand} = req.query
     let sortOption = {}
     let filter = { is_delete: false }
 
     if (category) {
-        filter.category_id = await Category.findOne({ category_name:category, is_delete: false }).select('_id')
+        const categories = await Category.findOne({ category_name:category})
+        if(categories){
+            filter.category_id = categories._id
+        }
     }
     if (search) {
         filter.product_name = { $regex: search, $options: 'i' }
     }
+    if (brand) {
+        const brands = await Brand.findOne({ brand_name: brand });
+        if (brands) {
+            filter.brand_id = brands._id;
+        }
+    }
    
-    try {
         let cartCount = []
         let wishlistCount = []
-
+       // for wishlist counst show in cart icon
         if (req.session.user) {
 
             cartCount = await Cart.aggregate([
@@ -309,7 +317,7 @@ exports.loadShop = async (req, res) => {
 
         const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
         const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
-        
+        // this for sorting products
         switch (sorting) {
             case 'priceLowToHigh':
                 sortOption = { 'variants.price': 1 }
@@ -330,26 +338,54 @@ exports.loadShop = async (req, res) => {
                 sortOption = {}
         }
 
-        const products = await Product.find(filter).sort(sortOption).populate(['offer', 'category_id']).lean();
 
+        const page = parseInt(req.query.page) || 1;
+        const limit = 8;
+        const skip = (page - 1) * limit;
+    
+        const totalProducts = await Product.countDocuments(filter);
+        const totalPage = Math.ceil(totalProducts / limit);
+       
+       
+
+        const products = await Product.find(filter).sort(sortOption).skip(skip)
+        .limit(limit).populate({
+            path: 'category_id',
+            populate: { path: 'offer' }
+        })
+        .populate('offer');
+
+        //for appliying offer in the product
         products.forEach(product => {
             const productDiscount = product.offer?.discount_percentage || 0;
             const categoryDiscount = product.category_id?.offer?.discount_percentage || 0;
-    
+            console.log("djdjdjdjd",productDiscount,categoryDiscount)
             const finalDiscount = Math.max(productDiscount, categoryDiscount);
     
             product.variants.forEach(variant => {
                 variant.discounted_price = variant.price - (variant.price * finalDiscount / 100);
             });
     
-        product.applied_discount_percentage = finalDiscount;
+         product.applied_discount_percentage = finalDiscount;
         });
-        console.log("dh",products)
+    
+        const allCategories = await Category.find({is_delete:false})
+        const allBrands = await Brand.find({is_delete:false})
 
         res.render('user/shop', {
             products,
             wishlistCount: finalWishlistCount,
-            cartCount: finalCartCount
+            cartCount: finalCartCount,
+            search,
+            sorting,
+            brand,
+            category,
+            allCategories,
+            allBrands,
+            totalPage,
+            currentPage: page,
+            selectedCategory:category,
+            selectedBrand:brand,
         })
 
     } catch (error) {
@@ -361,21 +397,6 @@ exports.loadShop = async (req, res) => {
     }
 }
 
-
-
-exports.serachCategory = async (req, res) => {
-    try {
-        const categoryId = req.params.categoryId;
-        const products = await Product.find({ category_id: categoryId, is_delete: false }).populate('brand_id');
-
-        res.render('user/shop', {
-            products: products
-        })
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Error retrieving products');
-    }
-}
 
 exports.forgotPage = async (req,res)=>{
     try{

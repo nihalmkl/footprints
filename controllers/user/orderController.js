@@ -76,7 +76,7 @@ exports.verifyPayment = async (req, res) => {
         return res.status(404).json({ success: false, error: 'Order not found.' });
       }
   
-      if (generatedSignature === signature) {
+      if(generatedSignature === signature) {
         existingOrder.payment_status = "Completed";
         existingOrder.payment_id = payment_id; 
         await existingOrder.save();
@@ -87,7 +87,7 @@ exports.verifyPayment = async (req, res) => {
   
         return res.status(200).json({ success: true, message: ' Payment verified successfully.', order: existingOrder });
       } else {
-
+        console.log("ahfahdfidhfiahsfdkahsdfjkhajksfhajkfdjagf")
         existingOrder.payment_status = "Pending";
         await existingOrder.save();
         userCart.items = [];
@@ -108,11 +108,9 @@ exports.verifyPayment = async (req, res) => {
 exports.placeOrder = async (req, res) => {
         const { address_id, payment_method, payment_id, order_id, signature,total_amount,couponCode,discountPrice } = req.body;
        
-
         if (!address_id || !payment_method) {
         return res.status(400).json({ message: "Address and payment method are required." });
         }
-    
         try {
         const userCart = await Cart.findOne({ user_id: req.user._id }).populate('items.product_id');
         if (!userCart) {
@@ -145,15 +143,16 @@ exports.placeOrder = async (req, res) => {
               newOrder.coupon_applied = coupon._id
             }
           }
-    console.log("paisaaa",total_amount)
+
         if (payment_method === "COD") {
-            console.log('hi ra')
+    
             await newOrder.save();
     
             for (const item of userCart.items) {
             const product = await Product.findById(item.product_id);
             if (product && product.variants[0].stock >= item.quantity) {
                 product.variants[0].stock -= item.quantity;
+                console.log("less quntity:",product.variants[0].stock)
                 await product.save();
             } else {
                 return res.status(400).json({ message: `Insufficient stock for product: ${product.product_name}` });
@@ -175,23 +174,19 @@ exports.placeOrder = async (req, res) => {
     
             newOrder.razorpay_id = razorpayOrder.id;
             await newOrder.save();
-            
 
+            for (const item of userCart.items) {
+              const product = await Product.findById(item.product_id);
+              if (product && product.variants[0].stock >= item.quantity) {
+                  product.variants[0].stock -= item.quantity;
+                  await product.save(); 
+                } else {
+                  return res.status(400).json({ message: `Deficient stock for product: ${product.product_name}` })
+              }
+          }
             if (payment_id && order_id && signature) {
-                console.log("payme",payment_id,"678888",order_id,signature)
-
-            const isVerified = verifyPayment(payment_id, order_id, signature); 
-            console.log("23",isVerified)
+            const isVerified = verifyPayment(payment_id, order_id, signature);
             if (isVerified) {
-                for (const item of userCart.items) {
-                    const product = await Product.findById(item.product_id)
-                    if (product && product.variants[0].stock >= item.quantity) {
-                        product.variants[0].stock -= item.quantity
-                        await product.save()
-                    } else {
-                        return res.status(400).json({ message: `Insufficient stock for product: ${product.product_name}` })
-                    }
-                }
                 userCart.items = [];
                 userCart.total_price = 0;
                 await userCart.save();
@@ -199,20 +194,29 @@ exports.placeOrder = async (req, res) => {
                 newOrder.payment_status = "Completed"; 
                 await newOrder.save();
 
-                return res.status(200).json({success:true, message: "Order placed successfully!", razorpayOrderId: razorpayOrder.id, amount: newOrder.total_amount,order_id:newOrder._id });
+                return res.status(200).json({
+                success:true, 
+                message: "Order placed successfully!", 
+                razorpayOrderId: razorpayOrder.id,
+                amount: newOrder.total_amount,
+                order_id:newOrder._id });
             } else {
-                console.log(333)
                 return res.status(400).json({ message: "Payment verification failed." });
             }
             }
     
-            return res.status(200).json({ message: "Proceed to Razorpay payment.", razorpayOrderId: razorpayOrder.id, amount: newOrder.total_amount,order_id:newOrder._id  });
-        }
+            return res.status(200).json({
+            message: "Proceed to Razorpay payment.",
+            razorpayOrderId: razorpayOrder.id,
+            amount: newOrder.total_amount,
+            order_id:newOrder._id  });
+          }
         } catch (error) {
         console.error("Error placing the order:", error);
         res.status(500).json({ message: "Failed to place the order." });
         }
     }
+
 function verifyPayment(payment_id, order_id, signature) {
         const secret = process.env.RAZOR_PAY_KEY_SECRET
         const body = `${order_id}|${payment_id}`
@@ -240,14 +244,12 @@ exports.getOrderDetails = async (req, res) => {
 try {
     
    const orderId = req.params.id;
-
    const order = await Orders.findById(orderId).populate('items.product_id')
    if (!order) {
     return res.status(404).send({ message: 'Order not found' })
 }
-   console.log("nihalee",order)
+   
    const addressDocument = await Address.findOne({ '_id': order.address_id })
-   console.log("ni",addressDocument)
  if (!addressDocument) {
      return res.status(404).send({ message: 'Address not found' })
  }
@@ -322,7 +324,6 @@ exports.cancelItem = async (req, res) => {
         return res.status(404).json({ message: 'Order not found' })
       }
       
-     console.log("nihu;oudie;oifrrgtrgtg",itemId)
       const item = order.items.find(item => item._id.toString() === itemId)
   
       if (!item) {
@@ -330,7 +331,7 @@ exports.cancelItem = async (req, res) => {
       }
       if (order.payment_status === 'Completed') {
         const wallet = await Wallet.findOne({ user: req.session.user.id })
-        console.log("wlll",wallet)
+        
         console.log("itemshsahq",item.price)
         if (wallet) {
             wallet.balance += item.price
@@ -347,7 +348,6 @@ exports.cancelItem = async (req, res) => {
             console.log('Wallet not found for the user')
         }
     }
-  console.log("id",item);
   
       item.is_cancelled = true
   
@@ -371,44 +371,37 @@ exports.cancelItem = async (req, res) => {
     }
   }
 
-exports.returnProduct = async (req, res) => {
+  exports.returnProduct = async (req, res) => {
     try {
-        const {orderId,itemId} = req.params
+        const { orderId, itemId } = req.params
 
         const order = await Orders.findOne({ _id: orderId })
-        console.log("djkdh",order)
         if (!order) {
             return res.status(404).json({ message: 'Order not found' })
         }
         
         const item = order.items.find(item => item._id.toString() === itemId)
-        console.log('item',item)
         if (!item) {
             return res.status(404).json({ message: 'Item not found in order' })
         }
         
         item.is_returned = true
-        order.order_status = 'Returned'
-        console.log('heiiiiiiiiiiiiiiiiii',order.order_status)
-        await Product.findOneAndUpdate(
+        
+        const updatedProduct = await Product.findOneAndUpdate(
             { _id: item.product_id, "variants.0": { $exists: true } },
             { $inc: { "variants.0.stock": item.quantity } },
             { new: true }
         )
-        console.log("numbekka")
 
         if (order.payment_status === 'Completed') {
             const wallet = await Wallet.findOne({ user: req.session.user.id })
-            console.log('Wallet')
             if (wallet) {
                 wallet.balance += item.price
-                
                 wallet.wallet_history.push({
                     date: new Date(),
                     amount: item.price,
                     transaction_type: 'credited'
                 })
-                
                 await wallet.save()
                 console.log('Wallet updated:', wallet)
             } else {
@@ -416,14 +409,20 @@ exports.returnProduct = async (req, res) => {
             }
         }
 
+        const allItemsReturned = order.items.every(item => item.is_returned || item.is_cancelled)
+        if (allItemsReturned) {
+            order.order_status = 'Returned'
+        }
+
         await order.save()
         
-        res.status(200).json({ message: 'Return processed successfully completed', order })
+        res.status(200).json({ message: 'Return processed successfully for the item', order })
     } catch (error) {
         console.error("Error in processing return request:", error)
         res.status(500).json({ message: 'Internal server error' })
     }
 }
+
 
 
 exports.applyCoupon = async (req, res) => {

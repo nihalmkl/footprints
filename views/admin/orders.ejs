@@ -103,7 +103,9 @@
                         title: 'Updated!',
                         text: 'Order status has been updated.',
                         icon: 'success',
-                    });
+                    }).then(()=>{
+                        location.reload()
+                    })
                 } else {
                     throw new Error('Failed to update order status');
                 }
