@@ -37,9 +37,7 @@ exports.editAddress = async (req, res) =>{
   }
 
   exports.addAddress = async (req, res) => {
-    const { full_name, street_address, pincode, city, state, country, phone } = req.body;
-    console.log(req.body);
-    console.log(1);
+    const { full_name, street_address, pincode, city, state, country, phone } = req.body
   
     if (!full_name || !street_address || !pincode || !city || !state || !country || !phone) {
       return res.status(400).send('All fields are required.');

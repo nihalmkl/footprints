@@ -7,9 +7,9 @@ const mongoose = require('mongoose')
 
 exports.loadWishlist = async (req, res) => {
     const {userId} = req.params
-    console.log(userId)
 
     try {
+
         let cartCount = []
         let wishlistCount = []
 
@@ -47,7 +47,7 @@ exports.loadWishlist = async (req, res) => {
 
 exports.addWishlist = async (req, res) => {
     const { userId, productId } = req.body
-   console.log("whhhh",productId)
+
 
     try {
         let wishlist = await Wishlist.findOne({ user_id: userId })
@@ -75,8 +75,6 @@ exports.addWishlist = async (req, res) => {
 exports.removeWishlistItem =  async (req, res) => {
     const { productId} = req.body
     const userId = req.session.user.id
-    console.log(userId)
-    console.log(req.body,"djakjdhdak")
 
     try {
         const wishlist = await Wishlist.findOne({ user_id: userId })
@@ -89,7 +87,7 @@ exports.removeWishlistItem =  async (req, res) => {
 
         res.status(200).json({ success: true, message: 'Product removed from wishlist' })
     } catch (error) {
-        console.error('Error removing from wishlist:', error)
+       
         res.status(500).json({ success: false, message: 'Server error' })
     }
 }

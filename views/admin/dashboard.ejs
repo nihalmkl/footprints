@@ -174,144 +174,6 @@
           </div>
         </div>
       
-        <!-- Sales Overview Chart Section -->
-        <div class="row">
-          <div class="col-lg-8 d-flex align-items-stretch">
-            <div class="card w-100">
-              <div class="card-body">
-                <div class="d-sm-flex d-block align-items-center justify-content-between mb-9">
-                  <div class="mb-3 mb-sm-0">
-                    <h5 class="card-title fw-semibold">Sales Overview</h5>
-                  </div>
-                  <div>
-                    <select class="form-select" id="chatSortSelect">
-                      <option value="" selected disabled>Sort by:</option>
-                      <option value="week">Week</option>
-                      <option value="month">Month</option>
-                      <option value="year">Year</option>
-                    </select>
-                  </div>
-                </div>
-      
-                <!-- Hidden input to hold the chart data from EJS -->
-                <input type="hidden" id="chartData" value=''>
-      
-                <!-- Canvas for the chart -->
-                <canvas id="myChart" width="400" height="200"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <div class="container mt-5">
-        <div class="row g-4">
-    
-          <!-- Best Selling Products -->
-          <div class="col-lg-4">
-            <div class="card h-100">
-              <div class="card-body">
-                <h5 class="card-title fw-semibold mb-4">Best Selling Products</h5>
-                <div class="table-responsive">
-                  <table class="table table-bordered">
-                    <thead>
-                      <tr>
-                        <th>Product Name</th>
-                        <th>Sale Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Product A</td>
-                        <td>120</td>
-                      </tr>
-                      <tr>
-                        <td>Product B</td>
-                        <td>98</td>
-                      </tr>
-                      <tr>
-                        <td>Product C</td>
-                        <td>75</td>
-                      </tr>
-                      <!-- Add more rows as needed -->
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-    
-          <!-- Best Selling Categories -->
-          <div class="col-lg-4">
-            <div class="card h-100">
-              <div class="card-body">
-                <h5 class="card-title fw-semibold mb-4">Best Selling Categories</h5>
-                <div class="table-responsive">
-                  <table class="table table-bordered">
-                    <thead>
-                      <tr>
-                        <th>Category Name</th>
-                        <th>Sale Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Category A</td>
-                        <td>200</td>
-                      </tr>
-                      <tr>
-                        <td>Category B</td>
-                        <td>150</td>
-                      </tr>
-                      <tr>
-                        <td>Category C</td>
-                        <td>130</td>
-                      </tr>
-                      <!-- Add more rows as needed -->
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-    
-          <!-- Best Selling Brands -->
-          <div class="col-lg-4">
-            <div class="card h-100">
-              <div class="card-body">
-                <h5 class="card-title fw-semibold mb-4">Best Selling Brands</h5>
-                <div class="table-responsive">
-                  <table class="table table-bordered">
-                    <thead>
-                      <tr>
-                        <th>Brand Name</th>
-                        <th>Sale Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Brand X</td>
-                        <td>300</td>
-                      </tr>
-                      <tr>
-                        <td>Brand Y</td>
-                        <td>240</td>
-                      </tr>
-                      <tr>
-                        <td>Brand Z</td>
-                        <td>210</td>
-                      </tr>
-                      <!-- Add more rows as needed -->
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-    
-        </div>
-      </div>
       <!-- Orders Table -->
       <div class="container mt-4">
         <h5>Order List</h5>
@@ -336,6 +198,111 @@
           </table>
         </div>
       </div>
+      <div class="container mt-5">
+        <div class="row g-4">
+    
+          <!-- Best Selling Products -->
+          <div class="col-lg-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">Best Selling Products</h5>
+                <div class="table-responsive">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Product Name</th>
+                        <th>Sale Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% if (best_products && best_products.length > 0) { %>
+                        <% best_products.forEach(product => { %>
+                          <tr>
+                            <td><%= product.product_name %></td>
+                            <td><%= product.total_quantity %></td>
+                          </tr>
+                        <% }) %>
+                      <% } else { %>
+                        <tr>
+                          <td colspan="2">No data available</td>
+                        </tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+          <!-- Best Selling Categories -->
+          <div class="col-lg-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">Best Selling Categories</h5>
+                <div class="table-responsive">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Category Name</th>
+                        <th>Sale Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% if (best_categories && best_categories.length > 0) { %>
+                        <% best_categories.forEach(category => { %>
+                          <tr>
+                            <td><%= category.category_name %></td>
+                            <td><%= category.total_quantity %></td>
+                          </tr>
+                        <% }) %>
+                      <% } else { %>
+                        <tr>
+                          <td colspan="2">No data available</td>
+                        </tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+          <!-- Best Selling Brands -->
+          <div class="col-lg-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">Best Selling Brands</h5>
+                <div class="table-responsive">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Brand Name</th>
+                        <th>Sale Count</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% if (best_brands && best_brands.length > 0) { %>
+                        <% best_brands.forEach(brand => { %>
+                          <tr>
+                            <td><%= brand.brand_name %></td>
+                            <td><%= brand.total_quantity %></td>
+                          </tr>
+                        <% }) %>
+                      <% } else { %>
+                        <tr>
+                          <td colspan="2">No data available</td>
+                        </tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+    
+        </div>
+      </div>
+
 
     </div>
     

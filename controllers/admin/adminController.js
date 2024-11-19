@@ -23,7 +23,6 @@ exports.loadAdminLogin = async (req, res) => {
 exports.adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password);
     const admin = await User.findOne({ email: email, isAdmin: true });
   
     if (!admin) {
@@ -71,6 +70,7 @@ exports.adminHome = async (req, res) => {
     const orders = await Orders.find(filterConditions);
 
     const totalUsers = await User.countDocuments();
+    
     const totalQuantity = await Orders.aggregate([
       { $match: filterConditions },
       { $unwind: '$items' }, 
@@ -88,6 +88,9 @@ exports.adminHome = async (req, res) => {
 
     const totalOrders = await Orders.countDocuments(filterConditions);
 
+    const best_products = await bestProducts()
+    const best_categories = await bestCategories()
+    const best_brands = await bestBrands()
 
     res.render('admin/dashboard', {
       layout: "layout/admin",
@@ -96,7 +99,10 @@ exports.adminHome = async (req, res) => {
       totalOrders,
       salesAmount,
       totalProducts:totalOrderedQuantity,
-      totalUsers
+      totalUsers,
+      best_products,
+      best_categories,
+      best_brands
     });
   } catch (error) {
     console.error("Error fetching sales report:", error);
@@ -303,44 +309,130 @@ exports.adminLogout = async (req, res) => {
   }
   
 
-  async function getBestSellingProducts() {
+  async function bestProducts() {
     try {
-      const bestSellingProducts = await Orders.aggregate([
-        { 
-          $unwind: "$items" // Deconstruct items array for individual processing
-        },
-        { 
-          $group: {
-            _id: "$items.product_id", // Group by product_id
-            totalQuantity: { $sum: "$items.quantity" } // Sum quantities for each product
-          }
-        },
-        {
-          $lookup: {
-            from: "products", // Product collection name in MongoDB
-            localField: "_id", // product_id from Orders
-            foreignField: "_id", // product_id in Product collection
-            as: "productDetails"
-          }
-        },
-        {
-          $unwind: "$productDetails" // Deconstruct productDetails array
-        },
-        {
-          $project: {
-            _id: 0, // Exclude the default _id field
-            product_name: "$productDetails.name", // Replace with your product name field
-            totalQuantity: 1 // Include total quantity
-          }
-        },
-        { 
-          $sort: { totalQuantity: -1 } // Sort by quantity (descending)
+      const orders = await Orders.find()
+      .populate("items.product_id", "product_name") 
+      .exec();
+
+    const productSales = {};
+
+    for (const order of orders) {
+      for (const item of order.items) {
+        const productId = item.product_id._id.toString();
+        const productName = item.product_id.product_name;
+
+        if (!productSales[productId]) {
+          productSales[productId] = { product_name: productName, total_quantity: 0 };
         }
-      ])
-      
-      console.log(bestSellingProducts)
-      return bestSellingProducts
-    } catch (error) {
-      console.error("Error fetching best-selling products:", error)
+
+        productSales[productId].total_quantity += item.quantity;
+      }
     }
+
+    const sortedProducts = Object.values(productSales).sort(
+      (a, b) => b.total_quantity - a.total_quantity
+    );
+
+    const bestProducts = sortedProducts.slice(0, 10);
+
+    return bestProducts;
+  } catch (error) {
+    console.error("Error fetching best-selling products:", error);
+    throw error;
   }
+  }
+
+ async function bestCategories() {
+      try {
+        const bestCategories = await Orders.aggregate([
+          {
+            $unwind: "$items" 
+          },
+          {
+            $lookup: {
+              from: "products",
+              localField: "items.product_id", 
+              foreignField: "_id",
+              as: "product_details"
+            }
+          },
+          {
+            $unwind: "$product_details" 
+          },
+          {
+            $lookup: {
+              from: "categories", 
+              localField: "product_details.category_id", 
+              foreignField: "_id", 
+              as: "category_details"
+            }
+          },
+          {
+            $unwind: "$category_details" 
+          },
+          {
+            $group: {
+              _id: "$category_details._id",
+              category_name: { $first: "$category_details.category_name" },
+              total_quantity: { $sum: "$items.quantity" }
+            }
+          },
+          {
+            $sort: { total_quantity: -1 } 
+          }
+        ])
+        return bestCategories
+      } catch (error) {
+        console.error("Error fetching best-selling categories:", error)
+        throw error
+      }
+    }
+  
+
+async function bestBrands() {
+      try {
+        const bestBrands = await Orders.aggregate([
+          {
+            $unwind: "$items" 
+          },
+          {
+            $lookup: {
+              from: "products",
+              localField: "items.product_id", 
+              foreignField: "_id",
+              as: "product_details"
+            }
+          },
+          {
+            $unwind: "$product_details" 
+          },
+          {
+            $lookup: {
+              from: "brands", 
+              localField: "product_details.brand_id", 
+              foreignField: "_id", 
+              as: "brand_details"
+            }
+          },
+          {
+            $unwind: "$brand_details" 
+          },
+          {
+            $group: {
+              _id: "$brand_details._id",
+              brand_name: { $first: "$brand_details.brand_name" },
+              total_quantity: { $sum: "$items.quantity" }
+            }
+          },
+          {
+            $sort: { total_quantity: -1 } 
+          }
+        ])
+        return bestBrands
+      } catch (error) {
+        console.error("Error fetching best-selling brands:", error)
+        throw error
+      }
+    }
+  

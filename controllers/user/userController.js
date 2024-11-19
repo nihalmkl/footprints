@@ -14,6 +14,8 @@ const Category = require('../../models/categorySchema')
 const Razorpay = require('razorpay')
 const Wallet = require('../../models/walletSchema')
 const Brand = require('../../models/brandSchema')
+
+
 exports.loadLogin =async (req,res) => {
     try {
         res.render('user/login')
@@ -31,13 +33,11 @@ exports.userLogin = async (req, res) => {
         console.log(userData);
 
         if (!userData) {
-            console.log("User not found");
             return res.json({ success: false, message: "User doesn't exist. Enter a valid email." });
         }
 
         const isMatch = await bcrypt.compare(password, userData.password);
         if (!isMatch) {
-            console.log('Password does not match');
             return res.json({ success: false, message: "Password doesn't match." });
         }
         req.session.user = {
@@ -45,7 +45,6 @@ exports.userLogin = async (req, res) => {
             email: userData.email,
         };
 
-        console.log('Login successful');
         return res.json({ success: true });
         
     } catch (error) {
@@ -54,16 +53,13 @@ exports.userLogin = async (req, res) => {
     }
 };
 
-
 exports.loadHome = async (req, res) => {
     try {
-      const products = await Product.find({ is_delete: false }).populate(['offer', 'category_id'])
+      
       let cartCount = []
       let wishlistCount = []
   
       if (req.session.user) {
-        console.log("User ID:", req.session.user.id)
-  
         cartCount = await Cart.aggregate([
           { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } }, 
           { $project: { itemCount: { $size: "$items" } } }
@@ -74,7 +70,13 @@ exports.loadHome = async (req, res) => {
           { $project: { itemCount: { $size: "$products" } } }
         ])
       }
-  
+
+      const products = await Product.find({ is_delete: false }).populate({
+        path: 'category_id',
+        populate: { path: 'offer' }
+        })
+        .populate('offer')
+        
       const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
       const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
 
@@ -105,7 +107,6 @@ exports.loadHome = async (req, res) => {
     }
   }
   
-
 exports.loadRegister = async(req,res)=>{
     try {
         res.render('user/register')   
@@ -359,7 +360,6 @@ exports.loadShop = async (req, res) => {
         products.forEach(product => {
             const productDiscount = product.offer?.discount_percentage || 0;
             const categoryDiscount = product.category_id?.offer?.discount_percentage || 0;
-            console.log("djdjdjdjd",productDiscount,categoryDiscount)
             const finalDiscount = Math.max(productDiscount, categoryDiscount);
     
             product.variants.forEach(variant => {
@@ -462,7 +462,7 @@ exports.resetPasswordPage = (req, res) => {
 };
 
 exports.resetPassword = async (req, res) => {
-    console.log(req.body);
+
     
     const { newPassword, token } = req.body;
 
@@ -494,12 +494,11 @@ exports.resetPassword = async (req, res) => {
 
 exports.productView = async (req, res) => {
     try {
+        //This is for show cart count and wishlist count 
         let cartCount = []
         let wishlistCount = []
-
         if (req.session.user) {
-            console.log("User ID:", req.session.user.id)
-
+            
             cartCount = await Cart.aggregate([
                 { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
                 { $project: { itemCount: { $size: "$items" } } }
@@ -510,15 +509,23 @@ exports.productView = async (req, res) => {
                 { $project: { itemCount: { $size: "$products" } } }
             ])
         }
-
         const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
         const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
         
-        const product = await Product.findById(req.params.id).populate(['brand_id','category_id','offer']).lean()
+        // This is for take more given offer in category and product
+        const product = await Product.findById(req.params.id).populate([
+            { path: 'brand_id' },
+            { 
+                path: 'category_id', 
+                populate: { path: 'offer' } 
+            },
+            { path: 'offer' }
+        ]).lean()
         const productDiscount = product.offer?.discount_percentage || 0
         const categoryDiscount = product.category_id?.offer?.discount_percentage || 0
-
         const finalDiscount = Math.max(productDiscount, categoryDiscount)
+
+
 
         product.variants.forEach(variant => {
          variant.discounted_price = variant.price - (variant.price * finalDiscount / 100)
@@ -560,8 +567,8 @@ exports.loadContact = async(req,res)=>{
 exports.userLogout = (req, res) => {
     req.session.destroy((err) => {
         if (err) {
-            console.error("Error during logout:", err.message);
-            return res.status(500).json({ success: false, message: "Could not log out. Please try again." });
+            
+            return res.status(500).json({ success: false, message: "Could not log out." });
         }
 
         return res.redirect('/login'); 
@@ -574,14 +581,11 @@ const razorpay = new Razorpay({
 
  exports.loadWallet = async (req, res) => {
     try {
-      console.log("djkak")
   
       const wallet = await Wallet.findOne({ user: req.user._id })
       if (wallet && wallet.wallet_history) {
-        // Sort wallet_history by date in descending order
         wallet.wallet_history.sort((a, b) => b.date - a.date)
       }
-     console.log(wallet)
       if (!wallet) {
         return res.render('user/wallet', { wallet: null })
       }
@@ -595,7 +599,6 @@ const razorpay = new Razorpay({
 exports.addFund = async (req, res) => {
     const { amount } = req.body
     const paymentAmount = amount * 100 
-  console.log(paymentAmount)
     try {
         
       const order = await razorpay.orders.create({
@@ -603,7 +606,6 @@ exports.addFund = async (req, res) => {
         currency: "INR",
         receipt: `receipt_${Date.now()}`,
       })
-      console.log("THis is order",order)
   
       res.json({ success: true, order })
     } catch (error) {
@@ -613,15 +615,9 @@ exports.addFund = async (req, res) => {
   }
 
   exports.addFundSuccess = async (req, res) => {
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, amount } = req.body
-  console.log(amount)
+    const { amount } = req.body
     try {
-      // Check if a wallet exists for the user
       let wallet = await Wallet.findOne({ user: req.session.user.id })
-      console.log(req.body)
-      console.log("Thisis user",req.session.user)
-  console.log("THis is wallet",wallet)
-      // If no wallet exists, create a new one
       if (!wallet) {
         wallet = new Wallet({
           user: req.session.user.id,
@@ -635,7 +631,6 @@ exports.addFund = async (req, res) => {
           ],
         })
       } else {
-        // If wallet exists, update the balance and add to history
         wallet.balance += amount
         wallet.wallet_history.push({
           amount: amount,
@@ -644,7 +639,6 @@ exports.addFund = async (req, res) => {
         })
       }
   
-      // Save the wallet document (whether newly created or updated)
       await wallet.save()
   
       res.json({ success: true })

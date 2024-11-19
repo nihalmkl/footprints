@@ -70,7 +70,7 @@
                         showConfirmButton: false
                     });
                     setTimeout(() => {
-                        window.location.reload(); // Refresh the page
+                        window.location.reload(); 
                     }, 1000);
                 } else {
                     Swal.fire({
@@ -94,7 +94,7 @@
             });
         }
         function addToCart(userId, productId, quantity) {
-    const selectedQuantity = quantity && quantity.trim() !== '' ? quantity : 1;  // Default to 1 if no quantity provided
+    const selectedQuantity = quantity && quantity.trim() !== '' ? quantity : 1
 
     fetch('/cart/add', {
         method: 'POST',

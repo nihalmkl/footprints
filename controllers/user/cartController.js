@@ -6,24 +6,19 @@ const mongoose = require('mongoose')
 const Wishlist = require('../../models/wishlistSchema')
 
 exports.loadCart =  async (req, res) => {
-    console.log('hello')
+
     const { userId } = req.params
-    console.log(userId)
-    
     try {
         let cartCount = []
     let wishlistCount = []
 
     if (req.session.user) {
-      console.log("User ID:", req.session.user.id)
 
-      // Get cart count
       cartCount = await Cart.aggregate([
         { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } }, 
         { $project: { itemCount: { $size: "$items" } } }
       ])
       
-      // Get wishlist count
       wishlistCount = await Wishlist.aggregate([
         { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
         { $project: { itemCount: { $size: "$products" } } }
@@ -32,10 +27,9 @@ exports.loadCart =  async (req, res) => {
 
     const finalWishlistCount = wishlistCount.length > 0 ? wishlistCount[0].itemCount : 0
     const finalCartCount = cartCount.length > 0 ? cartCount[0].itemCount : 0
-        console.log("hsjaguijdh")
         
         const cart = await Cart.findOne({ user_id: userId }).populate('items.product_id')
-        console.log(cart)
+        
         // if (!cart) {
         //     return res.status(404).json({ message: 'Cart not found' })
         // }
@@ -79,9 +73,7 @@ exports.addCart = async (req, res) => {
           
         const discountPercentage = product.offer?.discount_percentage || 0
         const originalPrice = product.variants[0].price
-        const discountedPrice = discountPercentage > 0 
-            ? originalPrice * (1 - discountPercentage / 100) 
-            : originalPrice
+        const discountedPrice = discountPercentage > 0 ? originalPrice * (1 - discountPercentage / 100) : originalPrice
             
         let cart = await Cart.findOne({ user_id: userId });
         if (!cart) {
@@ -142,11 +134,6 @@ exports.deleteCartItems = async (req, res) => {
 
         const removedItem = cart.items[itemIndex]
 
-        // const product = await Product.findById(productId)
-        // if (product) {
-        //     product.variants[0].stock += removedItem.quantity
-        //     await product.save()
-        // }
 
         cart.items.splice(itemIndex, 1);
         cart.total_price = cart.items.reduce((total, item) => total + item.price, 0)
