@@ -21,7 +21,8 @@
                 <div class="card-body">
                     <h5 class="card-title">Order ID: <%= orders.order_id %></h5>
                     <p class="card-text"><strong>Address ID:</strong> <%= orders.address_id%></p>
-                    <p class="card-text"><strong>Status:</strong> <%= orders.order_status %></p>
+                    <p class="card-text"><strong>Order Status:</strong> <%= orders.order_status %></p>
+                    <p class="card-text"><strong>Payment Method:</strong> <%= orders.payment_method === 'card' ? 'Raz or Pay' : orders.payment_method === 'wallet'  ? 'Wallet' : 'Cash on Delivery' %></p>
                     
                     <h2 class="mt-4">Items</h2>
                     <ul class="list-group">
@@ -32,13 +33,13 @@
                                     <div>
                                         <strong>Product Name:</strong> <%= item.product_id.product_name %><br>
                                         <strong>Quantity:</strong> <%= item.quantity %><br>
-                                        <strong>Price:</strong> $<%= item.price.toFixed(2) %><br>
+                                        <strong>Price:</strong> ₹<%= item.price.toFixed(2) %><br>
                                     </div>
                                 </div>
                             </li>
                         <% }); %>
                     </ul>
-                    <a href="/orders" class="btn  mt-3" style="width: 6rem; background-color: #88c8bc;">Back</a>
+                    <a href="/admin/orders" class="btn  mt-3" style="width: 6rem; background-color: #88c8bc;">Back</a>
                 </div>
             </div>
         </div>

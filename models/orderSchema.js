@@ -13,11 +13,36 @@ const OrdersSchema = new Schema(
       required: true,
       ref: "User" 
     },
-    address_id: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      ref: "Address" 
-    },
+    address: [{
+      full_name: {
+        type: String,
+        required: true,
+      },
+      street_address: {
+        type: String,
+        required: true,
+      },
+      pincode: {
+        type: Number,
+        required: true,
+      },
+      city: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: Number,
+        required: true,
+      },
+      country: {
+        type: String,
+        required: true,
+      },
+      state: {
+        type: String,
+        required: true,
+      },
+    }],
     order_status: {
       type: String,
       required: true,
@@ -71,7 +96,7 @@ const OrdersSchema = new Schema(
     payment_method: {
       type: String,
       required: true,
-      enum: ['COD', 'card']
+      enum: ['COD', 'card','wallet']
     },
     payment_status: {
       type: String,

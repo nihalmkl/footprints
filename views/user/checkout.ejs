@@ -73,7 +73,7 @@
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="address">Address</label>
-                                <input type="text" id="address" class="form-control" placeholder="Enter Your Address">
+                                 <input type="text" name="address" id="address" class="form-control" placeholder="Address">
                                 <small id="addressErr" class="text-danger"></small>
                             </div>
                         </div>
@@ -129,7 +129,7 @@
                             </div>
                         </div>
                         
-                        <button class="btn btn-primary address-button" onclick="createAddress(event)">Create</button>
+                        <button type="button" class="btn btn-primary address-button" onclick="createAddress(event)">Create</button>
                     </div>
                 </form>
                 
@@ -158,14 +158,14 @@
                                 </li>
                                 <li id="discount-div"><span>Discount</span> 
                                     <span id="discount-price-div">
-                                      0
+                                        0
                                     </span></li>
                                 <li id="delivery-div"><span>Delivery</span>
                                 <span id="delivery-price-div">
                                     <%= cart.delivery_charge%>
                                 </span></li>
                                 <li><span>Order Total</span> <span id="ordertotal">
-                                        <%= cart.total_price.toFixed(2)%>
+                                        <%= (cart.total_price + cart.delivery_charge).toFixed(2)%>
                                     </span></li>
                             </ul>
                         </div>
@@ -233,6 +233,13 @@
                             <div class="col-md-12">
                                 <div class="radio">
                                     <label><input type="radio" name="payment_method" value="COD">Cash on Delivery</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <div class="radio">
+                                    <label><input type="radio" name="payment_method" value="wallet">Wallet</label>
                                 </div>
                             </div>
                         </div>
@@ -340,51 +347,52 @@
         user_id: userId
     };
 
-    console.log("Form is valid. Proceed with submission.", data);
-
-            console.log(data)
-        fetch('/address/add-address', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
+    fetch('/checkout_address/add', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+})
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.message) });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
                 title: "Success",
                 text: "Address added successfully",
                 icon: "success",
                 timer: 1500,
                 showConfirmButton: false
-            }).then(()=>{
+            }).then(() => {
                 window.location.reload();
-            })
-            } else {
-                Swal.fire({
-                title: "failed",
-                text: "Failure in Address adding ",
-                icon: "error",
-                timer: 1500,
-            })
-
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            Swal.fire({
-                title: "Error!",
-                text: "Please try again later",
-                icon: "error",
-                timer: 1500,
-                showConfirmButton: false
             });
+        } else {
+            Swal.fire({
+                title: "Failed",
+                text: data.message || "Failure in adding address",
+                icon: "error",
+                timer: 1500,
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: "Error!",
+            text: "Please try again later",
+            icon: "error",
+            timer: 1500,
+            showConfirmButton: false
         });
+     });
     }
 
- async function placeOrder() {
+    async function placeOrder() {
     document.querySelector('.place-order').disabled = true;
   const addressId = document.getElementById("address").value
   const paymentMethod = document.querySelector('input[name="payment_method"]:checked')
@@ -403,6 +411,16 @@
     })
     return
   }
+  if (paymentMethod.value === 'COD' && discountedTotalPrice >= 1000) {
+  Swal.fire({
+    title: "Error",
+    text: "Cash on Delivery is not available orders above ₹1000",
+    icon: "error",
+    timer: 1500,
+    showConfirmButton: false
+  })
+  return
+}
 
   const orderData = { address_id: addressId, payment_method: paymentMethod.value,total_amount: discountedTotalPrice,couponCode:couponCode,discountPrice:discountPrice}
 
@@ -486,18 +504,26 @@
 
       const razorpay = new Razorpay(options)
       razorpay.open()
-    }
-  } else {
+    }else if(paymentMethod.value === 'wallet'){
+        Swal.fire({
+      icon: 'success',
+      title: 'Order Placed',
+      text: 'Your order has been placed successfully using wallet.',
+      confirmButtonText: 'OK'
+    }).then(() => {
+      window.location.href = '/';  
+    })
+     }else {
     document.querySelector('.place-order').disabled = false
     Swal.fire({
       icon: 'error',
       title: 'Failed to Order',
       text: 'Unable to place order. Please try again later.',
       confirmButtonText: 'OK'
-    });
-  }
-}
-
+      });
+    }
+   }
+ }
 let originalTotalPrice = parseFloat(document.getElementById('ordertotal').textContent)
 document.getElementById('place-order').addEventListener('click', (event) => {
     event.preventDefault();  

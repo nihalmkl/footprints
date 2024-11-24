@@ -42,7 +42,6 @@ exports.editAddress = async (req, res) =>{
     if (!full_name || !street_address || !pincode || !city || !state || !country || !phone) {
       return res.status(400).send('All fields are required.');
     }
-    console.log(2);
   
     try {
       const newAddress = new Address({
@@ -56,10 +55,10 @@ exports.editAddress = async (req, res) =>{
         user_id: req.user._id  
       });
       
-      console.log(3);
+      
       
       await newAddress.save();
-      console.log(0);
+      console.log('addr',newAddress)
       
       res.redirect('/profile/' + req.user._id);
       

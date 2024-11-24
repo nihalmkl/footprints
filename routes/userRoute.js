@@ -58,7 +58,7 @@ user_route.get('/checkout',orderController.loadCheckout)
 user_route.post('/order/place_order',orderController.placeOrder)
 user_route.get('/orders', orderController.getOrder)
 user_route.get('/order/:id',orderController.getOrderDetails)
-// user_route.put('/orders/:id',orderController.cancelOrder)
+user_route.post('/checkout_address/add',orderController.addCheckoutAddress)
 user_route.post('/quantityUpdate',orderController.qantityUpdate)
 user_route.post('/orders/:orderId/:itemId/request-return', orderController.returnProduct);
 user_route.post('/apply-coupon',orderController.applyCoupon)
@@ -69,7 +69,11 @@ user_route.get('/about', userController.loadAbout)
 user_route.get('/contact', userController.loadContact)
 user_route.post('/orders/:orderId/:itemId/cancel-order', orderController.cancelItem);
 user_route.post('/order/verify_payment',orderController.verifyPayment)
+user_route.get('/order/:orderId/invoice',orderController.downloadInvoice);
+user_route.post('/complete-payment', orderController.rePayment)
 
+// Endpoint to verify payment signature
+user_route.post('/verify-payment/complete',orderController.verifyPaymentStatus)
 
 user_route.patch('/order/payment_status/:orderId', async (req, res) => {
       try {

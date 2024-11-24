@@ -173,7 +173,34 @@
             </div>
           </div>
         </div>
-      
+        <!-- Sales Overview Chart Section -->
+         <div class="row">
+            <div class="col-lg-8 d-flex align-items-stretch">
+              <div class="card w-100">
+                <div class="card-body">
+                  <div class="d-sm-flex d-block align-items-center justify-content-between mb-9">
+                    <div class="mb-3 mb-sm-0">
+                      <h5 class="card-title fw-semibold">Sales Overview</h5>
+                    </div>
+                    <div>
+                      <select class="form-select" id="chatSortSelect" onchange="updateChartData()">
+                        <option value="" selected disabled>Sort by:</option>
+                        <option value="week">Week</option>
+                        <option value="month">Month</option>
+                        <option value="year">Year</option>
+                    </select>
+                    </div>
+                  </div>
+        
+                 <!-- Hidden input to hold the chart data from EJS-->
+                 <input type="hidden" id="chartData" value="<%= JSON.stringify(chartData || { labels: [], values: [] }) %>">
+        
+                  <canvas id="myChart" width="400" height="200"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       <!-- Orders Table -->
       <div class="container mt-4">
         <h5>Order List</h5>
@@ -412,44 +439,60 @@ window.location.href = url;
 
 }
 
-  const chartData = JSON.parse(document.getElementById('chartData').value) || "{}"
-  console.log('ddddd',chartData)
+let chartInstance;
+const chartDataElement = document.getElementById('chartData');
+const chartData = JSON.parse(chartDataElement.value || '{}'); // EJS passes the data here
 
-  var ctx = document.getElementById('myChart').getContext('2d');
-  
-  var myChart = new Chart(ctx, {
-    type: 'bar', 
-    data: {
-      labels: ['January', 'February', 'March', 'April', 'May', 'June'], // X-axis labels
-      datasets: [{
-        label: 'Sales in 2024', // Label for the data series
-        data: [12, 19, 3, 5, 2, 3], // Data points for each label
-        backgroundColor: 'rgba(54, 162, 235, 0.2)', // Bar color
-        borderColor: 'rgba(54, 162, 235, 1)', // Border color
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true // Start Y-axis from 0
+if (chartData && chartData.labels && chartData.values) {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Sales Data',
+                data: chartData.values,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
         }
-      }
-    }
-  });
+    });
+} else {
+    console.error('Invalid chart data provided:', chartData);
+}
 
-  // Event listener for sorting options
-  document.getElementById('chatSortSelect').addEventListener('change', function (e) {
-    const sortBy = e.target.value;
-    if (sortBy === 'month') {
-      myChart.data.labels = ['July', 'August', 'September'];
-      myChart.data.datasets[0].data = [8, 12, 5];
-      myChart.update();
-    }
-    console.log("Sort by:", sortBy);
-  });
+// Function to update chart based on selected filter
+function updateChartData() {
+    const filterValue = document.getElementById('chatSortSelect').value;
+    fetch(`/admin/dashboard?filter=${filterValue}`)
+        .then(response => response.json())
+        .then(data => {
+          console.log('dhdhdhdhdhhdhdhdhdhdhhhhhhhhhhh')
+            // Check if the returned data contains the correct structure
+            if (data && data.labels && data.values) {
+                // Update chart data
+                chartInstance.data.labels = data.labels;
+                chartInstance.data.datasets[0].data = data.values;
+                chartInstance.update();
+            } else {
+                console.error('Invalid data structure returned from the server');
+            }
+        })
+        .catch(error => console.error('Error fetching chart data:', error));
+}
 
-    </script>
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+        integrity="sha384-vfXChjKjWL3GCVtU0mOVXWhbkFr+u4AbzOTLcmuM7WUtkDniVsl1aauqbMNZB0lY" 
+        crossorigin="anonymous"></script>
   </body>
 </html>

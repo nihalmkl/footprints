@@ -104,10 +104,9 @@
                             <div class="total">
                                 <div class="sub">
                                     <p><span>Subtotal:</span> <span id="subtotal">₹<%= cart.total_price.toFixed(2) %></span></p>
-                                    <p><span>Delivery:</span> <span id="delivery">₹<%= cart.delivery_charge%> </span></p>
                                 </div>
                                 <div class="grand-total">
-                                    <p><span><strong>Total:</strong></span> <span id="total">₹<%= cart.total_price.toFixed(2) %></span></p>
+                                    <p><span><strong>Total:</strong></span> <span id="total">₹<%= (cart.total_price).toFixed(2) %></span></p>
                                 </div>
                                 <div>
                                     <% if (cart.items.length > 0) { %>

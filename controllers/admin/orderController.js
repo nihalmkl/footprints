@@ -10,7 +10,6 @@ exports.loadOrderPage = async (req, res) => {
             .skip(skip)
             .limit(limit)
             .populate('user_id')
-            .populate('address_id')
             .populate('items.product_id');
 
         const totalOrders = await Orders.countDocuments();
@@ -47,9 +46,7 @@ exports.updateStatus = async (req, res) => {
 exports.loadOrderDetails = async (req,res) => {
     try {
         const orderId = req.params.orderId
-        console.log("herr",orderId)
         const order = await Orders.findById(orderId).populate('items.product_id')
-        console.log("3456",order)
         if(!order){
             res.redirect('admin/orders')
         }

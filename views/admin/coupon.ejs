@@ -101,7 +101,7 @@
                     <td><%= coupon.discount %>%</td>
                     <td><%= new Date(coupon.start_date).toLocaleDateString() %></td>
                     <td><%= new Date(coupon.expiry_date).toLocaleDateString() %></td>
-                    <td><%= coupon.min_pur_amount.toFixed(2) %></td>
+                    <td>₹<%= coupon.min_pur_amount.toFixed(2) %></td>
                     <td><%= coupon.max_coupon_amount.toFixed(2) %></td>
                     <td><%= coupon.description %></td>
                     <td class="<%= new Date(coupon.expiry_date) > new Date() ? 'status-active' : 'status-expired' %>">

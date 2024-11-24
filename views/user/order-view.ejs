@@ -42,9 +42,15 @@ body {
                     <p><strong>Expected Delivery Date:</strong> <%= order.placed_at ? order.placed_at.toDateString() : 'TBD' %></p>
                 <% } %>
                 <h6 class="card-title ">Payment Status: <%= order.payment_status %></h6>
-                <% if (order.payment_status === 'Pending') { %>
-                    <button class="btn p-t-10"
-                    onclick=""><i class="fas fa-credit-card"></i> Pay online</button>
+                <% if ((order.payment_status === 'Pending' || order.payment_status === 'Failed') && order.order_status !== 'Cancelled') { %>
+                    <button class="btn p-t-10 re-pay"
+                    onclick="rePayment('<%= order._id %>')"><i class="fas fa-credit-card"></i> Pay online</button>
+                <% }%>
+                <% if (order.order_status === 'Delivered' || order.order_status === 'Returned') { %>
+                    <button class="btn p-t-10 invoice-download"
+                            onclick="downloadInvoice('<%= order._id %>', '<%= order.order_id %>')">
+                        <i class="fas fa-file-invoice"></i> Download Invoice
+                    </button>
                 <% } %>
     
                 <h4 class="mt-4">Items</h4>
@@ -56,7 +62,7 @@ body {
                                 <div>
                                     <strong>Product Name:</strong> <%= item.product_id.product_name %><br>
                                     <strong>Quantity:</strong> <%= item.quantity %><br>
-                                    <strong>Price:</strong> $<%= item.price.toFixed(2) %>
+                                    <strong>Price:</strong> ₹<%= item.price.toFixed(2) %>
                                 </div>
                             </div>
                             <% if (!item.is_cancelled && order.order_status !== 'Delivered' && order.order_status !== "Returned") { %>
@@ -80,108 +86,206 @@ body {
                         </li>
                     <% }); %>
                 </ul>
-                
-                <script>
-                    document.querySelectorAll('.return-button').forEach(button => {
-                        button.addEventListener('click', async (e) => {
-                            const itemId = e.target.getAttribute('data-item-id')
-                            const orderId = "<%= order._id %>"
-                
-                            try {
-                                const response = await fetch(`/orders/${orderId}/${itemId}/request-return`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                })
-                
-                                const result = await response.json()
-                
-                                if (response.ok) {
-                                    Swal.fire({
-                                        title: "Success",
-                                        text: result.message,
-                                        icon: "success",
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    }).then(() => {
-                                        window.location.reload()
-                                    })
-                                } else {
-                                    Swal.fire({
-                                        title: "Failed",
-                                        text: result.message || "Failed to submit return request",
-                                        icon: "error",
-                                        timer: 1500
-                                    })
-                                }
-                            } catch (error) {
-                                console.error("Error:", error)
-                                Swal.fire({
-                                    title: "Error!",
-                                    text: "Please try again later",
-                                    icon: "error",
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                })
-                            }
-                        })
-                    })
-                    document.querySelectorAll('.cancel-button').forEach(button => {
-                        button.addEventListener('click', async (e) => {
-                            const itemId = e.target.getAttribute('data-item-id')
-                            const orderId = "<%= order._id %>"
-                
-                            try {
-                                const response = await fetch(`/orders/${orderId}/${itemId}/cancel-order`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                })
-                
-                                const result = await response.json()
-                
-                                if (response.ok) {
-                                    Swal.fire({
-                                        title: "Success",
-                                        text: result.message,
-                                        icon: "success",
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    }).then(() => {
-                                        window.location.reload()
-                                    })
-                                } else {
-                                    Swal.fire({
-                                        title: "Failed",
-                                        text: result.message || "Failed to submit ",
-                                        icon: "error",
-                                        timer: 1500
-                                    })
-                                }
-                            } catch (error) {
-                                console.error("Error:", error)
-                                Swal.fire({
-                                    title: "Error!",
-                                    text: "Please try again later",
-                                    icon: "error",
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                })
-                            }
-                        })
-                    })
-
-                </script>
-                
-                
 
     
                 <a href="/profile/<%= user._id %>" class="btn mt-3" style="width: 6rem; background-color: #88c8bc;">Back</a>
             </div>
         </div>
     </div>
+    <script>
+        
+        document.querySelectorAll('.return-button').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const itemId = e.target.getAttribute('data-item-id')
+                const orderId = "<%= order._id %>"
     
+                try {
+                    const response = await fetch(`/orders/${orderId}/${itemId}/request-return`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+    
+                    const result = await response.json()
+    
+                    if (response.ok) {
+                        Swal.fire({
+                            title: "Success",
+                            text: result.message,
+                            icon: "success",
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.reload()
+                        })
+                    } else {
+                        Swal.fire({
+                            title: "Failed",
+                            text: result.message || "Failed to submit return request",
+                            icon: "error",
+                            timer: 1500
+                        })
+                    }
+                } catch (error) {
+                    console.error("Error:", error)
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Please try again later",
+                        icon: "error",
+                        timer: 1500,
+                        showConfirmButton: false
+                    })
+                }
+            })
+        })
+
+        document.querySelectorAll('.cancel-button').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const itemId = e.target.getAttribute('data-item-id')
+                const orderId = "<%= order._id %>"
+                
+    
+                try {
+                    const response = await fetch(`/orders/${orderId}/${itemId}/cancel-order`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+    
+                    const result = await response.json()
+    
+                    if (response.ok) {
+                        Swal.fire({
+                            title: "Success",
+                            text: result.message,
+                            icon: "success",
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.reload()
+                        })
+                    } else {
+                        Swal.fire({
+                            title: "Failed",
+                            text: result.message || "Failed to submit ",
+                            icon: "error",
+                            timer: 1500
+                        })
+                    }
+                } catch (error) {
+                    console.error("Error:", error)
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Please try again later",
+                        icon: "error",
+                        timer: 1500,
+                        showConfirmButton: false
+                    })
+                }
+            })
+        })
+        function downloadInvoice() {
+        const orderId = "<%= order._id %>"
+        const order_id = "<%=order.order_id%>"
+        console.log(order_id)
+        fetch(`/order/${orderId}/invoice`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to download invoice');
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        // Create a link element to trigger the file download
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = `invoice_${order_id}.pdf`; // Suggested filename
+        link.click();
+        URL.revokeObjectURL(url); // Clean up the URL object after use
+    })
+    .catch(error => {
+        console.error('Error downloading the invoice:', error);
+        alert('There was an error downloading the invoice. Please try again.');
+    });
+    }
+
+
+    async function rePayment(orderId) {
+  try {
+
+    const response = await fetch('/complete-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ orderId }),
+    })
+
+    const data = await response.json()
+    
+    if (!response.ok || !data.orderId) {
+      return alert(data.error || 'Failed to retrieve Razorpay order ID')
+    }
+
+    const options = {
+      key: 'rzp_test_MoQOrZAlepfiB7', // Replace with your Razorpay Key
+      amount: data.amount * 100, 
+      currency: 'INR',
+      name: 'FootPrints',
+      description: 'Order Payment',
+      order_id: data.orderId, // Razorpay Order ID
+      handler: async function (response) {
+        const verifyResponse = await fetch('/verify-payment/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          }),
+        })
+
+        if (verifyResponse.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Payment Successful',
+            text: 'Your payment has been completed successfully.',
+            confirmButtonText: 'OK',
+          }).then(() => {
+            window.location.href = '/profile/<%= user._id %>'
+          })
+        } else {
+          alert('Payment verification failed')
+        }
+      },
+      prefill: {
+        name: 'User Name',
+        email: 'user@example.com',
+        contact: '1234567890',
+      },
+      theme: {
+        color: '#3399cc',
+      },
+    }
+
+    const rzp = new Razorpay(options)
+    rzp.open()
+  } catch (error) {
+    console.error(error)
+    alert('Something went wrong')
+  }
+}
+    </script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <%- include('../partials/footer') %>

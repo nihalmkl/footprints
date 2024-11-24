@@ -5,6 +5,7 @@ const moment = require('moment')
 const Product = require('../../models/productSchema')
 const { generateSalesReportPDF } = require('../../utils/pdfGenerate')
 const { generateSalesReportExcel } = require('../../utils/excelGenerate')
+const {getSalesData} = require('../../utils/salesData')
 
 
 exports.loadAdminLogin = async (req, res) => {
@@ -33,7 +34,7 @@ exports.adminLogin = async (req, res) => {
       if (!passwordMatch) {
         return res.json({ success: false });
       }
-      req.session.admin = admin;
+      req.session.admin = admin
       res.json({ success: true });
     }
   } catch (error) {
@@ -67,6 +68,9 @@ exports.adminHome = async (req, res) => {
       };
     }
 
+    const chartData = await getSalesData(req) 
+    console.log("Where ",chartData)
+    
     const orders = await Orders.find(filterConditions);
 
     const totalUsers = await User.countDocuments();
@@ -102,8 +106,10 @@ exports.adminHome = async (req, res) => {
       totalUsers,
       best_products,
       best_categories,
-      best_brands
+      best_brands,
+      chartData
     });
+
   } catch (error) {
     console.error("Error fetching sales report:", error);
     res.status(500).send({ message: "Error generating sales report" });

@@ -47,7 +47,7 @@
                 <td><%= order.createdAt.toLocaleString() %></td>
                 <td><%= order.items.length %></td>
                 <td><%= order.payment_method %></td>
-                <td>$<%= order.total_amount %></td>
+                <td>₹<%= order.total_amount %></td>
                 <td>
                     <select name="order_status" class="form-select" data-order-id="<%= order._id %>" 
                         onchange="updateStatus(this)" <%= order.order_status === 'Delivered' ? 'disabled' : '' %>>
