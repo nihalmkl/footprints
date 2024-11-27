@@ -52,6 +52,7 @@ exports.loadCart =  async (req, res) => {
     }
 }
 
+// <------------------------ This for add product in to cart---------------------------->
 
 exports.addCart = async (req, res) => {
 
@@ -116,6 +117,7 @@ exports.addCart = async (req, res) => {
     }
 };
 
+// <------------------------ This for delete item in the cart ---------------------------->
 
 exports.deleteCartItems = async (req, res) => {
     const { userId, productId } = req.body

@@ -7,9 +7,10 @@ const fs = require('fs')
 const path = require('path')
 const multer = require('multer')
 
+
 exports.loadProducts = async (req, res) => {
     try {
-        const limit = 4; 
+        const limit = 10; 
         const page = parseInt(req.query.page) || 1; 
         const skip = (page - 1) * limit;
 
@@ -29,7 +30,8 @@ exports.loadProducts = async (req, res) => {
             Products: products,
             currentPage: page,
             totalPages: totalPages > 5 ? 5 : totalPages, 
-            Offers: offers
+            Offers: offers,
+            currentRoute: '/admin/products'
         });
     } catch (error) {
         console.error('Error fetching products:', error);
@@ -41,13 +43,11 @@ exports.loadProducts = async (req, res) => {
 
 exports.loadAddProduct = async(req,res)=>{
     try{
-        console.log('ahkdh')
         const categories = await Category.find({is_delete:false})
         const brands = await Brand.find({is_delete:false})
-        console.log(categories,brands)
-        res.render('admin/add-product', { layout: 'layout/admin', title: 'Products',categories,brands });
+        res.render('admin/add-product', { layout: 'layout/admin', title: 'Products',categories,brands,currentRoute: '/admin/add_product' });
     }catch(error){
-        console.log(error)
+        res.status(500).json({success:false, message: "Server Error" });
     }
 }
 
@@ -62,6 +62,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+// <------------------------ This for add  product---------------------------->
 exports.addProduct = async (req, res) => {
     try {
         const { productName, category, brand, description } = req.body;
@@ -120,6 +121,7 @@ exports.deleteProduct = async (req, res) => {
   }
 }
 
+// <------------------------ This for loading  edit products page ---------------------------->
 
 exports.editProductPage = async (req, res) => {
     try {
@@ -138,16 +140,19 @@ exports.editProductPage = async (req, res) => {
             title: 'Products',
             product,
             categories,
-            brands
+            brands,
+            currentRoute: '/admin/edit_product'
         });
     } catch (error) {
         console.error(error);
         res.status(500).send('Internal Server Error');
     }
-};
+}
+
+// <------------------------ This for edit products---------------------------->
 
 exports.editProduct = async (req, res) => {
-    const { productName, category, brand, description, existingImages,variants } = req.body;
+    const { productName, category, brand, description,variants } = req.body;
     try {
         const product = await Product.findById(req.params.id);
         if (!product) {
@@ -160,23 +165,11 @@ exports.editProduct = async (req, res) => {
         product.description = description;
 
          if (variants && Array.isArray(variants)) {
-            console.log("dhkajjaja",variants)
             product.variants = variants.map(variant => ({
                 size: variant.size,
                 stock: parseInt(variant.stock, 10),
                 price: parseInt(variant.price, 10)
             }));
-        }
-
-        if (req.files) {
-            req.files.forEach(file => {
-                const newImagePath = `/public/uploads/${file.filename}`;
-                product.images.push(newImagePath);
-            });
-        }
-
-        if (existingImages) {
-            product.images = product.images.filter(image => !existingImages.includes(image));
         }
 
         await product.save();
@@ -188,34 +181,14 @@ exports.editProduct = async (req, res) => {
 };
 
 
-    
-exports.deleteImage = async (req, res) => {
-    const { productId,imageUrl } = req.body;
+// <------------------------ This code for applying offer in product side ---------------------------->
 
-    try {
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-     
-        product.images = product.images.filter( image => image !== imageUrl);
-
-        await product.save();
-
-        res.json({ message: 'Image deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting image:', error); 
-        res.status(500).json({ message: 'Error deleting image', error });
-    }
-}
 exports.applyOffer = async (req, res) => {
     const { offer_id } = req.body
     const { productId } = req.params
-     console.log("shav",offer_id,"nihal",productId)
     try {
         const offerValue = offer_id ? offer_id : null
         await Product.findByIdAndUpdate(productId, { offer: offerValue })
-        console.log(124)
         res.json({ success: true, message: 'Offer applied successfully' })
     } catch (error) {
         console.error(error)

@@ -56,6 +56,8 @@
                         <option value="Shipped" <%= order.order_status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                         <option value="Delivered" <%= order.order_status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
                         <option value="Cancelled" <%= order.order_status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                        <option value="Returned" <%= order.order_status === 'Returned' ? 'selected' : '' %>>Returned</option>
+
                     </select>
                 </td>
                 <td>

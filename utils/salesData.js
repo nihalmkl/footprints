@@ -2,13 +2,8 @@ const mongoose = require("mongoose");
 const Orders = require("../models/orderSchema");
 
 async function getSalesData(req) {
-    const query = req.query.filter || 'week'; // Default to 'week'
-
-// Date range for the filter
-let startDate, endDate;
-
-// Get the current date
-const currentDate = new Date();
+    const query = req.query.filter || 'week'
+    const currentDate = new Date();
 
 switch (query) {
   case "week":
@@ -124,7 +119,7 @@ switch (query) {
         yearlyAmounts[index] = d.totalSales;
       }
     });
-
+ 
     return {
       labels: yearLabels,
       values: yearlyAmounts,

@@ -14,6 +14,48 @@
 .large-img{
     width: 100%;
 }
+
+.image-zoom-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            cursor: zoom-in;
+        }
+
+        .image-zoom-container img {
+            transition: transform 0.3s ease-in-out;
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .image-zoom-container:hover img {
+            transform: scale(1.5);
+        }
+
+        .image-zoom-lens {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: none;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .zoom-result {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            width: 300px;
+            height: 300px;
+            top: 0;
+            left: 110%;
+            background-repeat: no-repeat;
+            display: none;
+            z-index: 10;
+        }
 </style>
 <div class="breadcrumbs">
     <div class="container">
@@ -29,9 +71,11 @@
     <div class="container">
         <div class="row row-pb-lg product-detail-wrap">
             <div class="col-sm-6">
-                <div class="main-product-image">
-                    <img src="<%= product.images[0] %>" id="mainProductImage" class="img-fluid large-img" alt="Main Product Image" style="max-width: 100%; height: auto;">
+                <div class="image-zoom-container">
+                    <img src="<%= product.images[0] %>" id="mainProductImage" class="img-fluid large-img" alt="Main Product Image">
+                    <div class="image-zoom-lens"></div>
                 </div>
+                <div class="zoom-result"></div>
             </div>
             <div class="col-sm-2">
                 <div class="thumbnail-images">
@@ -48,17 +92,17 @@
             
             <div class="col-sm-4">
                 <div class="product-desc">
-                    <h3><%= product.product_name %></h3>
-                    <p class="price">
+                    <h2><%= product.product_name %></h2>
+                    <p class="price" style="font-family: initial; font-size: 20px;">
                         <% if (product.applied_discount_percentage > 0) { %>
-                            <span class="original-price" style="text-decoration: line-through;">₹<%= product.variants[0].price.toFixed(2) %></span>
-                            <span class="discount-price" style="color: red;">₹<%= (product.variants[0].price * (1 - product.applied_discount_percentage / 100)).toFixed(2) %></span>
+                            <span class="original-price" style="text-decoration: line-through;color: rgb(212, 21, 21);">₹<%= product.variants[0].price.toFixed(2) %></span>
+                            <span class="discount-price" style="color: rgb(1, 86, 32);">₹<%= (product.variants[0].price * (1 - product.applied_discount_percentage / 100)).toFixed(2) %></span>
                         <% } else { %>
                             <span class="current-price">₹<%= product.variants[0].price.toFixed(2) %></span>
                         <% } %>
                     </p>
                     
-                    <span class="<%= product.variants[0].stock == 0 ? 'text-danger' : 'text-success' %>">
+                    <span class="<%= product.variants[0].stock == 0 ? 'text-danger' : 'text-success' %>" style="font-family: initial; font-size: 20px;">
                         Available Stock: <%= product.variants[0].stock %>
                     </span>                    
                     <p class="star">
@@ -327,6 +371,45 @@ function addCart(userId, productId, quantity) {
         });
     });
 }
+document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.image-zoom-container');
+            const img = container.querySelector('img');
+            const lens = container.querySelector('.image-zoom-lens');
+            const result = document.querySelector('.zoom-result');
 
+            container.addEventListener('mouseenter', initZoom);
+            container.addEventListener('mouseleave', resetZoom);
+            container.addEventListener('mousemove', moveZoom);
+
+            function initZoom(e) {
+                lens.style.display = 'block';
+                result.style.display = 'block';
+                
+                // Set background image for result div
+                result.style.backgroundImage = `url(${img.src})`;
+                result.style.backgroundSize = `${img.width * 2}px ${img.height * 2}px`;
+            }
+
+            function moveZoom(e) {
+                const containerRect = container.getBoundingClientRect();
+                let x = e.clientX - containerRect.left;
+                let y = e.clientY - containerRect.top;
+
+                // Position lens
+                lens.style.left = `${x - lens.offsetWidth / 2}px`;
+                lens.style.top = `${y - lens.offsetHeight / 2}px`;
+
+                // Calculate background position for zoom effect
+                const percentX = (x / container.offsetWidth) * 100;
+                const percentY = (y / container.offsetHeight) * 100;
+
+                result.style.backgroundPosition = `${percentX}% ${percentY}%`;
+            }
+
+            function resetZoom() {
+                lens.style.display = 'none';
+                result.style.display = 'none';
+            }
+        });
 </script>
 <%- include('../partials/footer.ejs') %>

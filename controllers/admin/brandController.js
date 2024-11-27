@@ -15,9 +15,10 @@ exports.loadBrand = async (req, res) => {
       brands,
       currentPage: page,
       totalPages: totalPages,
+      currentRoute: '/admin/brands'
     });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -89,6 +90,6 @@ exports.deleteBrand = async (req, res) => {
       return res.json({ restored: true, message: "Brand deleted" });
     }
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ message: "Internal Error" });
   }
 };

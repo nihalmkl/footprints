@@ -140,6 +140,54 @@
 .pagedesign .page-item.disabled .page-link:hover {
     cursor: not-allowed;
 }
+
+
+
+.offer-badge {
+    position: relative;
+    display: inline;
+    background-color: #1d7799;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 6px 21px;
+    border-radius: 1px;
+    text-transform: uppercase;
+    overflow: hidden;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+.offer-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80%;
+    height: 100%;
+    background: linear-gradient(
+        120deg, 
+        transparent, 
+        rgba(255,255,255,0.3), 
+        transparent
+    );
+    transform: translateX(var(--shine-position));
+    transition: transform 1.5s ease-in-out;
+    animation: shine 2s infinite linear;
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-10%);
+    }
+    100% {
+        transform: translateX(30%);
+    }
+}
+
+/* Hover effect (optional) */
+.offer-badge:hover::before {
+    animation-play-state: paused;
+}
+
 	</style>
 	</head>
 	<body>
@@ -160,11 +208,11 @@
 							<div class="col-sm-5 col-md-4">
                                 <div class="search-wrap d-flex align-items-center">
                                     <form action="/shop" method="GET" class="d-flex w-100" id="filterForm">
-                                        <input type="search"  id="searchInput" class="form-control" name="search" placeholder="Search" style="border-radius: 0;" value="<%= search || '' %>">
+                                        <input type="search"  id="searchInput" class="form-control sear-box" name="search" placeholder="Search" style="border-radius: 0;" value="<%= search || '' %>">
                                         <input type="hidden" id="sortField" name="sorting" value="<%= sorting || '' %>">
                                         <input type="hidden" id="brand" name="brand" value="<%= brand || '' %>">
                                         <input type="hidden" id="category" name="category" value="<%= category || '' %>">
-                                        <button type="submit" class="btn btn-primary" style="border-radius: 0;">
+                                        <button type="submit" class="btn btn-primary sear-but" style="border-radius: 0;">
                                             <i class="icon-search"></i>
                                         </button>
                                     </form>
@@ -176,7 +224,7 @@
 							<div class="col-md-2 d-flex justify-content-end">
 								<div class="dropdown">
 									<button class="btn btn-transparent dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: transparent; border: none;">
-										<i class="icon-user" aria-hidden="true"></i>
+										<i class="fas fa-user-tie" aria-hidden="true"></i>
 									</button>
 									<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 										<% if (user) { %>
@@ -391,7 +439,7 @@
                             <div class="col-lg-4 mb-4 text-center">
                                 <div class="product-entry border">
                                     
-                                    <% if (product.offer && product.applied_discount_percentage > 0) { %>
+                                    <% if (product.applied_discount_percentage > 0) { %>
                                         <div class="offer-badge">
                                             <%= product.applied_discount_percentage %>% OFF
                                         </div>
@@ -406,10 +454,10 @@
                                         
                                         <span class="price">
                                             <% if (product.applied_discount_percentage > 0) { %>
-                                                <span class="discounted-price" style="color: red; font-weight: bold;">
+                                                <span class="discounted-price" style="color: rgb(27, 134, 39); font-weight: bold;">
                                                     ₹<%= (product.variants[0].price * (1 - product.applied_discount_percentage / 100)).toFixed(2) %>
                                                 </span>
-                                                <span class="original-price" style="text-decoration: line-through; color: gray;">
+                                                <span class="original-price" style="text-decoration: line-through; color: rgb(193, 29, 29);">
                                                     ₹<%= product.variants[0].price %>
                                                 </span>
                                             <% } else { %>

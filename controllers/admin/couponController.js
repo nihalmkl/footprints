@@ -1,5 +1,6 @@
 const Coupon = require('../../models/couponSchema')
 
+// <------------------------ This for load the coupon page   ---------------------------->
 exports.loadCoupon = async (req, res) => {
   try {
       const limit = 4;
@@ -16,7 +17,8 @@ exports.loadCoupon = async (req, res) => {
           title: "Coupon",
           coupons,
           currentPage: page,
-          totalPages: totalPages
+          totalPages: totalPages,
+          currentRoute: '/admin/promocodes'
       });
   } catch (error) {
       console.log(error.message);
@@ -24,7 +26,8 @@ exports.loadCoupon = async (req, res) => {
   }
 };
 
- 
+ // <------------------------ This for add coupon ---------------------------->
+
 exports.addCoupon = async (req, res) => {
     const { couponCode, discount, startDate, endDate, minAmount, maxAmount, couponDescription } = req.body;
   
@@ -86,6 +89,8 @@ exports.addCoupon = async (req, res) => {
     res.json({ success: true, message: 'Coupon successfully added' });
   };
 
+  // <------------------------ This for edit the coupon ---------------------------->
+
 exports.editCoupon = async (req, res) => {
     const couponId = req.params.id
     const { couponCode, discount, startDate, endDate, minAmount, maxAmount, couponDescription } = req.body;
@@ -137,10 +142,10 @@ exports.editCoupon = async (req, res) => {
         max_coupon_amount: maxAmount,    
         description: couponDescription    
     },{ new: true });
-     console.log('success',data)
-    res.json({ success: true, message: 'Coupon edited successfully' });
+    res.status(200).json({ success: true, message: 'Coupon edited successfully' });
 };
 
+// <------------------------ This for delete the coupon  ---------------------------->
 
 exports.deleteCoupon = async (req, res) => {
     const { couponId } = req.body

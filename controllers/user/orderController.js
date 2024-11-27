@@ -55,6 +55,7 @@ const randomDigits = Math.floor(1000 + Math.random() * 9000)
 return `ORD${randomDigits}`
 }
 
+// <------------------------ This for verify payment after place order---------------------------->
 
 exports.verifyPayment = async (req, res) => {
     const { payment_id,order_id, signature,Order_Schema } = req.body;
@@ -95,7 +96,7 @@ exports.verifyPayment = async (req, res) => {
     }
   };
   
-
+// <------------------------ This for place order---------------------------->
 exports.placeOrder = async (req, res) => {
         const { address_id, payment_method, payment_id, order_id, signature,total_amount,couponCode,discountPrice } = req.body;
        
@@ -148,8 +149,8 @@ exports.placeOrder = async (req, res) => {
           }
           if (payment_method === "wallet") {
             const wallet = await Wallet.findOne({ user: req.user._id });  
-          if (!wallet || wallet.wallet_balance < total_amount) {
-            return res.status(400).json({ message: "Insufficient wallet balance." });
+          if (!wallet || wallet.balance < total_amount) {
+            return res.status(400).json({success:false, message: "Insufficient wallet balance." });
             }
         
             wallet.balance -= total_amount;
@@ -167,7 +168,6 @@ exports.placeOrder = async (req, res) => {
             newOrder.payment_status = "Completed";
             newOrder.used_amount = total_amount;
             await newOrder.save();
-            console.log('neew',newOrder)
             // update the stock of the products in the order
             for (const item of userCart.items) {
                 const product = await Product.findById(item.product_id);
@@ -186,7 +186,7 @@ exports.placeOrder = async (req, res) => {
         
             return res.status(200).json({ message: "Order placed successfully using wallet!" });
         }
-        
+        // payment methord cash on delivery
           else if (payment_method === "COD") {
     
             await newOrder.save();
@@ -226,12 +226,12 @@ exports.placeOrder = async (req, res) => {
                   return res.status(400).json({ message: `Deficient stock for product: ${product.product_name}` })
               }
           }
+            userCart.items = [];
+             userCart.total_price = 0;
+             await userCart.save();
             if (payment_id && order_id && signature) {
             const isVerified = verifyPayment(payment_id, order_id, signature);
             if (isVerified) {
-                userCart.items = [];
-                userCart.total_price = 0;
-                await userCart.save();
 
                 newOrder.payment_status = "Completed"; 
                 await newOrder.save();
@@ -243,9 +243,6 @@ exports.placeOrder = async (req, res) => {
                 amount: newOrder.total_amount,
                 order_id:newOrder._id });
             } else {
-              userCart.items = [];
-                userCart.total_price = 0;
-                await userCart.save();
 
                 newOrder.payment_status = "Pending"; 
                 await newOrder.save();
@@ -285,6 +282,7 @@ try {
 }
 }
 
+// <------------------------ This for loading order details page---------------------------->
 
 exports.getOrderDetails = async (req, res) => {
 try {
@@ -328,7 +326,6 @@ try {
 }
 
 
-
 exports.qantityUpdate = async (req, res) => {
 
 const { product_id, quantity } = req.body; 
@@ -359,6 +356,7 @@ try {
 }
 }
 
+// <------------------------ This for indvidually cancel the  items ---------------------------->
 
 exports.cancelItem = async (req, res) => {
 
@@ -378,7 +376,7 @@ exports.cancelItem = async (req, res) => {
         const wallet = await Wallet.findOne({ user: req.session.user.id })
    
         if (wallet) {
-          wallet.balance += (item.price + 40)
+          wallet.balance += (item.price)
           wallet.wallet_history.push({
               date: new Date(),
               amount: item.price,
@@ -411,6 +409,8 @@ exports.cancelItem = async (req, res) => {
       res.status(500).json({ message: 'Error canceling item' })
     }
   }
+
+ // <------------------------ This is giving for return the product ---------------------------->
 
   exports.returnProduct = async (req, res) => {
     try {
@@ -463,7 +463,7 @@ exports.cancelItem = async (req, res) => {
     }
 }
 
-
+// <------------------------ This for applying coupon---------------------------->
 
 exports.applyCoupon = async (req, res) => {
     try {
@@ -504,6 +504,7 @@ exports.applyCoupon = async (req, res) => {
     }
   }
 
+// <------------------------ This for download invoice ---------------------------->
 
   exports.downloadInvoice = async (req, res) => {
     try {
@@ -520,7 +521,8 @@ exports.applyCoupon = async (req, res) => {
 }
 
 
-  
+  // <------------------------ This for add address in the checkout page ---------------------------->
+
 exports.addCheckoutAddress = async (req, res) => {
   const { full_name, street_address, pincode, city, state, country, phone } = req.body
 
@@ -528,7 +530,6 @@ exports.addCheckoutAddress = async (req, res) => {
     return res.status(400).send('All fields are required.');
   }
 
-  console.log(street_address)
   try {
     const newAddress = new Address({
       full_name,
@@ -553,6 +554,7 @@ exports.addCheckoutAddress = async (req, res) => {
   }
 };
 
+// <------------------------ This for repayment if the payment status is pending---------------------------->
 
 exports.rePayment = async (req, res) => { 
   const { orderId } = req.body
@@ -572,6 +574,7 @@ exports.rePayment = async (req, res) => {
   }
 }
 
+// <------------------------ This code for verify the payment ---------------------------->
 
 exports.verifyPaymentStatus = async (req, res) => {
   const crypto = require('crypto')
@@ -601,5 +604,21 @@ exports.verifyPaymentStatus = async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).send('Error verifying payment')
+  }
+}
+
+// <------------------------ This for upadate only the payment status if the payment is verfied ---------------------------->
+
+exports.updatePaymentStatus = async (req, res) => {
+  try {
+      const { orderId } = req.params;
+      const { payment_status } = req.body;
+
+      await Orders.findByIdAndUpdate(orderId, { payment_status });
+
+      res.status(200).json({ message: "Payment status updated to Failed." });
+  } catch (error) {
+      console.error("Error updating payment status:", error);
+      res.status(500).json({ message: "Failed to update payment status." });
   }
 }

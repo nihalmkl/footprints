@@ -24,13 +24,11 @@ exports.loadLogin =async (req,res) => {
     }
    
 }
-    
+    // <------------------------ this is for user login ---------------------------->
 exports.userLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
         const userData = await User.findOne({ email: email });
-
-        console.log(userData);
 
         if (!userData) {
             return res.json({ success: false, message: "User doesn't exist. Enter a valid email." });
@@ -52,19 +50,19 @@ exports.userLogin = async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
-
+// <------------------------ Load The UserInterinterface ---------------------------->
 exports.loadHome = async (req, res) => {
     try {
       
       let cartCount = []
       let wishlistCount = []
-  
+            // for cart count show in cart icon
       if (req.session.user) {
         cartCount = await Cart.aggregate([
           { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } }, 
           { $project: { itemCount: { $size: "$items" } } }
         ])
-        
+               // for wishlist count show in wishlist icon
         wishlistCount = await Wishlist.aggregate([
           { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
           { $project: { itemCount: { $size: "$products" } } }
@@ -111,7 +109,6 @@ exports.loadRegister = async(req,res)=>{
     try {
         res.render('user/register')   
     } catch (error) {
-        console.log('error:',error.message)
         res.status(500).render('user/error', {
             message: 'Please try again later.',
             errorCode: 500
@@ -147,17 +144,16 @@ exports. verifyOtp = (req,res)=>{
             text: `Your OTP is ${otp}`,
             html: `<b>Your OTP is ${otp}</b>`,
         });
-        console.log("Email sent: ", info);
         return info.accepted.length > 0; 
     } catch (error) {
         console.error("Sending email failed", error);
         return false; 
     }
 } 
+
 exports.register = async (req, res) => {
     try {
         const { username,email,phone, password, confirm_password } = req.body;
-        console.log(req.body)
         if (password !== confirm_password) {
             return res.render("user/register", { message: "Password doesn't match" });
         }
@@ -169,10 +165,8 @@ exports.register = async (req, res) => {
 
         const otp = generateOtp();
         req.session.userOtp = otp
-        console.log('Generated OTP:', otp);
 
         const sentEmail = await sentVerificationEmail(email, otp);
-        console.log('1')
         if (!sentEmail) {
             console.error("Email not sent");
             return res.json("Email not sent");
@@ -181,8 +175,6 @@ exports.register = async (req, res) => {
         const recordOtp = new Otp({ email, otp });
         await recordOtp.save();
         req.session.userData = {username,email,phone,password}
-         console.log("iqeriqwerio",req.session.userData)
-        console.log('OTP sent:', otp);
         res.redirect('/verify-otp'); 
     } catch (err) {
         console.error('Error:', err.message);
@@ -208,19 +200,15 @@ const securePassword = async (password) => {
 exports.verityOtp = async (req,res)=>{
     try{
        
-        console.log('hioadihfaosdhfaosdf')
         const {otpInput} = req.body
-        console.log("this is user date",req.session.userData.email)
         const otpRecord = await Otp.findOne({email:req.session.userData.email})
        
-        console.log("hiaoidfasdfhao",otpRecord.otp,"ufhushdasdhf",otpInput,"uwpihdaisdfhas")
        
         if(!otpRecord){
             return res.status(400).json({success:false,message:'OTP not found'})
         }
 
         if(String(otpInput) === String(otpRecord.otp)){
-            console.log("checking 1")
             const user = req.session.userData
             const passwordHash = await securePassword(user.password)
             const newUser = new User({
@@ -230,14 +218,13 @@ exports.verityOtp = async (req,res)=>{
                 password:passwordHash,
             })
             await newUser.save()
-            console.log("thish is user now",newUser)
             req.session.user =  newUser._id
             res.json({success:true,redirectUrl:'/login'})
         }else{
             res.status(400).json({success:false,message:'Invalid OTP,please try again'})
         }
     }catch(error){
-        console.log("Error Verification OTP :",error)
+        res.status(500).json({ message: "Internal Server Error" });
     }
 }
 
@@ -261,7 +248,6 @@ exports.resendOtp = async (req, res) => {
         })
 
         await resentotp.save();
-        console.log('New OTP saved:', otp);
 
         const sentEmail = await sentVerificationEmail(email, otp);
 
@@ -278,21 +264,24 @@ exports.resendOtp = async (req, res) => {
 };
 
 
+// <------------------------ Load Shop Page---------------------------->
 exports.loadShop = async (req, res) => {
     try {
     const { sorting, search ,category,brand} = req.query
     let sortOption = {}
     let filter = { is_delete: false }
-
+     // this for filter category
     if (category) {
         const categories = await Category.findOne({ category_name:category})
         if(categories){
             filter.category_id = categories._id
         }
     }
+     // this for search products
     if (search) {
         filter.product_name = { $regex: search, $options: 'i' }
     }
+     // this for filter brand
     if (brand) {
         const brands = await Brand.findOne({ brand_name: brand });
         if (brands) {
@@ -302,7 +291,7 @@ exports.loadShop = async (req, res) => {
    
         let cartCount = []
         let wishlistCount = []
-       // for wishlist counst show in cart icon
+       // for wishlist count show in cart icon
         if (req.session.user) {
 
             cartCount = await Cart.aggregate([
@@ -341,7 +330,7 @@ exports.loadShop = async (req, res) => {
 
 
         const page = parseInt(req.query.page) || 1;
-        const limit = 8;
+        const limit = 9;
         const skip = (page - 1) * limit;
     
         const totalProducts = await Product.countDocuments(filter);
@@ -406,7 +395,7 @@ exports.forgotPage = async (req,res)=>{
         
     }
 }
-
+// <------------------------ This is the Forgot Password ---------------------------->
 exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
 
@@ -422,7 +411,6 @@ exports.forgotPassword = async (req, res) => {
         req.session.email = email;
 
         const resetUrl = `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`;
-        console.log(resetUrl);
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -460,7 +448,7 @@ exports.resetPasswordPage = (req, res) => {
     }
     res.render('user/reset-pass', { token });
 };
-
+// <------------------------ This is for reset password---------------------------->
 exports.resetPassword = async (req, res) => {
 
     
@@ -491,7 +479,7 @@ exports.resetPassword = async (req, res) => {
     }
 };
 
-
+// <------------------------ Load The Product View Page---------------------------->
 exports.productView = async (req, res) => {
     try {
         //This is for show cart count and wishlist count 
@@ -565,20 +553,16 @@ exports.loadContact = async(req,res)=>{
     }
 }
 exports.userLogout = (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            
-            return res.status(500).json({ success: false, message: "Could not log out." });
-        }
-
-        return res.redirect('/login'); 
-    });
+    req.session.user = null;
+    return res.redirect('/')
 }
+
 const razorpay = new Razorpay({
     key_id: process.env.RAZOR_PAY_KEY_ID,
     key_secret: process.env.RAZOR_PAY_KEY_SECRET,
   })
 
+// <------------------------ Load Wallet ---------------------------->
  exports.loadWallet = async (req, res) => {
     try {
   
@@ -596,6 +580,7 @@ const razorpay = new Razorpay({
     }
   }
 
+// <------------------------ Add Fund Into Wallet ---------------------------->
 exports.addFund = async (req, res) => {
     const { amount } = req.body
     const paymentAmount = amount * 100 
@@ -614,6 +599,8 @@ exports.addFund = async (req, res) => {
     }
   }
 
+
+// <------------------------ Add Fund Into Wallet Success ---------------------------->
   exports.addFundSuccess = async (req, res) => {
     const { amount } = req.body
     try {
@@ -645,5 +632,16 @@ exports.addFund = async (req, res) => {
     } catch (error) {
       console.error("Failed to add funds:", error)
       res.status(500).json({ success: false, message: "Failed to add funds" })
+    }
+  }
+
+
+  exports.blockedUser = async (req,res)=>{
+    try{
+        console.log('is bloce')
+        res.render('user/blockuser',{title:'admin blocked'})
+
+    }catch(err){
+        console.log(err)
     }
   }

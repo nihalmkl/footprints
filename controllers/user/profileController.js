@@ -6,6 +6,7 @@ const Cart = require('../../models/cartSchema')
 const Wishlist = require('../../models/wishlistSchema')
 const mongoose = require('mongoose')
 
+// <------------------------ This for edit address---------------------------->
 exports.editAddress = async (req, res) =>{
     const { full_name, street_address, pincode, city, state, country, phone } = req.body;
     const addressId = req.params.addressId;
@@ -36,6 +37,8 @@ exports.editAddress = async (req, res) =>{
     }
   }
 
+// <------------------------ This for add address---------------------------->
+
   exports.addAddress = async (req, res) => {
     const { full_name, street_address, pincode, city, state, country, phone } = req.body
   
@@ -58,7 +61,7 @@ exports.editAddress = async (req, res) =>{
       
       
       await newAddress.save();
-      console.log('addr',newAddress)
+  
       
       res.redirect('/profile/' + req.user._id);
       
@@ -69,7 +72,7 @@ exports.editAddress = async (req, res) =>{
     }
   };
   
-  
+  // <------------------------ This for load profile page---------------------------->
 
   exports.loadProfile = async (req, res) => {
     try {
@@ -77,7 +80,6 @@ exports.editAddress = async (req, res) =>{
         let wishlistCount = []
 
         if (req.session.user) {
-            console.log("User ID:", req.session.user.id)
 
             cartCount = await Cart.aggregate([
                 { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
@@ -109,19 +111,19 @@ exports.editAddress = async (req, res) =>{
     }
   };
 
+// <------------------------ This for edit profile data---------------------------->
 
   exports.editProfile = async (req, res) => {
   
     const { username, phone } = req.body;
     const userId = req.params.userId; 
-    console.log(userId)
+    
     try {
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             { username, phone},
             { new: true} 
         );
-       console.log(updatedUser)
         if (!updatedUser) {
             return res.status(404).send('User not found');
         }
@@ -133,6 +135,7 @@ exports.editAddress = async (req, res) =>{
     }
 };
 
+// <------------------------ This for delete address---------------------------->
 exports.deleteAddress = async (req, res) => {
   const addressId = req.params.id
   const userId = req.user._id
@@ -151,34 +154,5 @@ exports.deleteAddress = async (req, res) => {
   }
 }
 
-// exports.deleteAddress = async (req, res) => {
-//     const addressId = req.params.id
-//     const userId = req.user._id
-//     console.log("Deleting address for user:", userId, "and address ID:", addressId)
-//     try {
-//         let addressRecord = await Address.findOne({ user_id: userId });
 
-//         if (!addressRecord) {
-//             return res.status(404).json({ message: 'Address record not found.' });
-//         }
-
-//         const updatedAddresses = addressRecord.address.filter(add => add._id.toString() !== addressId);
-
-//         if (updatedAddresses.length === addressRecord.address.length) {
-//             return res.status(404).json({ message: 'Address not found.' });
-//         }
-
-//         if (updatedAddresses.length === 0) {
-//             await Address.deleteOne({ user_id: userId });
-//         } else {
-//             addressRecord.address = updatedAddresses;
-//             await addressRecord.save();
-//         }
-
-//         res.status(200).json({ message: 'Address deleted successfully.' });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ message: 'Error deleting address.' });
-//     }
-// }
 

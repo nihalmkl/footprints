@@ -18,10 +18,11 @@ exports.loadUsers = async (req, res) => {
             title: 'Users', 
             users, 
             currentPage: page, 
-            totalPages 
+            totalPages ,
+            currentRoute: '/admin/users'
         })
     } catch (error) {
-        console.log(error)
+        res.status(500).json({ message: "Server Error" });
     }
 }
 
@@ -37,16 +38,16 @@ exports.blockUser = async (req,res) => {
         })
         res.redirect('/admin/users')
     } catch (error) {
-        console.log(error)
+        res.status(500).json({ message: "Internal Server Error" });
     }
 }
+
 exports.unblockUser = async (req,res) =>{
   try{
     let id = req.params.id
     await User.updateOne({_id:id},{$set:{isBlocked:'false'}})
     res.redirect('/admin/users')
   }catch(error){
-    console.log(error)
-  
+    res.status(500).json({ message: "Internal Server Error" });
   }
 }

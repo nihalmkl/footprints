@@ -103,5 +103,28 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <script src="/public/js/jquery.stellar.min.js"></script>
 <!-- Main -->
 <script src="/public/js/main.js"></script>
+<script>
+$(document).ready(function(){
+    $(".colorlib-nav ul li a").click(function(){
+        $(".colorlib-nav ul li").removeClass("active");  // Remove 'active' class from all
+        $(this).parent().addClass("active");  // Add 'active' class to the clicked item
+    });
+});
+document.addEventListener('DOMContentLoaded', () => {
+    const links = document.querySelectorAll('.colorlib-nav ul li a');
+
+    // Get the current path
+    const currentPath = window.location.pathname;
+
+    // Set the active link based on the current path
+    links.forEach(link => {
+        link.parentElement.classList.remove('active'); // Remove all active classes
+        if (link.getAttribute('href') === currentPath) {
+            link.parentElement.classList.add('active'); // Add active class to the matching link
+        }
+    });
+});
+
+</script>
 </body>
 </html>

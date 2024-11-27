@@ -1,5 +1,6 @@
 const Category = require("../../models/categorySchema");
 const Offer = require('../../models/offerSchema')
+
 exports.loadCategory = async (req, res) => {
   try {
     const limit = 4
@@ -20,7 +21,8 @@ exports.loadCategory = async (req, res) => {
       categories,
       currentPage: page,
       totalPages: totalPages,
-      Offers:offers
+      Offers:offers,
+      currentRoute: '/admin/categoties'
     });
   } catch (error) {
     console.log(error);
@@ -83,11 +85,8 @@ exports.addCategory = async (req, res) => {
 
 exports.deleteCategory = async (req, res) => {
   try {
-    console.log(req.body);
 
     const { categoryId } = req.body;
-    console.log(categoryId);
-    console.log("hi");
 
     const category = await Category.findOne({ _id: categoryId });
 
@@ -95,18 +94,16 @@ exports.deleteCategory = async (req, res) => {
       return res.json({ success: false });
     }
     if (category.is_delete) {
-      console.log("Restoring category...");
       await Category.updateOne({ _id: categoryId }, { is_delete: false }); 
       return res.json({deleted:true ,message:"category restored"})
 
   } else {
-      console.log("Deleting category...");
       await Category.updateOne({ _id: categoryId }, { is_delete: true }); 
       return res.json({restored:true,message:"category deleted" })
 
   }
   } catch (error) {
-    console.log(error)
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -120,6 +117,6 @@ exports.applyCategory= async (req, res) => {
       res.json({ success: true, message: 'Offer applied to category successfully' })
   } catch (error) {
       console.error(error)
-      res.json({ success: false, message: 'Failed to apply offer to category' })
+      res.status(500).json({ success: false, message: 'Failed to apply offer to category' })
   }
 }

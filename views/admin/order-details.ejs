@@ -20,7 +20,8 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Order ID: <%= orders.order_id %></h5>
-                    <p class="card-text"><strong>Address ID:</strong> <%= orders.address_id%></p>
+                    <p class="card-text"><strong>User ID:</strong> <%= orders.user_id%></p>
+                    <p class="card-text"><strong>Address ID:</strong> <%= orders.address[0]._id%></p>
                     <p class="card-text"><strong>Order Status:</strong> <%= orders.order_status %></p>
                     <p class="card-text"><strong>Payment Method:</strong> <%= orders.payment_method === 'card' ? 'Raz or Pay' : orders.payment_method === 'wallet'  ? 'Wallet' : 'Cash on Delivery' %></p>
                     

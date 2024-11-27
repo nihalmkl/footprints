@@ -131,7 +131,7 @@
         </div>
         <div class="row">
             <% products.forEach(function(product) { %>
-                <div class="col-md-3 col-lg-3 mb-4 text-center">
+                <div class="col-12 col-md-3  mb-4 text-center">
                     <div class="product-entry border">
                         <a href="/product-view/<%= product._id %>" class="prod-img">
                             <img src="<%= product.images[0] %>" class="img-fluid" alt="<%= product.product_name %>">
@@ -192,7 +192,7 @@
 
 
     function updateCart(itemId, quantity) {
-        console.log("hi")
+       
         $.ajax({
             url: '/quantityUpdate',
             type: 'POST',
@@ -201,8 +201,8 @@
                 quantity: quantity
             },
             success: function(response) {
-                $('#subtotal').text(`$${response.total_price.toFixed(2)}`);
-                $('#total').text(`$${response.total_price.toFixed(2)}`);
+                $('#subtotal').text(`₹${response.total_price.toFixed(2)}`);
+                $('#total').text(`₹${response.total_price.toFixed(2)}`);
             },
             error: function(error) {
                 console.error('Error updating cart:', error);

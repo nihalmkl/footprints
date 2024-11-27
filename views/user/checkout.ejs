@@ -71,11 +71,11 @@
                         </div>
                 
                         <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="address">Address</label>
-                                 <input type="text" name="address" id="address" class="form-control" placeholder="Address">
-                                <small id="addressErr" class="text-danger"></small>
-                            </div>
+                          <div class="form-group">
+                            <label for="address1">Address Line 1</label>
+                            <input type="text" name="address1" id="address1" class="form-control" placeholder="Address Line">
+                            <small id="address1Err" class="text-danger"></small>
+                        </div>
                         </div>
                 
                         <div class="row">
@@ -262,7 +262,7 @@
     event.preventDefault();
 
     const fullName = document.getElementById('fname').value;
-    const address = document.getElementById('address').value;
+    const addressInp = document.getElementById('address1').value;
     const city = document.getElementById('towncity').value;
     const state = document.getElementById('stateprovince').value;
     const zipcode = document.getElementById('zippostalcode').value;
@@ -282,7 +282,7 @@
     [phoneErr, zipErr, fullNameErr, addressErr, cityErr, stateErr, countryErr, emailErr].forEach(err => {
         if (err) err.innerHTML = '';
     });
-
+    
     const phoneRegex = /^[0-9]{10}$/;
     const zipRegex = /^[0-9]{6}(?:-[0-9]{4})?$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -338,7 +338,7 @@
     const userId = "<%= userId %>";
     const data = {
         full_name: fullName,
-        street_address: address,
+        street_address: addressInp,
         pincode: zipcode,
         city: city,
         phone: phone,
@@ -401,6 +401,7 @@
   const discountPrice = parseFloat(document.getElementById('discount-price-div').innerText)
   
 
+
   if (addressId === "#" || !paymentMethod) {
     Swal.fire({
       title: "Error",
@@ -421,7 +422,16 @@
   })
   return
 }
-
+  if(discountedTotalPrice <= 40){
+    Swal.fire({
+    title: "Error",
+    text: "Not Any Products exists",
+    icon: "error",
+    timer: 1500,
+    showConfirmButton: false
+  })
+  return
+  }
   const orderData = { address_id: addressId, payment_method: paymentMethod.value,total_amount: discountedTotalPrice,couponCode:couponCode,discountPrice:discountPrice}
 
   const response = await fetch('/order/place_order', {
@@ -489,7 +499,9 @@
               title: "Payment Failed",
               text: verifyData.error || 'Payment verification failed. Please try again.',
               confirmButtonText: 'OK'
-            });
+            }).then(()=>{
+                window.location.href = '/'
+            })
           }
         },
         prefill: {
@@ -498,30 +510,62 @@
           contact: '112233665544'
         },
         theme: {
-          color: "#000000"
-        }
+          color: "#3399cc"
+        },
+        modal: {
+      ondismiss: function () {
+        Swal.fire({
+          icon: 'warning',
+          title: "Payment Cancelled",
+          text: "You cancelled the payment.",
+          confirmButtonText: 'OK'
+        }).then(() => {
+          window.location.href = '/';
+        });
+      }
+    }
+
       }
 
       const razorpay = new Razorpay(options)
       razorpay.open()
     }else if(paymentMethod.value === 'wallet'){
-        Swal.fire({
-      icon: 'success',
-      title: 'Order Placed',
-      text: 'Your order has been placed successfully using wallet.',
+        if (result.success) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Order Placed',
+        text: 'Your order has been placed successfully',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        window.location.href = '/';  
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: result.message || 'An unexpected error occurred.',
+        confirmButtonText: 'OK'
+      });
+    }
+  }
+} else {
+  const errorResult = await response.json();
+  
+  if (errorResult.message === "Insufficient wallet balance.") {
+    Swal.fire({
+      icon: 'error',
+      title: 'Payment Failed',
+      text: 'Your wallet balance is insufficient',
       confirmButtonText: 'OK'
-    }).then(() => {
-      window.location.href = '/';  
-    })
-     }else {
-    document.querySelector('.place-order').disabled = false
+    });
+  } else {
     Swal.fire({
       icon: 'error',
       title: 'Failed to Order',
       text: 'Unable to place order. Please try again later.',
       confirmButtonText: 'OK'
-      });
-    }
+    });
+  }
    }
  }
 let originalTotalPrice = parseFloat(document.getElementById('ordertotal').textContent)
@@ -535,7 +579,6 @@ async function applyCoupon(event) {
   
   const couponCode = document.getElementById('coupon-code').value
   const totalPrice = document.getElementById('ordertotal').textContent
-    console.log(couponCode,totalPrice)
   if (!couponCode) {
     Swal.fire({
       icon: 'warning',

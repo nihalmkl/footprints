@@ -15,7 +15,8 @@ exports.loadOffer = async (req, res) => {
           offer,
           product,
           category,
-          selectoffer 
+          selectoffer ,
+          currentRoute: '/admin/offers'
       });
   } catch (error) {
       console.log(error);
@@ -27,7 +28,6 @@ exports.addOffers = async (req, res) => {
     try {
       const nameRegex = /^[a-zA-Z\s\-]+$/
       const { offerName, offerPercentage, offerStartDate } = req.body
-      console.log("hey",offerName)
       const currentDate = new Date()
   
       if (!offerName) {
@@ -106,7 +106,6 @@ exports.addOffers = async (req, res) => {
           editOfferStartDate,
          
         } = req.body;
-        console.log(editOfferStartDate,"djkdsauua")
         const currentDate = new Date();
   
         if (!editOfferName) {

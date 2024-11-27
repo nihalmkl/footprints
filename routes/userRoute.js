@@ -7,8 +7,7 @@ const orderController = require('../controllers/user/orderController')
 const cartController = require('../controllers/user/cartController')
 const wishlistController = require('../controllers/user/wishlistController')
 const profileController = require('../controllers/user/profileController')
-const Wallet = require('../models/walletSchema')
-const Orders = require('../models/orderSchema')
+
 const session = require('../middlewares/sessionChecker');    
 
 user_route.get('/login', userController.loadLogin)
@@ -22,6 +21,7 @@ user_route.get('/forgot-password', userController.forgotPage)
 user_route.post('/forgot-password', userController.forgotPassword)
 user_route.get('/reset-password/:token', userController.resetPasswordPage)
 user_route.post('/reset-password', userController.resetPassword)
+user_route.get('/block-user',userController.blockedUser)
 
 user_route.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 user_route.get('/auth/google/callback',passport.authenticate('google', { failureRedirect: '/login' }),(req, res) => {
@@ -29,14 +29,14 @@ user_route.get('/auth/google/callback',passport.authenticate('google', { failure
             id: req.user._id, 
             email: req.user.email,
           };
-      res.redirect('/')})
-
-
- user_route.get('/',session.sessionLogin,userController.loadHome) 
- user_route.get('/shop',session.sessionLogin, userController.loadShop)
- 
- user_route.use(session.sessionChecker)
-
+          res.redirect('/')})
+          
+          
+          user_route.get('/',session.sessionLogin,userController.loadHome) 
+          user_route.get('/shop',session.sessionLogin, userController.loadShop)
+          
+          user_route.use(session.sessionChecker)
+          
  user_route.get('/logout', userController.userLogout)
  user_route.get('/profile/:userId', profileController.loadProfile)
  user_route.post('/address/add-address', profileController.addAddress)
@@ -75,17 +75,5 @@ user_route.post('/complete-payment', orderController.rePayment)
 // Endpoint to verify payment signature
 user_route.post('/verify-payment/complete',orderController.verifyPaymentStatus)
 
-user_route.patch('/order/payment_status/:orderId', async (req, res) => {
-      try {
-          const { orderId } = req.params;
-          const { payment_status } = req.body;
-  
-          await Orders.findByIdAndUpdate(orderId, { payment_status });
-  
-          res.status(200).json({ message: "Payment status updated to Failed." });
-      } catch (error) {
-          console.error("Error updating payment status:", error);
-          res.status(500).json({ message: "Failed to update payment status." });
-      }
-  });
+user_route.patch('/order/payment_status/:orderId',orderController.updatePaymentStatus);
 module.exports = user_route;

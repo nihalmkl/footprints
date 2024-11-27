@@ -14,7 +14,6 @@ exports.loadWishlist = async (req, res) => {
         let wishlistCount = []
 
         if (req.session.user) {
-            console.log("User ID:", req.session.user.id)
 
             cartCount = await Cart.aggregate([
                 { $match: { user_id: new mongoose.Types.ObjectId(req.session.user.id) } },
@@ -32,11 +31,21 @@ exports.loadWishlist = async (req, res) => {
         const wishlist = await Wishlist.findOne({ user_id: userId }).populate('products.product_id');
 
         if (!wishlist || wishlist.products.length === 0) {
+            return res.render('user/wishlist', {
+                products: [],
+                message: 'Your wishlist is empty.',
+                wishlistCount: finalWishlistCount ||0,
+                cartCount: finalCartCount||0
+            })
+        }
+
+
+        if (!wishlist || wishlist.products.length === 0) {
             return res.render('user/wishlist', { products: [], message: 'Your wishlist is empty.' });
         }
 
         const products = wishlist.products.map(item => item.product_id);
-        res.render('user/wishlist', { products,  wishlistCount: finalWishlistCount,
+        res.render('user/wishlist', { products,  wishlistCount: finalWishlistCount ,
             cartCount: finalCartCount });
     } catch (error) {
         console.error('Error loading wishlist:', error);

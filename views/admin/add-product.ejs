@@ -1,3 +1,7 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
 <div class="container mt-5 container-add">
     <form action="/add_product" method="POST" id="add-product" enctype="multipart/form-data">
     
@@ -65,30 +69,84 @@
         <div class="mb-4">
             <label for="productImages" class="form-label">Upload Product Images (Max 4)</label>
             <div class="row" id="imageUploadContainer">
-                <% for(let i=0; i < 4; i++) { %>
+                <% for (let i = 0; i < 4; i++) { %>
                     <div class="col-md-6">
                         <div class="mb-4">
                             <label class="form-label">Image Previews</label>
                             <div id="imagePreviews<%= i %>" class="row"></div>
                         </div>
-                        <input class="form-control" type="file" id="productImages<%= i %>" name="productImages[]"
-       accept="image/*" onchange="previewImage(this,'<%= i %>')" required>
-
+                        <input class="form-control mb-2" 
+                               type="file" 
+                               id="productImages<%= i %>" 
+                               name="productImages[]" 
+                               accept="image/*" 
+                               onchange="previewImage('<%= i %>')" 
+                               required>
+                        <button type="button" class="btn btn-primary" 
+                                onclick="openCropModal('<%= i %>')">Crop Image</button>
                     </div>
                 <% } %>
             </div>
             <small id="image-error" class="text-danger"></small>
             <div class="form-text">You can upload up to 4 images.</div>
+        
+            <!-- Cropper Modal -->
+            <div class="modal fade" id="cropperModal" tabindex="-1" aria-labelledby="cropperModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="cropperModalLabel">Crop Image</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <img id="imageToCrop" style="max-width: 100%;" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="cropButton">Crop Image</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <style>
+                .modal-content {
+                    margin: 10% auto;
+                    padding: 20px;
+                    width: 80%;
+                    max-width: 600px;
+                    background-color: #363636;
+                }
+                .cropper-body {
+                    width: 100%;
+                    max-height: 400px;
+                    margin-bottom: 10px;
+                }
+                .is-invalid {
+                    border-color: #dc3545 !important;
+                }
+                .text-danger {
+                    color: #dc3545;
+                    margin-top: 0.25rem;
+                }
+            </style>
         </div>
         
+        
+        
         <div class="row">
-            <div class="col-md-12 text-center">
+            <div class="col-md-12 text-center mb-3">
                 <button type="submit" class="btn cust-btn">Add Product</button>
             </div>
         </div>
     </form>
 </div>
-
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script>
     document.getElementById('addVariant').addEventListener('click', () => {
         const variantContainer = document.getElementById('variantContainer');
@@ -211,32 +269,97 @@
     }
 });
 
+
 function previewImage(input, index) {
     const previewContainer = document.getElementById(`imagePreviews${index}`);
     previewContainer.innerHTML = ""; // Clear any existing previews
 
-    const files = input.files; // Get the selected files
+    const file = input.files[0]; // Only one file allowed per input
+    if (file) {
+        const reader = new FileReader();
 
-    // Loop through each selected file
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (file) {
-            const reader = new FileReader();
+        reader.onload = function (e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.classList.add('img-thumbnail', 'mb-2');
+            img.style.width = '14rem';
+            img.style.height = '8rem';
 
-            // When the file is read successfully, display the image
-            reader.onload = function (e) {
-                const img = document.createElement('img');
-                img.src = e.target.result; 
-                img.classList.add('img-thumbnail', 'mb-2'); 
-                img.style.width = '14rem';  
-                img.style.height = '8rem';   
-              
-                previewContainer.appendChild(img); // Append the image to the preview container
-            }
+            previewContainer.appendChild(img); // Show preview
+        };
 
-            reader.readAsDataURL(file); // Convert the file to a data URL
-        }
+        reader.readAsDataURL(file);
     }
 }
+
+// Ensure these are global variables if needed in multiple functions
+let cropper;
+let currentIndex;
+
+window.previewImage = (index) => {
+    const fileInput = document.getElementById(`productImages${index}`);
+    if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            const imageToCrop = document.getElementById('imageToCrop');
+            imageToCrop.src = e.target.result;
+            currentIndex = index;
+
+            // Remove any existing event listeners
+            $('#cropperModal').off('shown.bs.modal').off('hidden.bs.modal');
+
+            // Show modal and initialize cropper
+            $('#cropperModal').modal('show');
+            $('#cropperModal').on('shown.bs.modal', () => {
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                });
+            });
+
+            $('#cropperModal').on('hidden.bs.modal', () => {
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+            });
+        };
+
+        reader.readAsDataURL(file);
+    }
+};
+
+document.getElementById('cropButton').addEventListener('click', () => {
+    if (!cropper) return;
+
+    const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
+    canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+
+        const previewContainer = document.getElementById(`imagePreviews${currentIndex}`);
+        previewContainer.innerHTML = ''; // Clear existing preview
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'img-thumbnail mb-2';
+        img.style.width = '14rem';
+        img.style.height = '8rem';
+
+        previewContainer.appendChild(img);
+
+        // Save cropped image
+        const fileInput = document.getElementById(`productImages${currentIndex}`);
+        const dataTransfer = new DataTransfer();
+        const croppedFile = new File([blob], `croppedImage_${currentIndex}.png`, { type: 'image/png' });
+        dataTransfer.items.add(croppedFile);
+        fileInput.files = dataTransfer.files;
+    });
+
+    $('#cropperModal').modal('hide');
+});
+
 
 </script>

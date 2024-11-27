@@ -145,10 +145,10 @@
                                         
                                         <span class="price">
                                             <% if (product.applied_discount_percentage > 0) { %>
-                                                <span class="discounted-price" style="color: red; font-weight: bold;">
+                                                <span class="discounted-price" style="color: rgb(27, 134, 39); font-weight: bold;">
                                                     ₹<%= (product.variants[0].price * (1 - product.applied_discount_percentage / 100)).toFixed(2) %>
                                                 </span>
-                                                <span class="original-price" style="text-decoration: line-through; color: gray;">
+                                                <span class="original-price" style="text-decoration: line-through; color: rgb(198, 17, 17);">
                                                     ₹<%= product.variants[0].price %>
                                                 </span>
                                             <% } else { %>

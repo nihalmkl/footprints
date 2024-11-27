@@ -17,7 +17,7 @@ exports.loadAdminLogin = async (req, res) => {
       res.render("admin/adm-login", { layout: false });
     }
   } catch (err) {
-    console.log(err);
+    res.status(500).json({ message: "Server Error" });
   }
 }
 
@@ -38,13 +38,26 @@ exports.adminLogin = async (req, res) => {
       res.json({ success: true });
     }
   } catch (error) {
-    console.log("Login", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 }
 
 
+exports.salesChart = async (req, res) => {
+  try {
+    const chartData = await getSalesData(req) 
+      res.json(chartData)
+  } catch (error) {
+      console.error('Error fetching sales data:', error)
+      res.status(500).json({ error: 'Failed to fetch sales data' })
+  }
+}
+
+// <------------------------ This for loading admin dashboard ---------------------------->
+
 exports.adminHome = async (req, res) => {
   try {
+    // this is used to filter sales report data
     const { filter, startDate, endDate } = req.query;
 
     let filterConditions = {};
@@ -67,9 +80,7 @@ exports.adminHome = async (req, res) => {
         $lte: moment(endDate).toDate()
       };
     }
-
-    const chartData = await getSalesData(req) 
-    console.log("Where ",chartData)
+   
     
     const orders = await Orders.find(filterConditions);
 
@@ -96,6 +107,9 @@ exports.adminHome = async (req, res) => {
     const best_categories = await bestCategories()
     const best_brands = await bestBrands()
 
+    // this is used for take the sales chart data give default week
+    const chartData = await getSalesData({ query: { filter: 'week' } })
+    
     res.render('admin/dashboard', {
       layout: "layout/admin",
       title: "Dashboard",
@@ -107,15 +121,17 @@ exports.adminHome = async (req, res) => {
       best_products,
       best_categories,
       best_brands,
-      chartData
+      chartData,
+      currentRoute: '/admin/dashboard'
     });
 
   } catch (error) {
     console.error("Error fetching sales report:", error);
-    res.status(500).send({ message: "Error generating sales report" });
+    res.status(500).json({ success:false,message: "Error generating sales report" });
   }
 }
 
+// <------------------------ This for download sales report in pdf format ---------------------------->
 
 exports.downloadPdf = async (req, res) => {
   try {
@@ -211,6 +227,7 @@ exports.downloadPdf = async (req, res) => {
   }
 };
 
+// <------------------------ This for download sales report in excel format ---------------------------->
 
 exports.downloadExcel = async (req, res) => {
   try {
@@ -297,6 +314,7 @@ exports.downloadExcel = async (req, res) => {
         }
       }
     ]);
+    
     await generateSalesReportExcel(res, orders, { totalOrders, totalSales, totalDiscount }, filter, startDate, endDate)
 
   } catch (error) {
@@ -310,10 +328,11 @@ exports.adminLogout = async (req, res) => {
       delete req.session.admin;
       res.send(); 
     } catch (err) {
-      console.log("Unexpected error during logout:", err);
+      res.status(500).json({ message: "Internal Server Error" });
     }
   }
   
+// <------------------------ This funtion is used to take best selling products  ---------------------------->
 
   async function bestProducts() {
     try {
@@ -348,6 +367,7 @@ exports.adminLogout = async (req, res) => {
     throw error;
   }
   }
+// <------------------------ This funtion is used to take best selling categories  ---------------------------->
 
  async function bestCategories() {
       try {
@@ -395,6 +415,7 @@ exports.adminLogout = async (req, res) => {
       }
     }
   
+// <------------------------ This funtion is used to take best selling brands  ---------------------------->
 
 async function bestBrands() {
       try {
