@@ -30,9 +30,10 @@ exports.loadCart =  async (req, res) => {
         
         const cart = await Cart.findOne({ user_id: userId }).populate('items.product_id')
         
-        // if (!cart) {
-        //     return res.status(404).json({ message: 'Cart not found' })
-        // }
+        if (!cart) {
+            return res.status(404).json({success:false, message: 'Cart not found' })
+        }
+
         let products
         if(cart){
             products = cart.items.map(item => {

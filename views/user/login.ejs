@@ -48,7 +48,7 @@
     .btn {
         width: 100%;
         padding: 15px;
-        background-color: #88c8bc;
+        background: linear-gradient(45deg, #88c8bc, #85c9a8);
         color: white;
         border: none;
         border-radius: 5px;
@@ -77,14 +77,12 @@
         color: #337ab7;
         text-decoration: none;
     }
-    .link a:hover {
-        text-decoration: underline;
-    }
+    
     .google-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #4285F4;
+        background: radial-gradient(circle, #183858, #4a4c4e);
         color: white;
         padding: 15px;
         border-radius: 5px;
@@ -94,7 +92,7 @@
         text-align: center;
     }
     .google-btn:hover {
-        background-color: #357ae8;
+        background-color: #474a4c;
     }
     .image-container {
         flex: 1;
@@ -102,6 +100,28 @@
         background-size: cover;
         background-position: center;
     }
+    .form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 5px;
+}
+
+label {
+  font-weight: bold;
+  
+}
+
+.input-field {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.error-message {
+  color: red;
+  font-size: 12px;
+  min-height: 10px; 
+}
     </style>
 </head>
 <body>
@@ -110,12 +130,16 @@
     <div class="form-container">
         <h2>Login to Your Account</h2>
         <form id="login-form"  method="POST">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" class="input-field" placeholder="Enter your email" required>
-            <small id="email-error"></small>
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" class="input-field" placeholder="**********" >
-             <small id="password-error"></small>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" class="input-field" placeholder="Enter your email" required>
+                <small id="email-error" class="error-message"></small>
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="input-field" placeholder="**********">
+                <small id="password-error" class="error-message"></small>
+              </div>
             <button type="submit" class="btn">Sign In</button>
         </form>
         

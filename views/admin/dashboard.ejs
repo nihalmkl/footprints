@@ -111,6 +111,9 @@
     height: auto;
 }
 
+a{
+   text-decoration: none;
+}
     </style>
   </head>
   <body>
@@ -132,7 +135,7 @@
               </div>
               <div class="d-flex">
                 <button class="btn btn-outline-danger me-2" onclick="exportPDF()">Download PDF</button>
-                <button class="btn btn-outline-success" onclick="exportExcel()">Download PDF</button>
+                <button class="btn btn-outline-success" onclick="exportExcel()">Download Excel</button>
               </div>
             </div>
           </div>
@@ -184,7 +187,7 @@
                     </div>
                     <div>
                       <select class="form-select" id="chatSortSelect" onchange="updateChartData()">
-                        <option value="" selected disabled>Sort by:</option>
+                        <option value="" selected disabled>Fiter by:</option>
                         <option value="week">Week</option>
                         <option value="month">Month</option>
                         <option value="year">Year</option>

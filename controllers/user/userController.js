@@ -165,7 +165,7 @@ exports.register = async (req, res) => {
 
         const otp = generateOtp();
         req.session.userOtp = otp
-
+         console.log(otp)
         const sentEmail = await sentVerificationEmail(email, otp);
         if (!sentEmail) {
             console.error("Email not sent");
@@ -240,7 +240,7 @@ exports.resendOtp = async (req, res) => {
         
         const otp = generateOtp(); 
         req.session.userotp = otp; 
-
+        console.log('resend',otp)
         await Otp.findOneAndDelete({ email });
         const resentotp = new Otp({
             email,
